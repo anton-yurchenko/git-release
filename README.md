@@ -1,9 +1,12 @@
 # git-release
-[![Release](https://img.shields.io/github/v/release/anton-yurchenko/git-release?style=flat-square)](https://github.com/anton-yurchenko/git-release/releases/latest) [![License](https://img.shields.io/github/license/anton-yurchenko/git-release?style=flat-square)](https://github.com/anton-yurchenko/git-release/releases/latest) 
+![License](https://img.shields.io/github/license/anton-yurchenko/git-release?style=flat-square) ![Release](https://img.shields.io/github/v/release/anton-yurchenko/git-release?style=flat-square) 
 
 A GitHub Action for creating a new GitHub Release with Assets and Changelog whenever a Version Tag is pushed to the project.  
 
 ![PIC](docs/images/release.png)
+
+## Note:
+**git-release** is in development and right now is still missing the **changelog** parsing feature.
 
 ## Features:
 - Parse Tag to match Semantic Versioning (for example: 2.8.1).  
