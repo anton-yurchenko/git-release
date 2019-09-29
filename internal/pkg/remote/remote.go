@@ -51,7 +51,7 @@ func Authenticate(token string) Remote {
 
 // Publish release and upload assets
 func (r *Remote) Publish() error {
-	log.Info("creating release: ", *r.Release.Name)
+	log.Infof("creating '%+s' release: ", *r.Release.Name)
 
 	// create release
 	rel, _, err := r.Client.Repositories.CreateRelease(context.Background(), r.Owner, r.Repository, &github.RepositoryRelease{

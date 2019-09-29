@@ -44,7 +44,7 @@ func getConfig() config {
 	c.Draft = false
 	if d == "true" {
 		c.Draft = true
-	} else {
+	} else if d != "false" {
 		log.Warn("environmental variable DRAFT_RELEASE not set, assuming FALSE")
 	}
 
@@ -53,7 +53,7 @@ func getConfig() config {
 	c.Draft = false
 	if p == "true" {
 		c.Draft = true
-	} else {
+	} else if p == "false" {
 		log.Warn("environmental variable PRE_RELEASE not set, assuming FALSE")
 	}
 
@@ -87,7 +87,7 @@ func main() {
 
 	// prepare releast assets
 	// github 'jobs.<job_id>.steps.with.args' does not support arrays, so we need to parse it
-	arguments := strings.Split(os.Args[1], "\n") // TODO: parse by both newline and space
+	arguments := strings.Split(os.Args[1], "\n")
 	for _, argument := range arguments {
 		r.Assets = append(r.Assets, remote.Asset{
 			Name: filepath.Base(argument),
@@ -100,4 +100,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	log.Infof("release '%+s' published", *r.Release.Name)
 }

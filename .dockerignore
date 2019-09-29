@@ -1,2 +1,7 @@
-README.md
 .vscode/
+.idea/
+.gitignore
+.dockerignore
+README.md
+CHANGELOG.md
+docs/
