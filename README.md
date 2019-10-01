@@ -54,10 +54,10 @@ on:
     - name: Release
       uses: anton-yurchenko/git-release@master
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         DRAFT_RELEASE: "false"
         PRE_RELEASE: "false"
-        CHANGELOG: "CHANGELOG.md"
+        CHANGELOG_FILE: "CHANGELOG.md"
       with:
         args: |
           build/release/artifact-darwin-amd64.zip

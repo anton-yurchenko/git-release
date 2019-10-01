@@ -1,3 +1,8 @@
+## [0.2.1] - 2019-10-01
+### Fixed
+- Wrong PRE_RELEASE message when set.
+- Correct 'creating release' log message.
+
 ## [0.2.0] - 2019-10-01
 ### Added
 - Changelog reader.

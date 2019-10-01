@@ -2,7 +2,7 @@ FROM golang:1.13.1-alpine
 
 LABEL "repository"="https://github.com/anton-yurchenko/git-release"
 LABEL "maintainer"="Anton Yurchenko <anton.doar@gmail.com>"
-LABEL "version"="0.1.1"
+LABEL "version"="0.2.1"
 
 LABEL "com.github.actions.name"="Git Release"
 LABEL "com.github.actions.description"="Create a new GitHub Release with Assets and Changelog"
