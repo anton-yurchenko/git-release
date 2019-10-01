@@ -1,3 +1,7 @@
+
+## [1.0.0] - 2019-10-01
+- First stable release.
+
 ## [0.2.1] - 2019-10-01
 ### Fixed
 - Wrong PRE_RELEASE message when set.

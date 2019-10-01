@@ -13,7 +13,7 @@ A GitHub Action for creating a new GitHub Release with Assets and Changelog when
 ## Manual:
 1. Add your changes to **CHANGELOG.md** in the following format (according to [keepachangelog.com](https://keepachangelog.com/en/1.0.0/ "Keep a ChangeLog")):
 ```
-## [2.1.2] - 2019-10-01
+## [2.1.5] - 2019-10-01
 ### Added
 - Feature 1.
 - Feature 2.
@@ -31,30 +31,30 @@ A GitHub Action for creating a new GitHub Release with Assets and Changelog when
 ![PIC](docs/images/log.png)
 
 ## Configuration:
-1. Create a GitHub **Personal Access Token** with **Full control of private repositories** permission, add it as a Secret to target repository.
-2. Change the workflow to be triggered on Tag Push:
+1. Change the workflow to be triggered on Tag Push:
 ```
 on:
   push:
     tags:
     - '*'
 ```
-or
+or with `v` prefix:
 ```
 on:
   push:
     tags:
     - 'v*'
 ```
-3. Add Release stage to your workflow:
-   - Provide GITHUB_TOKEN from step 1.
-   - DRAFT_RELEASE and PRE_RELEASE are optional, assumed **false** if not set.
-   - Provide a list of assets as **args**
+2. Add Release stage to your workflow:
+    - **Optional**: Provide a list of assets as **args**
+    - **Optional**: `DRAFT_RELEASE: "true"/"false"` - Save release as draft instead of publishing it.
+    - **Optional**: `PRE_RELEASE: "true"/"false"` - GitHub will point out that this release is identified as non-production ready. 
+    - **Optional**: `CHANGELOG_FILE: "true"/"false"` - Changelog filename (default `CHANGELOG.md`)
 ```
     - name: Release
-      uses: anton-yurchenko/git-release@master
+      uses: anton-yurchenko/git-release@v1
       env:
-        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         DRAFT_RELEASE: "false"
         PRE_RELEASE: "false"
         CHANGELOG_FILE: "CHANGELOG.md"
