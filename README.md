@@ -6,20 +6,20 @@ A GitHub Action for creating a new GitHub Release with Assets and Changelog when
 ![PIC](docs/images/release.png)
 
 ## Features:
-- Parse Tag to match Semantic Versioning (for example: 2.8.1).  
+- Parse Tag to match Semantic Versioning.  
 - Upload build artifacts (assets) to the release.  
 - Add changelog to the release.  
 
 ## Manual:
 1. Add your changes to **CHANGELOG.md** in the following format (according to [keepachangelog.com](https://keepachangelog.com/en/1.0.0/ "Keep a ChangeLog")):
 ```
-## [2.1.1] - 2019-09-29
+## [2.1.2] - 2019-10-01
 ### Added
 - Feature 1.
 - Feature 2.
 
 ### Changed
-- Logger format.
+- Logger timestamp.
 
 ### Removed
 - Old library.
