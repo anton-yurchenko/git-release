@@ -25,11 +25,14 @@ func GetDetails(r *remote.Remote) error {
 		return err
 	}
 
+	// remove v from version tag.
+	name := strings.Trim(tag, "v")
+
 	r.Owner = repoName["owner"]
 	r.Repository = repoName["name"]
 	r.Release.CommitHash = &hash
 	r.Release.Tag = &tag
-	r.Release.Name = &tag
+	r.Release.Name = &name
 
 	return nil
 }

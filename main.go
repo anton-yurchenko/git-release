@@ -3,6 +3,7 @@ package main
 import (
 	"git-release/internal/pkg/local"
 	"git-release/internal/pkg/remote"
+	"git-release/pkg/changelog"
 	"strings"
 
 	"os"
@@ -16,6 +17,7 @@ type config struct {
 	Draft      bool
 	PreRelease bool
 	Home       string
+	Changelog  string
 }
 
 func init() {
@@ -63,6 +65,13 @@ func getConfig() config {
 		log.Fatal("environmental variable GITHUB_WORKSPACE not defined")
 	}
 
+	// get changelog
+	c.Changelog = os.Getenv("CHANGELOG_FILE")
+	if c.Changelog == "" {
+		log.Warn("environmental variable CHANGELOG_FILE not set, assuming 'CHANGELOG.md'")
+		c.Changelog = "CHANGELOG.md"
+	}
+
 	return c
 }
 
@@ -81,9 +90,15 @@ func main() {
 		log.Fatal(err)
 	}
 
-	body := "" // TODO: parse CHANGELOG.md
-
-	r.Release.Body = &body
+	// get changelog
+	log.Infof("reading changelog: %+s", conf.Changelog)
+	r.Release.Body, err = changelog.GetBody(*r.Release.Name, conf.Changelog)
+	if *r.Release.Body == "" {
+		log.Warn("creating release with empty body")
+	}
+	if err != nil {
+		log.Warn(err)
+	}
 
 	// prepare releast assets
 	// github 'jobs.<job_id>.steps.with.args' does not support arrays, so we need to parse it

@@ -1,3 +1,14 @@
+## [0.2.0] - 2019-10-01
+### Added
+- Changelog reader.
+- MIT License.
+
+### Changed
+- Remove 'v' from release name.
+
+### Fixed
+- Create release without assets.
+
 ## [0.1.1] - 2019-09-29
 ### Added
 - Tag regex to match v1.0.0 and 1.0.0.

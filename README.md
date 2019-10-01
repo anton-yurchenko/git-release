@@ -1,12 +1,9 @@
 # git-release
-![License](https://img.shields.io/github/license/anton-yurchenko/git-release?style=flat-square) ![Release](https://img.shields.io/github/v/release/anton-yurchenko/git-release?style=flat-square) 
+[![License](https://img.shields.io/github/license/anton-yurchenko/git-release?style=flat-square)](LICENSE.md) [![Release](https://img.shields.io/github/v/release/anton-yurchenko/git-release?style=flat-square)](https://github.com/anton-yurchenko/git-release/releases/latest)
 
 A GitHub Action for creating a new GitHub Release with Assets and Changelog whenever a Version Tag is pushed to the project.  
 
 ![PIC](docs/images/release.png)
-
-## Note:
-**git-release** is in development and right now is still missing the **changelog** parsing feature.
 
 ## Features:
 - Parse Tag to match Semantic Versioning (for example: 2.8.1).  
@@ -14,7 +11,7 @@ A GitHub Action for creating a new GitHub Release with Assets and Changelog when
 - Add changelog to the release.  
 
 ## Manual:
-1. Add your changes to **CHANGELOG.md** in the following format (according to [keepachangelog.com](https://keepachangelog.com/ "Keep a ChangeLog")):
+1. Add your changes to **CHANGELOG.md** in the following format (according to [keepachangelog.com](https://keepachangelog.com/en/1.0.0/ "Keep a ChangeLog")):
 ```
 ## [2.1.1] - 2019-09-29
 ### Added
@@ -42,6 +39,13 @@ on:
     tags:
     - '*'
 ```
+or
+```
+on:
+  push:
+    tags:
+    - 'v*'
+```
 3. Add Release stage to your workflow:
    - Provide GITHUB_TOKEN from step 1.
    - DRAFT_RELEASE and PRE_RELEASE are optional, assumed **false** if not set.
@@ -53,9 +57,13 @@ on:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         DRAFT_RELEASE: "false"
         PRE_RELEASE: "false"
+        CHANGELOG: "CHANGELOG.md"
       with:
         args: |
           build/release/artifact-darwin-amd64.zip
           build/release/artifact-linux-amd64.zip
           build/release/artifact-windows-amd64.zip
 ```
+
+## License
+[MIT](LICENSE.md) © 2019-present Anton Yurchenko

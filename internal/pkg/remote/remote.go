@@ -70,25 +70,27 @@ func (r *Remote) Publish() error {
 	r.Release.ID = rel.GetID()
 
 	// upload assets
-	results := make(chan error, len(r.Assets))
-	var wg sync.WaitGroup
-	wg.Add(len(r.Assets))
-	for _, asset := range r.Assets {
-		go r.upload(asset, &wg, results)
-	}
-	wg.Wait()
-
-	failed := false
-	for i := 0; i <= len(r.Assets)-1; i++ {
-		result := <-results
-		if result != nil {
-			log.Errorf("error uploading file %s: %s", r.Assets[i].Name, result)
-			failed = true
+	if len(r.Assets) > 0 {
+		results := make(chan error, len(r.Assets))
+		var wg sync.WaitGroup
+		wg.Add(len(r.Assets))
+		for _, asset := range r.Assets {
+			go r.upload(asset, &wg, results)
 		}
-	}
+		wg.Wait()
 
-	if failed {
-		return errors.New("some assets were not uploaded, please validate github release manually")
+		failed := false
+		for i := 0; i <= len(r.Assets)-1; i++ {
+			result := <-results
+			if result != nil {
+				log.Errorf("error uploading file %s: %s", r.Assets[i].Name, result)
+				failed = true
+			}
+		}
+
+		if failed {
+			return errors.New("some assets were not uploaded, please validate github release manually")
+		}
 	}
 
 	return nil
