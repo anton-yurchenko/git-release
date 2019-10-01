@@ -6,7 +6,7 @@ LABEL "version"="1.0.0"
 
 LABEL "com.github.actions.name"="Git Release"
 LABEL "com.github.actions.description"="Create a new GitHub Release with Assets and Changelog"
-LABEL "com.github.actions.icon"="save"
+LABEL "com.github.actions.icon"="tag"
 LABEL "com.github.actions.color"="black"
 
 WORKDIR /opt/src

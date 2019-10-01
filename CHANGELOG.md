@@ -1,4 +1,3 @@
-
 ## [1.0.0] - 2019-10-01
 - First stable release.
 
