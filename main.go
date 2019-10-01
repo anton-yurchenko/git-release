@@ -55,7 +55,7 @@ func getConfig() config {
 	c.Draft = false
 	if p == "true" {
 		c.Draft = true
-	} else if p == "false" {
+	} else if p != "false" {
 		log.Warn("environmental variable PRE_RELEASE not set, assuming FALSE")
 	}
 
