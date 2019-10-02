@@ -1,14 +1,14 @@
 # git-release
 [![License](https://img.shields.io/github/license/anton-yurchenko/git-release?style=flat-square)](LICENSE.md) [![Release](https://img.shields.io/github/v/release/anton-yurchenko/git-release?style=flat-square)](https://github.com/anton-yurchenko/git-release/releases/latest)
 
-A GitHub Action for creating a new GitHub Release with Assets and Changelog whenever a Version Tag is pushed to the project.  
+A GitHub Action for creating a GitHub Release with Assets and Changelog whenever a Version Tag is pushed to the project.  
 
 ![PIC](docs/images/release.png)
 
 ## Features:
 - Parse Tag to match Semantic Versioning.  
 - Upload build artifacts (assets) to the release.  
-- Add changelog to the release.  
+- Add a changelog to the release.  
 
 ## Manual:
 1. Add your changes to **CHANGELOG.md** in the following format (according to [keepachangelog.com](https://keepachangelog.com/en/1.0.0/ "Keep a ChangeLog")):
@@ -32,13 +32,7 @@ A GitHub Action for creating a new GitHub Release with Assets and Changelog when
 
 ## Configuration:
 1. Change the workflow to be triggered on Tag Push:
-```
-on:
-  push:
-    tags:
-    - '*'
-```
-or with `v` prefix:
+    - Use either `'*'` or `'v*`
 ```
 on:
   push:
@@ -52,7 +46,7 @@ on:
     - **Optional**: `CHANGELOG_FILE: "true"/"false"` - Changelog filename (default `CHANGELOG.md`)
 ```
     - name: Release
-      uses: anton-yurchenko/git-release@v1
+      uses: docker://antonyurchenko/git-release:latest
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         DRAFT_RELEASE: "false"
@@ -64,6 +58,10 @@ on:
           build/release/artifact-linux-amd64.zip
           build/release/artifact-windows-amd64.zip
 ```
+
+## Remarks:
+- This action is automatically built at Docker Hub, and tagged with `latest / v1 / v1.0 / v1.0.0`. You may lock to a certain version instead of using **latest**. (*Recommended to lock against a major version, for example* `v1`).
+- Instead of using pre-built image, you may build it during the execution of your flow by changing `docker://antonyurchenko/git-release:latest` to `anton-yurchenko/git-release@master`
 
 ## License
 [MIT](LICENSE.md) © 2019-present Anton Yurchenko
