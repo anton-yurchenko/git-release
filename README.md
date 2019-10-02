@@ -1,5 +1,5 @@
 # git-release
-[![License](https://img.shields.io/github/license/anton-yurchenko/git-release?style=flat-square)](LICENSE.md) [![Release](https://img.shields.io/github/v/release/anton-yurchenko/git-release?style=flat-square)](https://github.com/anton-yurchenko/git-release/releases/latest)
+[![License](https://img.shields.io/github/license/anton-yurchenko/git-release?style=flat-square)](LICENSE.md) [![Release](https://img.shields.io/github/v/release/anton-yurchenko/git-release?style=flat-square)](https://github.com/anton-yurchenko/git-release/releases/latest) [![Docker Build](https://img.shields.io/docker/cloud/build/antonyurchenko/git-release?style=flat-square)](https://hub.docker.com/r/antonyurchenko/git-release) [![Docker Pulls](https://img.shields.io/docker/pulls/antonyurchenko/git-release?style=flat-square)](https://hub.docker.com/r/antonyurchenko/git-release)
 
 A GitHub Action for creating a GitHub Release with Assets and Changelog whenever a Version Tag is pushed to the project.  
 
