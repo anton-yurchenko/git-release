@@ -1,0 +1,7 @@
+name: 'Git Release'
+description: 'Create a GitHub Release with Assets and Changelog'
+icon: 'tag'
+color: 'black'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
