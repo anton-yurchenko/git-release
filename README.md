@@ -41,9 +41,9 @@ on:
 ```
 2. Add Release stage to your workflow:
     - **Optional**: Provide a list of assets as **args**
-    - **Optional**: `DRAFT_RELEASE: "true"/"false"` - Save release as draft instead of publishing it.
-    - **Optional**: `PRE_RELEASE: "true"/"false"` - GitHub will point out that this release is identified as non-production ready. 
-    - **Optional**: `CHANGELOG_FILE: "true"/"false"` - Changelog filename (default `CHANGELOG.md`)
+    - **Optional**: `DRAFT_RELEASE: "true"/"false"` - Save release as draft instead of publishing it (default `false`).
+    - **Optional**: `PRE_RELEASE: "true"/"false"` - GitHub will point out that this release is identified as non-production ready (default `false`). 
+    - **Optional**: `CHANGELOG_FILE: "changes.md"` - Changelog filename (default `CHANGELOG.md`).
 ```
     - name: Release
       uses: docker://antonyurchenko/git-release:latest
