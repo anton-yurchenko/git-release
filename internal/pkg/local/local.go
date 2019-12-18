@@ -26,7 +26,8 @@ func GetDetails(r *remote.Remote) error {
 	}
 
 	// remove v from version tag.
-	name := strings.Trim(tag, "v")
+	var re = regexp.MustCompile(".*([0-9]+.[0-9]+.[0-9]+)")
+	name := re.ReplaceAllString(tag, "$1")
 
 	r.Owner = repoName["owner"]
 	r.Repository = repoName["name"]
@@ -66,10 +67,10 @@ func getVersionTag() (string, error) {
 		return "", errors.New("environmental variable GITHUB_REF not defined")
 	}
 
-	regex := regexp.MustCompile("refs/tags/v?[0-9]+.[0-9]+.[0-9]+")
+	regex := regexp.MustCompile("refs/tags/.*[0-9]+.[0-9]+.[0-9]+")
 	if regex.MatchString(o) {
 		return strings.Split(o, "/")[2], nil
 	}
 
-	return "", errors.New("no matching tags found. expected to match regex 'v?[0-9]+.[0-9]+.[0-9]+'")
+	return "", errors.New("no matching tags found. expected to match regex '.*[0-9]+.[0-9]+.[0-9]+'")
 }

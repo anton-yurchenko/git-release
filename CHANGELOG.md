@@ -1,3 +1,7 @@
+## [Unreleased]
+### Added
+- Allow any prefix to semver tag
+
 ## [1.0.0] - 2019-10-01
 - First stable release.
 
