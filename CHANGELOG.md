@@ -1,6 +1,9 @@
-## [Unreleased]
+## [1.1.0] - 2019-12-21
 ### Added
-- Allow any prefix to semver tag
+- [PR #3](https://github.com/anton-yurchenko/git-release/pull/3) Allow any prefix to semver tag. (*Thanks to [Taylor Becker](https://github.com/tajobe) for the PR*)
+
+### Fixed
+- PreRelease overwriting Draft configuration. (*Thanks to [Taylor Becker](https://github.com/tajobe) for the reporting an issue*)
 
 ## [1.0.0] - 2019-10-01
 - First stable release.

@@ -52,9 +52,9 @@ func getConfig() config {
 
 	// get prerelease
 	p := os.Getenv("PRE_RELEASE")
-	c.Draft = false
+	c.PreRelease = false
 	if p == "true" {
-		c.Draft = true
+		c.PreRelease = true
 	} else if p != "false" {
 		log.Warn("environmental variable PRE_RELEASE not set, assuming FALSE")
 	}
