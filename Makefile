@@ -1,7 +1,7 @@
 # global
 BINARY := $(notdir $(CURDIR))
 GO_BIN_DIR := $(GOPATH)/bin
-PKGS := $(go list ./... | grep -v /vendor)
+PKGS := $(go list ./... | grep -v /vendor | grep -v /mocks)
 
 # unit tests
 test: lint
