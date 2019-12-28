@@ -1,4 +1,12 @@
-.vscode/
-.idea/
+# OS
 **/.DS_Store
-vendor/
+
+# IDE
+.vscode/
+**/__debug_bin
+.idea/
+
+# project
+coverage.txt
+/vendor/
+/release/
