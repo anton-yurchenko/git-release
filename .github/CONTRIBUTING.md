@@ -7,6 +7,7 @@
 
 
 ## Pull Request:
+- Open [Pull Request](https://github.com/anton-yurchenko/git-release/pulls) towards **dev** branch.
 - Ensure [Pull Request](https://github.com/anton-yurchenko/git-release/pulls) description clearly describes the problem and solution.
 - Make sure all Tests are passed and there is no Code Coverage degradation.
 - Please follow [AngularJS Commit Message Guidelines](https://github.com/angular/angular/blob/master/CONTRIBUTING.md#-commit-message-guidelines)
