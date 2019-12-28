@@ -1,3 +1,4 @@
+.github/
 .vscode/
 .idea/
 .gitignore
@@ -5,3 +6,6 @@
 README.md
 CHANGELOG.md
 docs/
+coverage.txt
+Dockerfile
+Makefile
