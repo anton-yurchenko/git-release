@@ -39,4 +39,4 @@ release: test
 
 .PHONY: codecov
 codecov: test
-	@go tool cover -html=codecoverage.out
+	@go tool cover -html=coverage.txt
