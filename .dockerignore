@@ -1,11 +1,13 @@
 .github/
+.circleci/
 .vscode/
 .idea/
+docs/
+action.yml
 .gitignore
 .dockerignore
 README.md
 CHANGELOG.md
-docs/
 coverage.txt
 Dockerfile
 Makefile

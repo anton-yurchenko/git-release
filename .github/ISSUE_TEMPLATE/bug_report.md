@@ -16,5 +16,8 @@ A clear and concise description of what the bug is.
 **Changelog**
 ```Provide a full/sample changelog```
 
+**Log**
+```Provide an execution log```
+
 **Screenshots**
 If applicable, add screenshots to help explain your problem.
