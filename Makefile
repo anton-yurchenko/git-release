@@ -1,12 +1,11 @@
 # global
 BINARY := $(notdir $(CURDIR))
 GO_BIN_DIR := $(GOPATH)/bin
-PKGS := $(go list ./... | grep -v /vendor | grep -v /mocks)
 
 # unit tests
 test: lint
 	@echo "unit testing..."
-	@go test ./... -race -coverprofile=coverage.txt -covermode=atomic
+	@go test $$(go list ./... | grep -v vendor | grep -v mocks) -race -coverprofile=coverage.txt -covermode=atomic
 
 # lint
 .PHONY: lint

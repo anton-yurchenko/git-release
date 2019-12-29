@@ -1,5 +1,10 @@
 # git-release
-[![Release](https://img.shields.io/github/v/release/anton-yurchenko/git-release)](https://github.com/anton-yurchenko/git-release/releases/latest) [![codecov](https://codecov.io/gh/anton-yurchenko/git-release/branch/master/graph/badge.svg)](https://codecov.io/gh/anton-yurchenko/git-release) [![Go Report Card](https://goreportcard.com/badge/github.com/anton-yurchenko/git-release)](https://goreportcard.com/report/github.com/anton-yurchenko/git-release) [![Docker Build](https://img.shields.io/docker/cloud/build/antonyurchenko/git-release)](https://hub.docker.com/r/antonyurchenko/git-release) [![Docker Pulls](https://img.shields.io/docker/pulls/antonyurchenko/git-release)](https://hub.docker.com/r/antonyurchenko/git-release) [![License](https://img.shields.io/github/license/anton-yurchenko/git-release)](LICENSE.md)
+[![Release](https://img.shields.io/github/v/release/anton-yurchenko/git-release)](https://github.com/anton-yurchenko/git-release/releases/latest)
+[![codecov](https://codecov.io/gh/anton-yurchenko/git-release/branch/master/graph/badge.svg)](https://codecov.io/gh/anton-yurchenko/git-release)
+[![Go Report Card](https://goreportcard.com/badge/github.com/anton-yurchenko/git-release)](https://goreportcard.com/report/github.com/anton-yurchenko/git-release)
+[![Docker Build](https://img.shields.io/docker/cloud/build/antonyurchenko/git-release)](https://hub.docker.com/r/antonyurchenko/git-release)
+[![Docker Pulls](https://img.shields.io/docker/pulls/antonyurchenko/git-release)](https://hub.docker.com/r/antonyurchenko/git-release)
+[![License](https://img.shields.io/github/license/anton-yurchenko/git-release)](LICENSE.md)
 
 A GitHub Action for creating a GitHub Release with Assets and Changelog whenever a Version Tag is pushed to the project.  
 
