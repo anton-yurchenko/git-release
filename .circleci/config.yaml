@@ -1,0 +1,11 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/golang:1.13
+    working_directory: /go/src/github.com/anton-yurchenko/git-release
+    steps:
+      - checkout
+      - run:
+          name: Run unit tests
+          command: go test $(go list ./... | grep -v vendor | grep -v mocks) -race
