@@ -11,6 +11,6 @@ LABEL "maintainer"="Anton Yurchenko <anton.doar@gmail.com>"
 LABEL "version"="2.0.2"
 COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=build /etc/passwd /etc/passwd
-COPY --from=build /opt/LICENSE.md /LICENSE.md
+COPY LICENSE.md /LICENSE.md
 COPY --from=build --chown=1000:0 /opt/app /app
 ENTRYPOINT [ "/app" ]
