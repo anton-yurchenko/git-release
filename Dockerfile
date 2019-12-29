@@ -1,11 +1,4 @@
 ARG BUILDER=golang:1.13.1-alpine
-ARG TESTER=golangci/golangci-lint:latest
-
-FROM ${TESTER} as test
-WORKDIR /opt/src
-COPY . .
-RUN golangci-lint run ./...
-RUN go test ./... -race -coverprofile=coverage.txt -covermode=atomic
 
 FROM ${BUILDER} as build
 WORKDIR /opt/src

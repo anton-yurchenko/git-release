@@ -1,3 +1,7 @@
+## [2.0.1] - 2019-12-28
+### Changed
+- Disable unit testing on Docker Hub auto builds
+
 ## [2.0.0] - 2019-12-28
 This is a major release as most of the code was refactored and some behavior was changed, for example "Tag version is set as a release title".
 
