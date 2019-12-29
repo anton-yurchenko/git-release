@@ -1,3 +1,12 @@
+## [2.0.2] - 2019-12-29
+### Added
+- CircleCI integrated as a Continuous Integration system
+- GolangCI integrated as a Continuous Code Quality system
+- CodeCov integrated as a Continuous Code Quality system
+
+### Changed
+- DockerHub setup as a Continuous Delivery system
+
 ## [2.0.1] - 2019-12-28
 ### Changed
 - Disable unit testing on Docker Hub auto builds
