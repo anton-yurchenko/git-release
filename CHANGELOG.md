@@ -1,3 +1,7 @@
+## [Unreleased]
+### Changed
+- Replace CircleCI with GitHub Actions as a Continuous Integration system
+
 ## [2.0.2] - 2019-12-29
 ### Added
 - CircleCI integrated as a Continuous Integration system
