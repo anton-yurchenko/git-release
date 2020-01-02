@@ -124,7 +124,7 @@ func TestReadProjectName(t *testing.T) {
 
 	err = m.ReadProjectName()
 
-	assert.EqualError(err, "malformed env.var 'GITHUB_REPOSITORY': expected to match regex '.*/.*', got 'value'")
+	assert.EqualError(err, "malformed env.var 'GITHUB_REPOSITORY': expected to match regex '^(?P<owner>[\\w,\\-,\\_]+)/(?P<repo>[\\w,\\-,\\_]+)$', got 'value'")
 
 	// TEST: env.var not set
 	err = os.Setenv("GITHUB_REPOSITORY", "")
