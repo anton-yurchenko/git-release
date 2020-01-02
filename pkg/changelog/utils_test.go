@@ -11,7 +11,7 @@ const content string = `## [Unreleased]
 - Unrelease feature.
 - Parsing bug fixed.
 
-## [1.0.1] - 2018-01-28
+## [1.0.1-beta] - 2018-01-28
 ### Added
 - New feature.
 
@@ -48,12 +48,18 @@ const content string = `## [Unreleased]
 - Control Release Draft through env.var 'DRAFT_RELEASE'.
 - Control Release Pre Release through env.var 'PRE_RELEASE'.
 
+## [1.2.3----RC-SNAPSHOT.12.9.1--.12+788] - 2018-01-01
+- Test valid builds.
+
+## [2.0.0+build.1848] - 2018-01-01
+- Test valid builds.
+
 [Unreleased]: [0.3.0]: https://github.com/anton-yurchenko/git-release/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/anton-yurchenko/git-release/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/anton-yurchenko/git-release/releases/tag/v0.1.0`
 
 var releasesContentMargins map[string]map[string]int = map[string]map[string]int{
-	"1.0.1": map[string]int{
+	"1.0.1-beta": map[string]int{
 		"start": 5,
 		"end":   10,
 	},
@@ -73,10 +79,18 @@ var releasesContentMargins map[string]map[string]int = map[string]map[string]int
 		"start": 35,
 		"end":   40,
 	},
+	"1.2.3----RC-SNAPSHOT.12.9.1--.12+788": map[string]int{
+		"start": 42,
+		"end":   43,
+	},
+	"2.0.0+build.1848": map[string]int{
+		"start": 45,
+		"end":   46,
+	},
 }
 
 var releasesContent map[string]string = map[string]string{
-	"1.0.1": `### Added
+	"1.0.1-beta": `### Added
 - New feature.
 
 ### Fixed
@@ -103,6 +117,8 @@ var releasesContent map[string]string = map[string]string{
 - Upload Assets.
 - Control Release Draft through env.var 'DRAFT_RELEASE'.
 - Control Release Pre Release through env.var 'PRE_RELEASE'.`,
+	"1.2.3----RC-SNAPSHOT.12.9.1--.12+788": `- Test valid builds.`,
+	"2.0.0+build.1848":                     `- Test valid builds.`,
 }
 
 func createChangelog(fs afero.Fs, t *testing.T) string {

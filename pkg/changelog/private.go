@@ -2,9 +2,9 @@ package changelog
 
 import (
 	"bufio"
-	"github.com/spf13/afero"
 	"regexp"
-	"strings"
+
+	"github.com/spf13/afero"
 )
 
 // Read changelog line by line and return content as []string
@@ -30,7 +30,7 @@ func (c *Changes) Read(fs afero.Fs) ([]string, error) {
 // GetEndOfFirstRelease returns line number on which the first release ends.
 // It may be an end of file or a start of an 'Unreleased Versions'.
 func GetEndOfFirstRelease(content []string) int {
-	expression := `\[.*\]:.*`
+	expression := "^(?P<prefix>\\[)(?P<unreleased>[^\\]]*)(?P<postfix>\\].*)$"
 	regex := regexp.MustCompile(expression)
 
 	for i := 0; i < len(content); i++ {
@@ -46,7 +46,7 @@ func GetEndOfFirstRelease(content []string) int {
 func GetReleasesLines(content []string) []int {
 	lines := make([]int, 0)
 
-	expression := `## \[[0-9]+.[0-9]+.[0-9]+\].*`
+	expression := "^(?P<prefix>##\\s*\\[)(?P<major>0|[1-9]\\d*)\\.(?P<minor>0|[1-9]\\d*)\\.(?P<patch>0|[1-9]\\d*)(?:-(?P<prerelease>(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+(?P<buildmetadata>[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?(?P<postfix>\\])(?P<date>.*)$"
 	regex := regexp.MustCompile(expression)
 
 	for i, line := range content {
@@ -65,7 +65,23 @@ func (c *Changes) GetMargins(content []string) map[string]int {
 	releaseLines := GetReleasesLines(content)
 
 	for i, line := range releaseLines {
-		v := strings.Split(strings.TrimPrefix(content[line], "## ["), "] ")[0]
+		expression := "^(?P<prefix>##\\s*\\[)(?P<major>0|[1-9]\\d*)\\.(?P<minor>0|[1-9]\\d*)\\.(?P<patch>0|[1-9]\\d*)(?:(?P<sep1>-)(?P<prerelease>(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:(?P<sep2>\\+)(?P<buildmetadata>[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?(?P<postfix>\\])(?P<date>.*)$"
+		regex := regexp.MustCompile(expression)
+		var v string
+
+		if regex.MatchString(content[line]) {
+			if regex.ReplaceAllString(content[line], "${5}") == "-" {
+				if regex.ReplaceAllString(content[line], "${7}") == "+" {
+					v = regex.ReplaceAllString(content[line], "${2}.${3}.${4}${5}${6}${7}${8}")
+				} else {
+					v = regex.ReplaceAllString(content[line], "${2}.${3}.${4}${5}${6}")
+				}
+			} else if regex.ReplaceAllString(content[line], "${7}") == "+" {
+				v = regex.ReplaceAllString(content[line], "${2}.${3}.${4}${7}${8}")
+			} else {
+				v = regex.ReplaceAllString(content[line], "${2}.${3}.${4}")
+			}
+		}
 
 		if v == c.Version {
 			margins["start"] = line + 1

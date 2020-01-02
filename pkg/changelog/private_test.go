@@ -41,7 +41,7 @@ func TestGetEndOfFirstRelease(t *testing.T) {
 	assert := assert.New(t)
 
 	// TEST: expected content
-	expected := 40
+	expected := 46
 
 	result := changelog.GetEndOfFirstRelease(strings.Split(content, "\n"))
 
@@ -61,7 +61,7 @@ func TestGetEndOfFirstRelease(t *testing.T) {
 func TestGetReleasesLines(t *testing.T) {
 	assert := assert.New(t)
 
-	expected := []int{4, 11, 14, 19, 34}
+	expected := []int{4, 11, 14, 19, 34, 41, 44}
 	result := changelog.GetReleasesLines(strings.Split(content, "\n"))
 
 	assert.Equal(expected, result)

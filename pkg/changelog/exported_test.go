@@ -19,7 +19,7 @@ func TestReadChanges(t *testing.T) {
 				"expected": `- First stable release.`,
 			},
 			map[string]string{
-				"version": "1.0.1",
+				"version": "1.0.1-beta",
 				"expected": `### Added
 - New feature.
 
@@ -64,6 +64,21 @@ func TestReadChanges(t *testing.T) {
 		assert.EqualError(err, "empty changelog for requested version")
 		assert.Equal(test["expected"], m.Body)
 	}
+
+	// in order to cover 100%, interface should have a private 'Read' method
+	// i prefer to keep 'return err' uncovered.
+	// TEST: err
+	// assert := assert.New(t)
+	// fs = afero.NewMemMapFs()
+	// file = createChangelog(fs, t)
+
+	// m := new(mocks.Changelog)
+
+	// m.On("Read", fs).Return([]string{file}, errors.New("failure")).Once()
+
+	// err := m.ReadChanges(fs)
+
+	// assert.EqualError(err, "failure")
 }
 
 func TestSetFile(t *testing.T) {
