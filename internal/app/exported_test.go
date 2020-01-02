@@ -10,6 +10,7 @@ import (
 	"github.com/anton-yurchenko/git-release/internal/pkg/repository"
 	"github.com/anton-yurchenko/git-release/mocks"
 	"github.com/anton-yurchenko/git-release/pkg/changelog"
+	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
@@ -134,6 +135,42 @@ func TestHydrate(t *testing.T) {
 	err := c.Hydrate(m, &v)
 
 	assert.Equal(nil, err)
+
+	// TEST: ReadProjectName error
+	m = new(mocks.Repository)
+	c = new(app.Configuration)
+
+	m.On("ReadProjectName").Return(errors.New("failure1")).Once()
+	m.On("ReadCommitHash").Return(nil).Once()
+	m.On("ReadTag", &v, false).Return(nil).Once()
+
+	err = c.Hydrate(m, &v)
+
+	assert.EqualError(err, "failure1")
+
+	// TEST: ReadCommitHash error
+	m = new(mocks.Repository)
+	c = new(app.Configuration)
+
+	m.On("ReadProjectName").Return(nil).Once()
+	m.On("ReadCommitHash").Return(errors.New("failure2")).Once()
+	m.On("ReadTag", &v, false).Return(nil).Once()
+
+	err = c.Hydrate(m, &v)
+
+	assert.EqualError(err, "failure2")
+
+	// TEST: ReadTag error
+	m = new(mocks.Repository)
+	c = new(app.Configuration)
+
+	m.On("ReadProjectName").Return(nil).Once()
+	m.On("ReadCommitHash").Return(nil).Once()
+	m.On("ReadTag", &v, false).Return(errors.New("failure3")).Once()
+
+	err = c.Hydrate(m, &v)
+
+	assert.EqualError(err, "failure3")
 }
 
 func TestGetReleaseBody(t *testing.T) {
@@ -164,6 +201,22 @@ func TestGetReleaseBody(t *testing.T) {
 	err = conf.GetReleaseBody(m, fs)
 
 	assert.EqualError(err, "changelog does not contain changes for requested project version")
+
+	// TEST: changelog error
+	log.SetLevel(log.FatalLevel)
+	m = new(mocks.Changelog)
+	fs = afero.NewMemMapFs()
+	conf = &app.Configuration{
+		AllowEmptyChangelog: true,
+	}
+
+	m.On("ReadChanges", fs).Return(errors.New("failure")).Once()
+	m.On("GetBody").Return("").Once()
+
+	err = conf.GetReleaseBody(m, fs)
+
+	assert.EqualError(err, "failure")
+
 }
 
 func TestPublish(t *testing.T) {
