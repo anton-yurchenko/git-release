@@ -58,9 +58,8 @@ func GetConfig(release release.Interface, changes changelog.Interface, fs afero.
 	}
 
 	t = os.Getenv("ALLOW_TAG_PREFIX")
-	if strings.ToLower(t) == "false" {
-		log.Warn("'ALLOW_TAG_PREFIX' disabled")
-	} else {
+	if strings.ToLower(t) == "true" {
+		log.Warn("'ALLOW_TAG_PREFIX' enabled")
 		conf.AllowTagPrefix = true
 	}
 
