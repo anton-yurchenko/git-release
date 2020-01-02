@@ -7,7 +7,7 @@
 [![Docker Pulls](https://img.shields.io/docker/pulls/antonyurchenko/git-release)](https://hub.docker.com/r/antonyurchenko/git-release)
 [![License](https://img.shields.io/github/license/anton-yurchenko/git-release)](LICENSE.md)
 
-A GitHub Action for creating a GitHub Release with Assets and Changelog whenever a new Tag is pushed to the repository.  
+A **GitHub Action** for creating a **GitHub Release** with **Assets** and **Changelog** whenever a new **Tag** is pushed to the repository.  
 
 ![PIC](docs/images/release.png)
 
@@ -71,7 +71,8 @@ on:
 ```
 
 ## Remarks:
-- This action is automatically built at Docker Hub, and tagged with `latest / v2 / v2.0 / v2.0.2`. You may lock to a certain version instead of using **latest**. (*Recommended to lock against a major version, for example* `v2`).
+- This action is automatically built at Docker Hub, and tagged with `latest / v2 / v2.0 / v2.0.2`. You may lock to a certain version instead of using **latest**.  
+(*Recommended to lock against a major version, for example* `v2`)
 - Instead of using pre-built image, you may build it during the execution of your flow by changing `docker://antonyurchenko/git-release:latest` to `anton-yurchenko/git-release@master`
 
 ## License

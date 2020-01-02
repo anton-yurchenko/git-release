@@ -19,7 +19,7 @@ type Repository struct {
 
 // Interface of 'Repository'
 type Interface interface {
-	ReadTag(*string) error
+	ReadTag(*string, bool) error
 	ReadCommitHash() error
 	ReadProjectName() error
 	GetOwner() string
@@ -29,22 +29,33 @@ type Interface interface {
 }
 
 // ReadTag sets tag to the receiver and sem.ver parsed version to provided parameter
-func (r *Repository) ReadTag(version *string) error {
+func (r *Repository) ReadTag(version *string, allowPrefix bool) error {
 	o := os.Getenv("GITHUB_REF")
 	if o == "" {
 		return errors.New("env.var 'GITHUB_REF' is empty or not defined")
 	}
 
-	expression := "refs/tags/.*([0-9]+.[0-9]+.[0-9]+)"
+	semver := "(?P<major>0|[1-9]\\d*)\\.(?P<minor>0|[1-9]\\d*)\\.(?P<patch>0|[1-9]\\d*)(?:-(?P<prerelease>(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+(?P<buildmetadata>[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?"
+	var expression string
+	var repl string
+
+	if allowPrefix {
+		expression = fmt.Sprintf("^refs/tags/(?P<prefix>.*)%v$", semver)
+		repl = "${2}.${3}.${4}"
+	} else {
+		expression = fmt.Sprintf("^refs/tags/%v$", semver)
+		repl = "${1}.${2}.${3}"
+	}
+
 	regex := regexp.MustCompile(expression)
 
 	if regex.MatchString(o) {
 		r.Tag = strings.Split(o, "/")[2]
-		*version = regex.ReplaceAllString(o, "$1")
+		*version = regex.ReplaceAllString(o, repl)
 		return nil
 	}
 
-	return errors.New(fmt.Sprintf("malformed env.var 'GITHUB_REF': expected to match regex '%v', got '%v'", expression, o))
+	return errors.New(fmt.Sprintf("malformed env.var 'GITHUB_REF': expected to match regex '%s', got '%v'", expression, o))
 }
 
 // ReadCommitHash sets current commit hash

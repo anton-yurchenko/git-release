@@ -20,6 +20,7 @@ import (
 // Configuration is a git-release settings struct
 type Configuration struct {
 	AllowEmptyChangelog bool
+	AllowTagPrefix      bool
 }
 
 // GetConfig sets validated Release/Changelog configuration and returns github.com Token
@@ -50,10 +51,17 @@ func GetConfig(release release.Interface, changes changelog.Interface, fs afero.
 		log.Fatal("env.var 'GITHUB_WORKSPACE' not defined")
 	}
 
-	temp := os.Getenv("ALLOW_EMPTY_CHANGELOG")
-	if strings.ToLower(temp) == "true" {
+	t := os.Getenv("ALLOW_EMPTY_CHANGELOG")
+	if strings.ToLower(t) == "true" {
 		log.Warn("'ALLOW_EMPTY_CHANGELOG' enabled")
 		conf.AllowEmptyChangelog = true
+	}
+
+	t = os.Getenv("ALLOW_TAG_PREFIX")
+	if strings.ToLower(t) == "false" {
+		log.Warn("'ALLOW_TAG_PREFIX' disabled")
+	} else {
+		conf.AllowTagPrefix = true
 	}
 
 	c := os.Getenv("CHANGELOG_FILE")
@@ -88,7 +96,7 @@ func Login(token string) *github.Client {
 }
 
 // Hydrate fetches project's git repository information
-func Hydrate(local repository.Interface, version *string) error {
+func (c *Configuration) Hydrate(local repository.Interface, version *string) error {
 	if err := local.ReadProjectName(); err != nil {
 		return err
 	}
@@ -97,7 +105,7 @@ func Hydrate(local repository.Interface, version *string) error {
 		return err
 	}
 
-	if err := local.ReadTag(version); err != nil {
+	if err := local.ReadTag(version, c.AllowTagPrefix); err != nil {
 		return err
 	}
 

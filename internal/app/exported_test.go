@@ -52,10 +52,29 @@ func TestGetConfig(t *testing.T) {
 	rel.Changes = new(changelog.Changes)
 	expectedConfig := &app.Configuration{
 		AllowEmptyChangelog: true,
+		AllowTagPrefix:      true,
 	}
 	expectedToken = "value"
 
 	config, token, err := app.GetConfig(rel, rel.Changes, fs, []string{})
+
+	assert.Equal(expectedConfig, config)
+	assert.Equal(expectedToken, token)
+	assert.Equal(nil, err)
+
+	// TEST: Configuration: AllowTagPrefix
+	err = os.Setenv("ALLOW_TAG_PREFIX", "true")
+	assert.Equal(nil, err, "preparation: error setting env.var 'ALLOW_TAG_PREFIX'")
+
+	rel = new(release.Release)
+	rel.Changes = new(changelog.Changes)
+	expectedConfig = &app.Configuration{
+		AllowEmptyChangelog: true,
+		AllowTagPrefix:      true,
+	}
+	expectedToken = "value"
+
+	config, token, err = app.GetConfig(rel, rel.Changes, fs, []string{})
 
 	assert.Equal(expectedConfig, config)
 	assert.Equal(expectedToken, token)
@@ -67,10 +86,6 @@ func TestGetConfig(t *testing.T) {
 
 	rel = new(release.Release)
 	rel.Changes = new(changelog.Changes)
-	expectedConfig = &app.Configuration{
-		AllowEmptyChangelog: true,
-	}
-	expectedToken = "value"
 	expectedRelease := &release.Release{
 		Draft: true,
 		Changes: &changelog.Changes{
@@ -79,10 +94,8 @@ func TestGetConfig(t *testing.T) {
 		Assets: []asset.Asset{},
 	}
 
-	config, token, err = app.GetConfig(rel, rel.Changes, fs, []string{})
+	_, _, err = app.GetConfig(rel, rel.Changes, fs, []string{})
 
-	assert.Equal(expectedConfig, config)
-	assert.Equal(expectedToken, token)
 	assert.Equal(nil, err)
 	assert.Equal(expectedRelease, rel)
 
@@ -92,10 +105,6 @@ func TestGetConfig(t *testing.T) {
 
 	rel = new(release.Release)
 	rel.Changes = new(changelog.Changes)
-	expectedConfig = &app.Configuration{
-		AllowEmptyChangelog: true,
-	}
-	expectedToken = "value"
 	expectedRelease = &release.Release{
 		Draft:      true,
 		PreRelease: true,
@@ -105,10 +114,8 @@ func TestGetConfig(t *testing.T) {
 		Assets: []asset.Asset{},
 	}
 
-	config, token, err = app.GetConfig(rel, rel.Changes, fs, []string{})
+	_, _, err = app.GetConfig(rel, rel.Changes, fs, []string{})
 
-	assert.Equal(expectedConfig, config)
-	assert.Equal(expectedToken, token)
 	assert.Equal(nil, err)
 	assert.Equal(expectedRelease, rel)
 }
@@ -117,13 +124,14 @@ func TestHydrate(t *testing.T) {
 	assert := assert.New(t)
 
 	m := new(mocks.Repository)
+	c := new(app.Configuration)
 	v := "1.0.0"
 
 	m.On("ReadProjectName").Return(nil).Once()
 	m.On("ReadCommitHash").Return(nil).Once()
-	m.On("ReadTag", &v).Return(nil).Once()
+	m.On("ReadTag", &v, false).Return(nil).Once()
 
-	err := app.Hydrate(m, &v)
+	err := c.Hydrate(m, &v)
 
 	assert.Equal(nil, err)
 }

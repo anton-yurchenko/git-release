@@ -20,7 +20,7 @@ func TestReadTag(t *testing.T) {
 
 	m := new(repository.Repository)
 
-	err = m.ReadTag(&version)
+	err = m.ReadTag(&version, true)
 
 	assert.Equal(nil, err)
 	assert.Equal("v1.0.0", m.Tag)
@@ -31,10 +31,19 @@ func TestReadTag(t *testing.T) {
 	assert.Equal(nil, err, "preparation: error setting env.var 'GITHUB_REF'")
 
 	m = new(repository.Repository)
+	//		TEST 1
+	err = m.ReadTag(&version, false)
 
-	err = m.ReadTag(&version)
+	expression := "(?P<major>0|[1-9]\\d*)\\.(?P<minor>0|[1-9]\\d*)\\.(?P<patch>0|[1-9]\\d*)(?:-(?P<prerelease>(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+(?P<buildmetadata>[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?"
 
-	assert.EqualError(err, "malformed env.var 'GITHUB_REF': expected to match regex 'refs/tags/.*([0-9]+.[0-9]+.[0-9]+)', got 'malformed-var'")
+	e := fmt.Sprintf("malformed env.var 'GITHUB_REF': expected to match regex '^refs/tags/%s$', got 'malformed-var'", expression)
+	assert.EqualError(err, e)
+
+	//		TEST 2
+	err = m.ReadTag(&version, true)
+
+	e = fmt.Sprintf("malformed env.var 'GITHUB_REF': expected to match regex '^refs/tags/(?P<prefix>.*)%s$', got 'malformed-var'", expression)
+	assert.EqualError(err, e)
 
 	// TEST: env.var not set
 	err = os.Setenv("GITHUB_REF", "")
@@ -42,9 +51,24 @@ func TestReadTag(t *testing.T) {
 
 	m = new(repository.Repository)
 
-	err = m.ReadTag(&version)
+	err = m.ReadTag(&version, false)
 
 	assert.EqualError(err, "env.var 'GITHUB_REF' is empty or not defined")
+
+	// TEST: allowPrefix is disabled env.var correct
+	tag = "refs/tags/1.2.3----RC-SNAPSHOT.44.5.6--.77"
+	version = ""
+
+	err = os.Setenv("GITHUB_REF", tag)
+	assert.Equal(nil, err, "preparation: error setting env.var 'GITHUB_REF'")
+
+	m = new(repository.Repository)
+
+	err = m.ReadTag(&version, false)
+
+	assert.Equal(nil, err)
+	assert.Equal("1.2.3----RC-SNAPSHOT.44.5.6--.77", m.Tag)
+	assert.Equal("1.2.3", version)
 }
 
 func TestReadCommitHash(t *testing.T) {
