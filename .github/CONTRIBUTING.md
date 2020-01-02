@@ -5,7 +5,6 @@
 - Search for already opened [issues](https://github.com/anton-yurchenko/git-release/issues) before submitting a [new one](https://github.com/anton-yurchenko/git-release/issues/new/choose).
 - Provide as much information as you can, even if not requested by an Issue Template.
 
-
 ## Pull Request:
 - Open [Pull Request](https://github.com/anton-yurchenko/git-release/pulls) towards **dev** branch.
 - Ensure [Pull Request](https://github.com/anton-yurchenko/git-release/pulls) description clearly describes the problem and solution.
@@ -14,7 +13,7 @@
 
 ## Other:
 #### Require new feature or change of an existing one?
-- Suggest your change via [email](email:anton.doar+git-release@gmail.com) or [Pull Request](https://github.com/anton-yurchenko/git-release/pulls), do not open an issue on GitHub.
+- Suggest your change via [email](mailto:anton.doar+git-release@gmail.com) or [Pull Request](https://github.com/anton-yurchenko/git-release/pulls), do not open an issue on GitHub.
 
 #### Have questions about the source code?
-- Feel free to contact me via [email](email:anton.doar+git-release@gmail.com), I'll be glad to provide any information required.
+- Feel free to contact me via [email](mailto:anton.doar+git-release@gmail.com), I'll be glad to provide any information required.

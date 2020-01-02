@@ -1,6 +1,20 @@
-## [Unreleased]
+## [3.0.0] - 2020-01-03
+This is a major release because default behavior was changed.  
+Semantic versioning now enforced by default and in order to allow custom prefixes like `v*` or `release-*`, **ALLOW_TAG_PREFIX** env.var should be enabled.  
+
+Pay attention that prefix is related only to Tags, Changelog versions are still expected to be a valid **semver**.
+
 ### Changed
 - Replace CircleCI with GitHub Actions as a Continuous Integration system
+- Better 'GITHUB_REPOSITORY' regex validation
+- Improved 'Changelog' package parsing capabilities
+
+### Fixed
+- Semantic Versioning compliance
+- Keep a Changelog compliance
+
+### Added
+- 'ALLOW_TAG_PREFIX' to control version prefix like `v` or `release`
 
 ## [2.0.2] - 2019-12-29
 ### Added

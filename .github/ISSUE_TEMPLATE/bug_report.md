@@ -1,5 +1,5 @@
 ---
-name: Bug report
+name: Bug Report
 about: Create a report to help us improve
 title: ''
 labels: ''
@@ -7,17 +7,17 @@ assignees: anton-yurchenko
 
 ---
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+### Description:  
+A clear and concise description of what the bug is
 
-**Actions Workflow**
-```Provide a relevant Workflow Stage```
+### Workflow:
+```Attach your GitHub Action Workflow YAML```
 
-**Changelog**
-```Provide a full/sample changelog```
+### Changelog:
+```Attach a full changelog```  
 
-**Log**
-```Provide an execution log```
+### Log:
+```Attach an execution log```
 
-**Screenshots**
+### Screenshots:
 If applicable, add screenshots to help explain your problem.
