@@ -53,7 +53,7 @@ func TestGetConfig(t *testing.T) {
 	rel.Changes = new(changelog.Changes)
 	expectedConfig := &app.Configuration{
 		AllowEmptyChangelog: true,
-		AllowTagPrefix:      true,
+		AllowTagPrefix:      false,
 	}
 	expectedToken = "value"
 

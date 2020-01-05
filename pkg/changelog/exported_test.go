@@ -1,6 +1,7 @@
 package changelog_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/anton-yurchenko/git-release/pkg/changelog"
@@ -61,7 +62,7 @@ func TestReadChanges(t *testing.T) {
 
 		err := m.ReadChanges(fs)
 
-		assert.EqualError(err, "empty changelog for requested version")
+		assert.EqualError(err, fmt.Sprintf("empty changelog for requested version: '%v'", test["version"]))
 		assert.Equal(test["expected"], m.Body)
 	}
 

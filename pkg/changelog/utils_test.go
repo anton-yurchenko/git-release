@@ -26,7 +26,7 @@ const content string = `## [Unreleased]
 - Wrong message on success.
 - Proper log message.
 
-## [0.2.0] - 2016-10-01
+## [0.2.11-alpha-a.b-c-somethinglong+build.1-aef.1-its-okay] - 2016-10-01
 ### Added
 - File reader.
 - License.
@@ -71,7 +71,7 @@ var releasesContentMargins map[string]map[string]int = map[string]map[string]int
 		"start": 15,
 		"end":   18,
 	},
-	"0.2.0": map[string]int{
+	"0.2.11-alpha-a.b-c-somethinglong+build.1-aef.1-its-okay": map[string]int{
 		"start": 20,
 		"end":   33,
 	},
@@ -99,7 +99,7 @@ var releasesContent map[string]string = map[string]string{
 	"0.3.0": `### Fixed
 - Wrong message on success.
 - Proper log message.`,
-	"0.2.0": `### Added
+	"0.2.11-alpha-a.b-c-somethinglong+build.1-aef.1-its-okay": `### Added
 - File reader.
 - License.
 

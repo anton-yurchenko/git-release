@@ -34,15 +34,15 @@ func TestReadTag(t *testing.T) {
 	//		TEST 1
 	err = m.ReadTag(&version, false)
 
-	expression := "(?P<major>0|[1-9]\\d*)\\.(?P<minor>0|[1-9]\\d*)\\.(?P<patch>0|[1-9]\\d*)(?:-(?P<prerelease>(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+(?P<buildmetadata>[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?"
+	expression := "(?P<major>0|[1-9]\\d*)\\.(?P<minor>0|[1-9]\\d*)\\.(?P<patch>0|[1-9]\\d*)(?:(?P<sep1>-)(?P<prerelease>(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:(?P<sep2>\\+)(?P<buildmetadata>[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?"
 
-	e := fmt.Sprintf("malformed env.var 'GITHUB_REF': expected to match regex '^refs/tags/%s$', got 'malformed-var'", expression)
+	e := fmt.Sprintf("malformed env.var 'GITHUB_REF' (control tag prefix via env.var 'ALLOW_TAG_PREFIX'): expected to match regex '^refs/tags/%s$', got 'malformed-var'", expression)
 	assert.EqualError(err, e)
 
 	//		TEST 2
 	err = m.ReadTag(&version, true)
 
-	e = fmt.Sprintf("malformed env.var 'GITHUB_REF': expected to match regex '^refs/tags/(?P<prefix>.*)%s$', got 'malformed-var'", expression)
+	e = fmt.Sprintf("malformed env.var 'GITHUB_REF' (control tag prefix via env.var 'ALLOW_TAG_PREFIX'): expected to match regex '^refs/tags/(?P<prefix>.*)%s$', got 'malformed-var'", expression)
 	assert.EqualError(err, e)
 
 	// TEST: env.var not set
@@ -68,7 +68,7 @@ func TestReadTag(t *testing.T) {
 
 	assert.Equal(nil, err)
 	assert.Equal("1.2.3----RC-SNAPSHOT.44.5.6--.77", m.Tag)
-	assert.Equal("1.2.3", version)
+	assert.Equal("1.2.3----RC-SNAPSHOT.44.5.6--.77", version)
 }
 
 func TestReadCommitHash(t *testing.T) {
