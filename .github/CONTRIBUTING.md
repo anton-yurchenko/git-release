@@ -12,8 +12,5 @@
 - Please follow [AngularJS Commit Message Guidelines](https://github.com/angular/angular/blob/master/CONTRIBUTING.md#-commit-message-guidelines)
 
 ## Other:
-#### Require new feature or change of an existing one?
-- Suggest your change via [email](mailto:anton.doar+git-release@gmail.com) or [Pull Request](https://github.com/anton-yurchenko/git-release/pulls), do not open an issue on GitHub.
-
 #### Have questions about the source code?
 - Feel free to contact me via [email](mailto:anton.doar+git-release@gmail.com), I'll be glad to provide any information required.
