@@ -73,7 +73,7 @@ on:
 ```
 
 ## Remarks:
-- **Git Tag** should be identical to **Changelog Version** in order for changes to be parsed properly.  
+- **Git Tag** should be identical to **Changelog Version** in order for changes to be parsed properly. This does not include **Tag Prefix** like `release-*`.
 - This action is automatically built at **Docker Hub**, and tagged with `latest / v3 / v3.0 / v3.0.0`. You may lock to a certain version instead of using **latest**.  
 (*Recommended to lock against a major version, for example* `v3`)
 - Instead of using pre-built image, you may build it during the execution of your flow by changing `docker://antonyurchenko/git-release:latest` to `anton-yurchenko/git-release@master`
