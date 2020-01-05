@@ -19,7 +19,7 @@ A **GitHub Action** for creating a **GitHub Release** with **Assets** and **Chan
 ## Manual:
 1. Add your changes to `CHANGELOG.md` in the following format (according to [keepachangelog.com](https://keepachangelog.com/en/1.0.0/ "Keep a ChangeLog")):
 ```
-## [3.0.0] - 2019-12-21 
+## [3.0.0-rc.1] - 2019-12-21 
 ### Added
 - Feature A
 - Feature B
@@ -34,7 +34,7 @@ A **GitHub Action** for creating a **GitHub Release** with **Assets** and **Chan
 - Previous Artifactory
 ```
 2. Tag a commit with Version (according to [semver.org](https://semver.org/ "Semantic Versioning")).
-    - Prefix supported (for example `v3.0.0`), see configuration section for more info.
+    - Prefix support is available (for example `v3.0.0`), see configuration section in order to enable it.
 3. Push and watch **Git-Release** publishing a Release on GitHub ;-)  
 ![PIC](docs/images/log.png)
 
@@ -51,27 +51,31 @@ on:
     - Customize configuration with **env.vars**:
         - Provide a list of assets as `args` (divided by one of: `new line`, `space`, `comma`, `pipe`)
         - `DRAFT_RELEASE: [true, false]` - Save release as draft instead of publishing it (default `false`).
-        - `PRE_RELEASE: [true, false]` - GitHub will point out that this release is identified as non-production ready (default `false`). 
-        - `CHANGELOG_FILE: string` - Changelog filename (default `CHANGELOG.md`).
+        - `PRE_RELEASE: [true, false]` - GitHub will point out that this release is identified as non-production ready (default: `false`). 
+        - `CHANGELOG_FILE: string` - Changelog filename (default: `CHANGELOG.md`).
         - `ALLOW_EMPTY_CHANGELOG: [true, false]` - Allow publishing a release without changelog (default `false`).
-        - `ALLOW_TAG_PREFIX: [true, false]` - Allow prefix on version Tag, for example `v1.2.3` or `release-1.1.14` (default `false`).
+        - `ALLOW_TAG_PREFIX: [true, false]` - Allow prefix on version Tag, for example `v3.0.0` or `release-3.0.0` (default: `false`).
 ```
     - name: Release
       uses: docker://antonyurchenko/git-release:latest
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        DRAFT_RELEASE: "false"
+        PRE_RELEASE: "false"
+        CHANGELOG_FILE: "CHANGELOG.md"
         ALLOW_EMPTY_CHANGELOG: "true"
         ALLOW_TAG_PREFIX: "true"
       with:
         args: |
-          build/release/darwin-amd64.zip
-          build/release/linux-amd64.zip
-          build/release/windows-amd64.zip
+            build/darwin-amd64.zip
+            build/linux-amd64.zip
+            build/windows-amd64.zip
 ```
 
 ## Remarks:
-- This action is automatically built at Docker Hub, and tagged with `latest / v3 / v3.0 / v3.0.0`. You may lock to a certain version instead of using **latest**.  
-(*Recommended to lock against a major version, for example* `v2`)
+- **Git Tag** should be identical to **Changelog Version** in order for changes to be parsed properly.  
+- This action is automatically built at **Docker Hub**, and tagged with `latest / v3 / v3.0 / v3.0.0`. You may lock to a certain version instead of using **latest**.  
+(*Recommended to lock against a major version, for example* `v3`)
 - Instead of using pre-built image, you may build it during the execution of your flow by changing `docker://antonyurchenko/git-release:latest` to `anton-yurchenko/git-release@master`
 
 ## License
