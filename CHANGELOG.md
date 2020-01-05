@@ -1,6 +1,19 @@
-## [Unreleased]
+## [3.0.0] - 2020-01-05
+This is a major release because of a certain behavior change:  
+- *Tag (without prefix) should be identical to Changelog Version in order for changes to be mapped (for example tag `v3.0.0-rc.1` is expected to be listed as `3.0.0-rc.1` in changelog).*
+- *By default valid semver version is expected. Prefix should be explicitly allowed by enabling `ALLOW_TAG_PREFIX`*
+
 ### Changed
-- Replace CircleCI with GitHub Actions as a Continuous Integration system
+- Better `GITHUB_REPOSITORY` regex validation
+- Improved **Changelog** package parsing capabilities
+- Tag should match Changelog Version (excluding prefix)
+
+### Fixed
+- Semantic Versioning compliance
+- Keep a Changelog compliance
+
+### Added
+- `ALLOW_TAG_PREFIX` to control version prefix like `v` or `release`
 
 ## [2.0.2] - 2019-12-29
 ### Added

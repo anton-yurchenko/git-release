@@ -95,13 +95,13 @@ func (_m *Repository) ReadProjectName() error {
 	return r0
 }
 
-// ReadTag provides a mock function with given fields: _a0
-func (_m *Repository) ReadTag(_a0 *string) error {
-	ret := _m.Called(_a0)
+// ReadTag provides a mock function with given fields: _a0, _a1
+func (_m *Repository) ReadTag(_a0 *string, _a1 bool) error {
+	ret := _m.Called(_a0, _a1)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(*string) error); ok {
-		r0 = rf(_a0)
+	if rf, ok := ret.Get(0).(func(*string, bool) error); ok {
+		r0 = rf(_a0, _a1)
 	} else {
 		r0 = ret.Error(0)
 	}

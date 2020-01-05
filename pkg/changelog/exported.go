@@ -1,6 +1,7 @@
 package changelog
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -34,7 +35,7 @@ func (c *Changes) ReadChanges(fs afero.Fs) error {
 	c.Body = strings.Join(GetContent(margins, file), "\n")
 
 	if c.Body == "" {
-		return errors.New("empty changelog for requested version")
+		return errors.New(fmt.Sprintf("empty changelog for requested version: '%v'", c.Version))
 	}
 
 	return nil

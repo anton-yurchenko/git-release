@@ -19,7 +19,7 @@ type Repository struct {
 
 // Interface of 'Repository'
 type Interface interface {
-	ReadTag(*string) error
+	ReadTag(*string, bool) error
 	ReadCommitHash() error
 	ReadProjectName() error
 	GetOwner() string
@@ -29,22 +29,36 @@ type Interface interface {
 }
 
 // ReadTag sets tag to the receiver and sem.ver parsed version to provided parameter
-func (r *Repository) ReadTag(version *string) error {
+func (r *Repository) ReadTag(version *string, allowPrefix bool) error {
 	o := os.Getenv("GITHUB_REF")
 	if o == "" {
 		return errors.New("env.var 'GITHUB_REF' is empty or not defined")
 	}
 
-	expression := "refs/tags/.*([0-9]+.[0-9]+.[0-9]+)"
+	semver := "(?P<major>0|[1-9]\\d*)\\.(?P<minor>0|[1-9]\\d*)\\.(?P<patch>0|[1-9]\\d*)(?:(?P<sep1>-)(?P<prerelease>(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:(?P<sep2>\\+)(?P<buildmetadata>[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?"
+
+	var expression string
+	if allowPrefix {
+		expression = fmt.Sprintf("^refs/tags/(?P<prefix>.*)%v$", semver)
+	} else {
+		expression = fmt.Sprintf("^refs/tags/%v$", semver)
+	}
+
 	regex := regexp.MustCompile(expression)
 
 	if regex.MatchString(o) {
 		r.Tag = strings.Split(o, "/")[2]
-		*version = regex.ReplaceAllString(o, "$1")
+
+		if allowPrefix {
+			*version = regex.ReplaceAllString(o, "${2}.${3}.${4}${5}${6}${7}${8}")
+		} else {
+			*version = regex.ReplaceAllString(o, "${1}.${2}.${3}${4}${5}${6}${7}${8}")
+		}
+
 		return nil
 	}
 
-	return errors.New(fmt.Sprintf("malformed env.var 'GITHUB_REF': expected to match regex '%v', got '%v'", expression, o))
+	return errors.New(fmt.Sprintf("malformed env.var 'GITHUB_REF' (control tag prefix via env.var 'ALLOW_TAG_PREFIX'): expected to match regex '%s', got '%v'", expression, o))
 }
 
 // ReadCommitHash sets current commit hash
@@ -65,8 +79,7 @@ func (r *Repository) ReadProjectName() error {
 		return errors.New("env.var 'GITHUB_REPOSITORY' is empty or not defined")
 	}
 
-	// TODO: improve expression
-	expression := ".*/.*"
+	expression := "^(?P<owner>[\\w,\\-,\\_]+)/(?P<repo>[\\w,\\-,\\_]+)$"
 	regex := regexp.MustCompile(expression)
 
 	if regex.MatchString(o) {
