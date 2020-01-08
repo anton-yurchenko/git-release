@@ -34,7 +34,7 @@ A **GitHub Action** for creating a **GitHub Release** with **Assets** and **Chan
 - Previous Artifactory
 ```
 2. Tag a commit with Version (according to [semver.org](https://semver.org/ "Semantic Versioning")).
-    - Prefix support is available (for example `v3.0.0`), see configuration section in order to enable it.
+    - Prefix support is available (for example `v3.0.1`), see configuration section in order to enable it.
 3. Push and watch **Git-Release** publishing a Release on GitHub ;-)  
 ![PIC](docs/images/log.png)
 
@@ -54,7 +54,7 @@ on:
         - `PRE_RELEASE: [true, false]` - GitHub will point out that this release is identified as non-production ready (default: `false`). 
         - `CHANGELOG_FILE: string` - Changelog filename (default: `CHANGELOG.md`).
         - `ALLOW_EMPTY_CHANGELOG: [true, false]` - Allow publishing a release without changelog (default `false`).
-        - `ALLOW_TAG_PREFIX: [true, false]` - Allow prefix on version Tag, for example `v3.0.0` or `release-3.0.0` (default: `false`).
+        - `ALLOW_TAG_PREFIX: [true, false]` - Allow prefix on version Tag, for example `v3.0.1` or `release-3.0.1` (default: `false`).
 ```
     - name: Release
       uses: docker://antonyurchenko/git-release:latest
@@ -74,7 +74,7 @@ on:
 
 ## Remarks:
 - **Git Tag** should be identical to **Changelog Version** in order for changes to be parsed properly. This does not include **Tag Prefix** like `release-*`.
-- This action is automatically built at **Docker Hub**, and tagged with `latest / v3 / v3.0 / v3.0.0`. You may lock to a certain version instead of using **latest**.  
+- This action is automatically built at **Docker Hub**, and tagged with `latest / v3 / v3.0 / v3.0.1`. You may lock to a certain version instead of using **latest**.  
 (*Recommended to lock against a major version, for example* `v3`)
 - Instead of using pre-built image, you may build it during the execution of your flow by changing `docker://antonyurchenko/git-release:latest` to `anton-yurchenko/git-release@master`
 
