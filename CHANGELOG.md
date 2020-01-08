@@ -1,3 +1,7 @@
+## [3.0.1] - 2020-01-08
+### Fixed
+- Empty release name
+
 ## [3.0.0] - 2020-01-05
 This is a major release because of a certain behavior change:  
 - *Tag (without prefix) should be identical to Changelog Version in order for changes to be mapped (for example tag `v3.0.0-rc.1` is expected to be listed as `3.0.0-rc.1` in changelog).*

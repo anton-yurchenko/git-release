@@ -95,7 +95,7 @@ func Login(token string) *github.Client {
 }
 
 // Hydrate fetches project's git repository information
-func (c *Configuration) Hydrate(local repository.Interface, version *string) error {
+func (c *Configuration) Hydrate(local repository.Interface, version *string, releaseName *string) error {
 	if err := local.ReadProjectName(); err != nil {
 		return err
 	}
@@ -108,6 +108,7 @@ func (c *Configuration) Hydrate(local repository.Interface, version *string) err
 		return err
 	}
 
+	*releaseName = *local.GetTag()
 	return nil
 }
 

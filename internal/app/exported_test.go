@@ -127,12 +127,14 @@ func TestHydrate(t *testing.T) {
 	m := new(mocks.Repository)
 	c := new(app.Configuration)
 	v := "1.0.0"
+	n := "v1.0.0"
 
 	m.On("ReadProjectName").Return(nil).Once()
 	m.On("ReadCommitHash").Return(nil).Once()
 	m.On("ReadTag", &v, false).Return(nil).Once()
+	m.On("GetTag").Return(&n).Once()
 
-	err := c.Hydrate(m, &v)
+	err := c.Hydrate(m, &v, &n)
 
 	assert.Equal(nil, err)
 
@@ -143,8 +145,9 @@ func TestHydrate(t *testing.T) {
 	m.On("ReadProjectName").Return(errors.New("failure1")).Once()
 	m.On("ReadCommitHash").Return(nil).Once()
 	m.On("ReadTag", &v, false).Return(nil).Once()
+	m.On("GetTag").Return(&n).Once()
 
-	err = c.Hydrate(m, &v)
+	err = c.Hydrate(m, &v, &n)
 
 	assert.EqualError(err, "failure1")
 
@@ -155,8 +158,9 @@ func TestHydrate(t *testing.T) {
 	m.On("ReadProjectName").Return(nil).Once()
 	m.On("ReadCommitHash").Return(errors.New("failure2")).Once()
 	m.On("ReadTag", &v, false).Return(nil).Once()
+	m.On("GetTag").Return(&n).Once()
 
-	err = c.Hydrate(m, &v)
+	err = c.Hydrate(m, &v, &n)
 
 	assert.EqualError(err, "failure2")
 
@@ -167,8 +171,9 @@ func TestHydrate(t *testing.T) {
 	m.On("ReadProjectName").Return(nil).Once()
 	m.On("ReadCommitHash").Return(nil).Once()
 	m.On("ReadTag", &v, false).Return(errors.New("failure3")).Once()
+	m.On("GetTag").Return(&n).Once()
 
-	err = c.Hydrate(m, &v)
+	err = c.Hydrate(m, &v, &n)
 
 	assert.EqualError(err, "failure3")
 }

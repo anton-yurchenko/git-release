@@ -37,7 +37,7 @@ func main() {
 
 	cli := app.Login(token)
 
-	if err := conf.Hydrate(repo, &release.Changes.Version); err != nil {
+	if err := conf.Hydrate(repo, &release.Changes.Version, &release.Name); err != nil {
 		log.Fatal(err)
 	}
 
