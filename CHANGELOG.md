@@ -1,3 +1,7 @@
+## [3.1.0] - 2020-02-17
+### Added
+- [Issue #10](https://github.com/anton-yurchenko/git-release/issues/10) - Release Title manipulation through `RELEASE_NAME`, `RELEASE_NAME_PREFIX`, `RELEASE_NAME_POSTFIX`. (*Thanks to [Victor](https://github.com/victoraugustolls) for suggesting a change*)
+
 ## [3.0.1] - 2020-01-08
 ### Fixed
 - Empty release name
@@ -54,10 +58,10 @@ This is a major release as most of the code was refactored and some behavior was
 
 ## [1.1.0] - 2019-12-21
 ### Added
-- [PR #3](https://github.com/anton-yurchenko/git-release/pull/3) Allow any prefix to semver tag. (*Thanks to [Taylor Becker](https://github.com/tajobe) for the PR*)
+- [PR #3](https://github.com/anton-yurchenko/git-release/pull/3) - Allow any prefix to semver tag. (*Thanks to [Taylor Becker](https://github.com/tajobe) for the PR*)
 
 ### Fixed
-- PreRelease overwriting Draft configuration. (*Thanks to [Taylor Becker](https://github.com/tajobe) for reporting an issue*)
+- [PR #3](https://github.com/anton-yurchenko/git-release/pull/3) - PreRelease overwriting Draft configuration. (*Thanks to [Taylor Becker](https://github.com/tajobe) for reporting an issue*)
 
 ## [1.0.0] - 2019-10-01
 - First stable release.
