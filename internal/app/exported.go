@@ -21,6 +21,9 @@ import (
 type Configuration struct {
 	AllowEmptyChangelog bool
 	AllowTagPrefix      bool
+	ReleaseName         string
+	ReleaseNamePrefix   string
+	ReleaseNamePostfix  string
 }
 
 // GetConfig sets validated Release/Changelog configuration and returns github.com Token
@@ -29,26 +32,26 @@ func GetConfig(release release.Interface, changes changelog.Interface, fs afero.
 
 	token := os.Getenv("GITHUB_TOKEN")
 	if token == "" {
-		return conf, "", errors.New("env.var 'GITHUB_TOKEN' not defined")
+		return conf, "", errors.New("'GITHUB_TOKEN' is not defined")
 	}
 
 	d := os.Getenv("DRAFT_RELEASE")
 	if strings.ToLower(d) == "true" {
 		release.EnableDraft()
 	} else if strings.ToLower(d) != "false" {
-		log.Warn("env.var 'DRAFT_RELEASE' is not equal to 'true', assuming 'false'")
+		log.Warn("'DRAFT_RELEASE' is not equal to 'true', assuming 'false'")
 	}
 
 	p := os.Getenv("PRE_RELEASE")
 	if strings.ToLower(p) == "true" {
 		release.EnablePreRelease()
 	} else if strings.ToLower(p) != "false" {
-		log.Warn("env.var 'PRE_RELEASE' is not equal to 'true', assuming 'false'")
+		log.Warn("'PRE_RELEASE' is not equal to 'true', assuming 'false'")
 	}
 
 	dir := os.Getenv("GITHUB_WORKSPACE")
 	if dir == "" {
-		log.Fatal("env.var 'GITHUB_WORKSPACE' not defined")
+		log.Fatal("'GITHUB_WORKSPACE' is not defined")
 	}
 
 	t := os.Getenv("ALLOW_EMPTY_CHANGELOG")
@@ -63,9 +66,31 @@ func GetConfig(release release.Interface, changes changelog.Interface, fs afero.
 		conf.AllowTagPrefix = true
 	}
 
+	rName := os.Getenv("RELEASE_NAME")
+	if rName != "" {
+		log.Warnf("'RELEASE_NAME' is set to '%v'", rName)
+		conf.ReleaseName = rName
+	}
+
+	rNamePrefix := os.Getenv("RELEASE_NAME_PREFIX")
+	if rNamePrefix != "" {
+		log.Warnf("'RELEASE_NAME_PREFIX' is set to '%v'", rNamePrefix)
+		conf.ReleaseNamePrefix = rNamePrefix
+	}
+
+	rNamePostfix := os.Getenv("RELEASE_NAME_POSTFIX")
+	if rNamePostfix != "" {
+		log.Warnf("'RELEASE_NAME_POSTFIX' is set to '%v'", rNamePostfix)
+		conf.ReleaseNamePostfix = rNamePostfix
+	}
+
+	if rName != "" && ((rNamePrefix != "" && rNamePostfix != "") || (rNamePrefix != "" || rNamePostfix != "")) {
+		log.Fatal("both 'RELEASE_NAME' and 'RELEASE_NAME_PREFIX'/'RELEASE_NAME_POSTFIX' are set (expected 'RELEASE_NAME' or combination/one of 'RELEASE_NAME_PREFIX' 'RELEASE_NAME_POSTFIX')")
+	}
+
 	c := os.Getenv("CHANGELOG_FILE")
 	if c == "" {
-		log.Warn("env.var 'CHANGELOG_FILE' not defined, assuming 'CHANGELOG.md'")
+		log.Warn("'CHANGELOG_FILE' is not defined, assuming 'CHANGELOG.md'")
 		c = "CHANGELOG.md"
 	}
 
@@ -76,7 +101,7 @@ func GetConfig(release release.Interface, changes changelog.Interface, fs afero.
 	}
 
 	if !b {
-		log.Fatalf("changelog '%v' not found!", changes.GetFile())
+		log.Fatalf("changelog file '%v' not found!", changes.GetFile())
 	}
 
 	release.SetAssets(GetAssets(dir, fs, args))
@@ -108,7 +133,14 @@ func (c *Configuration) Hydrate(local repository.Interface, version *string, rel
 		return err
 	}
 
-	*releaseName = *local.GetTag()
+	if c.ReleaseName != "" {
+		*releaseName = c.ReleaseName
+	} else if c.ReleaseNamePrefix != "" || c.ReleaseNamePostfix != "" {
+		*releaseName = fmt.Sprintf("%v%v%v", c.ReleaseNamePrefix, *local.GetTag(), c.ReleaseNamePostfix)
+	} else {
+		*releaseName = *local.GetTag()
+	}
+
 	return nil
 }
 

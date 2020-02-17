@@ -10,6 +10,9 @@ assignees: anton-yurchenko
 ### Description:  
 A clear and concise description of what the bug is
 
+### Tag:
+`Provide Git Tag`
+
 ### Workflow:
 ```Attach your GitHub Action Workflow YAML```
 

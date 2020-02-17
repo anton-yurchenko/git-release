@@ -32,7 +32,7 @@ func TestGetConfig(t *testing.T) {
 	// TEST: missing GITHUB_TOKEN
 	_, _, err = app.GetConfig(rel, rel.Changes, fs, []string{})
 
-	assert.EqualError(err, "env.var 'GITHUB_TOKEN' not defined")
+	assert.EqualError(err, "'GITHUB_TOKEN' is not defined")
 
 	// TEST: token
 	err = os.Setenv("GITHUB_TOKEN", "value")
@@ -74,6 +74,85 @@ func TestGetConfig(t *testing.T) {
 		AllowTagPrefix:      true,
 	}
 	expectedToken = "value"
+
+	config, token, err = app.GetConfig(rel, rel.Changes, fs, []string{})
+
+	assert.Equal(expectedConfig, config)
+	assert.Equal(expectedToken, token)
+	assert.Equal(nil, err)
+
+	// TEST: Configuration: ReleaseName
+	err = os.Setenv("RELEASE_NAME", "CodeName")
+	assert.Equal(nil, err, "preparation: error setting env.var 'RELEASE_NAME'")
+
+	rel = new(release.Release)
+	rel.Changes = new(changelog.Changes)
+	expectedConfig = &app.Configuration{
+		AllowEmptyChangelog: true,
+		AllowTagPrefix:      true,
+		ReleaseName:         "CodeName",
+	}
+
+	config, token, err = app.GetConfig(rel, rel.Changes, fs, []string{})
+
+	assert.Equal(expectedConfig, config)
+	assert.Equal(expectedToken, token)
+	assert.Equal(nil, err)
+
+	// TEST: Configuration: ReleaseNamePrefix
+	err = os.Setenv("RELEASE_NAME", "")
+	assert.Equal(nil, err, "preparation: error setting env.var 'RELEASE_NAME'")
+
+	err = os.Setenv("RELEASE_NAME_PREFIX", "Release: ")
+	assert.Equal(nil, err, "preparation: error setting env.var 'RELEASE_NAME'")
+
+	rel = new(release.Release)
+	rel.Changes = new(changelog.Changes)
+	expectedConfig = &app.Configuration{
+		AllowEmptyChangelog: true,
+		AllowTagPrefix:      true,
+		ReleaseNamePrefix:   "Release: ",
+	}
+
+	config, token, err = app.GetConfig(rel, rel.Changes, fs, []string{})
+
+	assert.Equal(expectedConfig, config)
+	assert.Equal(expectedToken, token)
+	assert.Equal(nil, err)
+
+	// TEST: Configuration: ReleaseNamePrefix + ReleaseNamePostfix
+	err = os.Setenv("RELEASE_NAME_POSTFIX", " (codename: netscape)")
+	assert.Equal(nil, err, "preparation: error setting env.var 'RELEASE_NAME_POSTFIX'")
+
+	rel = new(release.Release)
+	rel.Changes = new(changelog.Changes)
+	expectedConfig = &app.Configuration{
+		AllowEmptyChangelog: true,
+		AllowTagPrefix:      true,
+		ReleaseNamePrefix:   "Release: ",
+		ReleaseNamePostfix:  " (codename: netscape)",
+	}
+
+	config, token, err = app.GetConfig(rel, rel.Changes, fs, []string{})
+
+	assert.Equal(expectedConfig, config)
+	assert.Equal(expectedToken, token)
+	assert.Equal(nil, err)
+
+	// TEST: Configuration: ReleaseNamePrefix
+	err = os.Setenv("RELEASE_NAME_PREFIX", "")
+	assert.Equal(nil, err, "preparation: error setting env.var 'RELEASE_NAME_PREFIX'")
+
+	err = os.Setenv("RELEASE_NAME_POSTFIX", " (codename: netscape)")
+	assert.Equal(nil, err, "preparation: error setting env.var 'RELEASE_NAME_POSTFIX'")
+
+	rel = new(release.Release)
+	rel.Changes = new(changelog.Changes)
+	expectedConfig = &app.Configuration{
+		AllowEmptyChangelog: true,
+		AllowTagPrefix:      true,
+		ReleaseNamePostfix:  " (codename: netscape)",
+	}
 
 	config, token, err = app.GetConfig(rel, rel.Changes, fs, []string{})
 
