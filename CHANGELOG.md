@@ -1,3 +1,11 @@
+## [3.1.1] - 2020-03-25
+### Fixed
+- [Issue #14](https://github.com/anton-yurchenko/git-release/issues/14) - Ignored first release link in a comment. (*Thanks to [Luiz Ferraz](https://github.com/Fryuni)*)
+
+### Changed
+- Upgrade GoLang to 1.14.1
+- Upgrade dependencies
+
 ## [3.1.0] - 2020-02-17
 ### Added
 - [Issue #10](https://github.com/anton-yurchenko/git-release/issues/10) - Release Title manipulation through `RELEASE_NAME`, `RELEASE_NAME_PREFIX`, `RELEASE_NAME_POSTFIX`. (*Thanks to [Victor](https://github.com/victoraugustolls) for suggesting a change*)
