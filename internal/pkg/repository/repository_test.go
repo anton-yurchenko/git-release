@@ -2,10 +2,11 @@ package repository_test
 
 import (
 	"fmt"
-	"github.com/anton-yurchenko/git-release/internal/pkg/repository"
-	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
+
+	"github.com/anton-yurchenko/git-release/internal/pkg/repository"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestReadTag(t *testing.T) {
@@ -124,7 +125,7 @@ func TestReadProjectName(t *testing.T) {
 
 	err = m.ReadProjectName()
 
-	assert.EqualError(err, "malformed env.var 'GITHUB_REPOSITORY': expected to match regex '^(?P<owner>[\\w,\\-,\\_]+)/(?P<repo>[\\w,\\-,\\_]+)$', got 'value'")
+	assert.EqualError(err, "malformed env.var 'GITHUB_REPOSITORY': expected to match regex '^(?P<owner>[\\w,\\-,\\_\\.]+)\\/(?P<repo>[\\w\\,\\-\\_\\.]+)$', got 'value'")
 
 	// TEST: env.var not set
 	err = os.Setenv("GITHUB_REPOSITORY", "")

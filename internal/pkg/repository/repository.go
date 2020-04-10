@@ -79,7 +79,7 @@ func (r *Repository) ReadProjectName() error {
 		return errors.New("env.var 'GITHUB_REPOSITORY' is empty or not defined")
 	}
 
-	expression := "^(?P<owner>[\\w,\\-,\\_]+)/(?P<repo>[\\w,\\-,\\_]+)$"
+	expression := "^(?P<owner>[\\w,\\-,\\_\\.]+)\\/(?P<repo>[\\w\\,\\-\\_\\.]+)$"
 	regex := regexp.MustCompile(expression)
 
 	if regex.MatchString(o) {
