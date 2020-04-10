@@ -1,3 +1,8 @@
+## [3.1.2] - 2020-04-10
+### Fixed
+- [Issue #16](https://github.com/anton-yurchenko/git-release/issues/16) - Error parsing tags with slashes. (*Thanks to [Jonathan Hilgart](https://github.com/jonhilgart22)*)
+- Support `.` in organization and repository names.
+
 ## [3.1.1] - 2020-03-25
 ### Fixed
 - [Issue #14](https://github.com/anton-yurchenko/git-release/issues/14) - Ignored first release link in a comment. (*Thanks to [Luiz Ferraz](https://github.com/Fryuni)*)

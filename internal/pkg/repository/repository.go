@@ -47,7 +47,8 @@ func (r *Repository) ReadTag(version *string, allowPrefix bool) error {
 	regex := regexp.MustCompile(expression)
 
 	if regex.MatchString(o) {
-		r.Tag = strings.Split(o, "/")[2]
+		refs := strings.Split(o, "/")
+		r.Tag = strings.Join(refs[2:], "/")
 
 		if allowPrefix {
 			*version = regex.ReplaceAllString(o, "${2}.${3}.${4}${5}${6}${7}${8}")
