@@ -1,10 +1,8 @@
 package changelog
 
 import (
-	"fmt"
 	"strings"
 
-	"github.com/pkg/errors"
 	"github.com/spf13/afero"
 )
 
@@ -33,10 +31,6 @@ func (c *Changes) ReadChanges(fs afero.Fs) error {
 	margins := c.GetMargins(file)
 
 	c.Body = strings.Join(GetContent(margins, file), "\n")
-
-	if c.Body == "" {
-		return errors.New(fmt.Sprintf("empty changelog for requested version: '%v'", c.Version))
-	}
 
 	return nil
 }
