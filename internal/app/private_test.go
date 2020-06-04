@@ -59,15 +59,15 @@ func TestGetAssets(t *testing.T) {
 	}
 
 	expected := []asset.Asset{
-		asset.Asset{
+		{
 			Name: "file1",
 			Path: "./file1",
 		},
-		asset.Asset{
+		{
 			Name: "file2",
 			Path: "./file2",
 		},
-		asset.Asset{
+		{
 			Name: "file3",
 			Path: "./file3",
 		},
@@ -90,27 +90,27 @@ file6`,
 	}
 
 	expected = []asset.Asset{
-		asset.Asset{
+		{
 			Name: "file1",
 			Path: "./file1",
 		},
-		asset.Asset{
+		{
 			Name: "file2",
 			Path: "./file2",
 		},
-		asset.Asset{
+		{
 			Name: "file3",
 			Path: "./file3",
 		},
-		asset.Asset{
+		{
 			Name: "file4",
 			Path: "./file4",
 		},
-		asset.Asset{
+		{
 			Name: "file5",
 			Path: "./file5",
 		},
-		asset.Asset{
+		{
 			Name: "file6",
 			Path: "./file6",
 		},
@@ -130,27 +130,27 @@ file6`,
 	}
 
 	expected = []asset.Asset{
-		asset.Asset{
+		{
 			Name: "file1",
 			Path: "./file1",
 		},
-		asset.Asset{
+		{
 			Name: "file2",
 			Path: "./file2",
 		},
-		asset.Asset{
+		{
 			Name: "file3",
 			Path: "./file3",
 		},
-		asset.Asset{
+		{
 			Name: "file4",
 			Path: "./file4",
 		},
-		asset.Asset{
+		{
 			Name: "file5",
 			Path: "./file5",
 		},
-		asset.Asset{
+		{
 			Name: "file6",
 			Path: "./file6",
 		},
@@ -170,27 +170,27 @@ file6`,
 	}
 
 	expected = []asset.Asset{
-		asset.Asset{
+		{
 			Name: "file1",
 			Path: "./file1",
 		},
-		asset.Asset{
+		{
 			Name: "file2",
 			Path: "./file2",
 		},
-		asset.Asset{
+		{
 			Name: "file3",
 			Path: "./file3",
 		},
-		asset.Asset{
+		{
 			Name: "file4",
 			Path: "./file4",
 		},
-		asset.Asset{
+		{
 			Name: "file5",
 			Path: "./file5",
 		},
-		asset.Asset{
+		{
 			Name: "file6",
 			Path: "./file6",
 		},
@@ -209,11 +209,11 @@ file6`,
 	}
 
 	expected = []asset.Asset{
-		asset.Asset{
+		{
 			Name: "file1",
 			Path: "workspace/file1",
 		},
-		asset.Asset{
+		{
 			Name: "file2",
 			Path: "workspace/file2",
 		},

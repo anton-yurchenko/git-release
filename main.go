@@ -41,8 +41,10 @@ func main() {
 		log.Fatal(err)
 	}
 
-	if err = conf.GetReleaseBody(release.Changes, fs); err != nil {
-		log.Fatal(err)
+	if !conf.IgnoreChangelog {
+		if err = conf.GetReleaseBody(release.Changes, fs); err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	if err = conf.Publish(repo, release, cli.Repositories); err != nil {

@@ -20,6 +20,7 @@ import (
 // Configuration is a git-release settings struct
 type Configuration struct {
 	AllowEmptyChangelog bool
+	IgnoreChangelog     bool
 	AllowTagPrefix      bool
 	ReleaseName         string
 	ReleaseNamePrefix   string
@@ -89,19 +90,24 @@ func GetConfig(release release.Interface, changes changelog.Interface, fs afero.
 	}
 
 	c := os.Getenv("CHANGELOG_FILE")
-	if c == "" {
+	if c == "none" {
+		log.Warn("'CHANGELOG_FILE' is set to 'none'")
+		conf.IgnoreChangelog = true
+	} else if c == "" {
 		log.Warn("'CHANGELOG_FILE' is not defined, assuming 'CHANGELOG.md'")
 		c = "CHANGELOG.md"
 	}
 
-	changes.SetFile(fmt.Sprintf("%v/%v", dir, c))
-	b, err := IsExists(changes.GetFile(), fs)
-	if err != nil {
-		log.Fatal(err)
-	}
+	if !conf.IgnoreChangelog {
+		changes.SetFile(fmt.Sprintf("%v/%v", dir, c))
+		b, err := IsExists(changes.GetFile(), fs)
+		if err != nil {
+			log.Fatal(err)
+		}
 
-	if !b {
-		log.Fatalf("changelog file '%v' not found!", changes.GetFile())
+		if !b {
+			log.Fatalf("changelog file '%v' not found!", changes.GetFile())
+		}
 	}
 
 	release.SetAssets(GetAssets(dir, fs, args))

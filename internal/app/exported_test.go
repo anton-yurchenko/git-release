@@ -54,6 +54,7 @@ func TestGetConfig(t *testing.T) {
 	expectedConfig := &app.Configuration{
 		AllowEmptyChangelog: true,
 		AllowTagPrefix:      false,
+		IgnoreChangelog:     false,
 	}
 	expectedToken = "value"
 
@@ -72,6 +73,7 @@ func TestGetConfig(t *testing.T) {
 	expectedConfig = &app.Configuration{
 		AllowEmptyChangelog: true,
 		AllowTagPrefix:      true,
+		IgnoreChangelog:     false,
 	}
 	expectedToken = "value"
 
@@ -90,6 +92,7 @@ func TestGetConfig(t *testing.T) {
 	expectedConfig = &app.Configuration{
 		AllowEmptyChangelog: true,
 		AllowTagPrefix:      true,
+		IgnoreChangelog:     false,
 		ReleaseName:         "CodeName",
 	}
 
@@ -111,6 +114,7 @@ func TestGetConfig(t *testing.T) {
 	expectedConfig = &app.Configuration{
 		AllowEmptyChangelog: true,
 		AllowTagPrefix:      true,
+		IgnoreChangelog:     false,
 		ReleaseNamePrefix:   "Release: ",
 	}
 
@@ -129,6 +133,7 @@ func TestGetConfig(t *testing.T) {
 	expectedConfig = &app.Configuration{
 		AllowEmptyChangelog: true,
 		AllowTagPrefix:      true,
+		IgnoreChangelog:     false,
 		ReleaseNamePrefix:   "Release: ",
 		ReleaseNamePostfix:  " (codename: netscape)",
 	}
@@ -138,6 +143,9 @@ func TestGetConfig(t *testing.T) {
 	assert.Equal(expectedConfig, config)
 	assert.Equal(expectedToken, token)
 	assert.Equal(nil, err)
+
+	err = os.Unsetenv("RELEASE_NAME_POSTFIX")
+	assert.Equal(nil, err, "cleanup: error unsetting env.var 'RELEASE_NAME_POSTFIX'")
 
 	// TEST: Configuration: ReleaseNamePrefix
 	err = os.Setenv("RELEASE_NAME_PREFIX", "")
@@ -151,6 +159,7 @@ func TestGetConfig(t *testing.T) {
 	expectedConfig = &app.Configuration{
 		AllowEmptyChangelog: true,
 		AllowTagPrefix:      true,
+		IgnoreChangelog:     false,
 		ReleaseNamePostfix:  " (codename: netscape)",
 	}
 
@@ -159,6 +168,9 @@ func TestGetConfig(t *testing.T) {
 	assert.Equal(expectedConfig, config)
 	assert.Equal(expectedToken, token)
 	assert.Equal(nil, err)
+
+	err = os.Unsetenv("RELEASE_NAME_POSTFIX")
+	assert.Equal(nil, err, "cleanup: error unsetting env.var 'RELEASE_NAME_POSTFIX'")
 
 	// TEST: Draft setting
 	err = os.Setenv("DRAFT_RELEASE", "true")
@@ -198,6 +210,25 @@ func TestGetConfig(t *testing.T) {
 
 	assert.Equal(nil, err)
 	assert.Equal(expectedRelease, rel)
+
+	// TEST: Configuration: IgnoreChangelog
+	err = os.Setenv("CHANGELOG_FILE", "none")
+	assert.Equal(nil, err, "preparation: error setting env.var 'CHANGELOG_FILE'")
+
+	rel = new(release.Release)
+	rel.Changes = new(changelog.Changes)
+	expectedConfig = &app.Configuration{
+		AllowEmptyChangelog: true,
+		AllowTagPrefix:      true,
+		IgnoreChangelog:     true,
+	}
+	expectedToken = "value"
+
+	config, token, err = app.GetConfig(rel, rel.Changes, fs, []string{})
+
+	assert.Equal(expectedConfig, config)
+	assert.Equal(expectedToken, token)
+	assert.Equal(nil, err)
 }
 
 func TestHydrate(t *testing.T) {
