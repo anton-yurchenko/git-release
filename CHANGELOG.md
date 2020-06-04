@@ -1,3 +1,12 @@
+## [3.2.0] - 2020-06-04
+### Fixed
+- Ignored `ALLOW_EMPTY_CHANGELOG=true` failed to create a release.
+
+### Added
+- `CHANGELOG_FILE=none` will skip changelog file validation. This allows to create a release from empty workspace.
+- Upgrade GoLang to 1.14.4
+- Upgrade dependencies
+
 ## [3.1.2] - 2020-04-10
 ### Fixed
 - [Issue #16](https://github.com/anton-yurchenko/git-release/issues/16) - Error parsing tags with slashes. (*Thanks to [Jonathan Hilgart](https://github.com/jonhilgart22)*)
