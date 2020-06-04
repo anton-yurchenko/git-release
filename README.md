@@ -72,8 +72,9 @@ on:
 - `DRAFT_RELEASE (true/false as string)` - Save release as draft instead of publishing it (default `false`).
 - `PRE_RELEASE (true/false as string)` - GitHub will point out that this release is identified as non-production ready (default: `false`). 
 - `CHANGELOG_FILE (string)` - Changelog filename (default: `CHANGELOG.md`).
+  - set to `none` in order to completely ignore changelog.
 - `ALLOW_EMPTY_CHANGELOG (true/false as string)` - Allow publishing a release without changelog (default `false`).
-- `ALLOW_TAG_PREFIX (true/false as string)` - Allow prefix on version Tag, for example `v3.1.0` or `release-3.1.0` (default: `false`).
+- `ALLOW_TAG_PREFIX (true/false as string)` - Allow prefix on version Tag, for example `v3.2.0` or `release-3.2.0` (default: `false`).
 - `RELEASE_NAME (string)` - Complete release title (may not be combined with PREFIX or POSTFIX).
 - `RELEASE_NAME_PREFIX (string)` - Release title prefix.
 - `RELEASE_NAME_POSTFIX (string)` - Release title postfix.
@@ -82,7 +83,7 @@ on:
 
 ## Remarks:
 - **Git Tag** should be identical to **Changelog Version** in order for changes to be parsed properly. This does not include **Tag Prefix** like `release-*`.
-- This action is automatically built at **Docker Hub**, and tagged with `latest / v3 / v3.1 / v3.1.0`. You may lock to a certain version instead of using **latest**.  
+- This action is automatically built at **Docker Hub**, and tagged with `latest / v3 / v3.2 / v3.2.0`. You may lock to a certain version instead of using **latest**.  
 (*Recommended to lock against a major version, for example* `v3`)
 - Instead of using pre-built image, you may build it during the execution of your flow by changing `docker://antonyurchenko/git-release:latest` to `anton-yurchenko/git-release@master`
 
