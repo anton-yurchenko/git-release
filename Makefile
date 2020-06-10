@@ -1,6 +1,8 @@
 # global
 BINARY := $(notdir $(CURDIR))
 GO_BIN_DIR := $(GOPATH)/bin
+OSES := windows
+ARCHS := amd64
 
 # unit tests
 test: lint
@@ -34,7 +36,15 @@ $(GO_LINTER):
 release: test
 	@rm -rf ./release
 	@mkdir -p release
-	@GOOS=linux GOARCH=amd64 go build -o ./release/app
+	@for ARCH in $(ARCHS); do \
+		for OS in $(OSES); do \
+			if test "$$OS" = "windows"; then \
+				GOOS=$$OS GOARCH=$$ARCH go build -o release/$(BINARY)-$$OS-$$ARCH.exe; \
+			else \
+				GOOS=$$OS GOARCH=$$ARCH go build -o release/$(BINARY)-$$OS-$$ARCH; \
+			fi; \
+		done; \
+	done
 
 .PHONY: codecov
 codecov: test

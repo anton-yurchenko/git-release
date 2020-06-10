@@ -64,9 +64,9 @@ on:
             build/windows-amd64.zip
 ```
 
-[Configuration Examples](docs/example.md#examples)
+:information_source: [Configuration Examples](docs/example.md#examples)
 
-<details><summary>All Configuration Options</summary>
+<details><summary>:information_source: All Configuration Options</summary>
 
 - Provide a list of assets as `args` (divided by one of: `new line`, `space`, `comma`, `pipe`)
 - `DRAFT_RELEASE (true/false as string)` - Save release as draft instead of publishing it (default `false`).
@@ -81,8 +81,41 @@ on:
 
 </details>  
 
+<details><summary>:information_source: Execute on Windows runner</summary>
+
+In case you need to execute 'git-release' directly from a Windows Runner, you may do that by downloading the binary and running it directly.  
+
+Example:
+```
+      - name: Release
+        shell: pwsh
+        run: |
+          Write-Host "Downloading latest 'git-release' windows binary..."
+          Invoke-WebRequest $( `
+              Invoke-RestMethod -uri https://api.github.com/repos/anton-yurchenko/git-release/releases/latest | `
+              select -ExpandProperty assets | `
+              select -expand browser_download_url  | `
+              where { $_.Contains("windows-amd64") -eq $true }) `
+          -OutFile ./git-release.exe
+
+          Write-Host "Creating a GitHub Release..."
+          $env:GITHUB_TOKEN = '${{ secrets.GITHUB_TOKEN }}'; `
+          $env:DRAFT_RELEASE = 'false'; `
+          $env:PRE_RELEASE = 'false'; `
+          $env:CHANGELOG_FILE = 'CHANGELOG.md'; `
+          $env:ALLOW_EMPTY_CHANGELOG = 'false'; `
+          $env:ALLOW_TAG_PREFIX = 'true'; `
+          ./git-release.exe `
+          build/darwin-amd64.zip `
+          build/linux-amd64.zip `
+          build/windows-amd64.zip  
+```
+- Provide the configuration in exactly the same manner to the binary as to docker container, environmental variables and arguments.
+
+</details>
+
 ## Remarks:
-- **Git Tag** should be identical to **Changelog Version** in order for changes to be parsed properly. This does not include **Tag Prefix** like `release-*`.
+- **Git Tag** should be identical to **Changelog Version** in order for changes to be parsed properly. This does not include **Tag Prefix** like `v*`.
 - This action is automatically built at **Docker Hub**, and tagged with `latest / v3 / v3.2 / v3.2.0`. You may lock to a certain version instead of using **latest**.  
 (*Recommended to lock against a major version, for example* `v3`)
 - Instead of using pre-built image, you may build it during the execution of your flow by changing `docker://antonyurchenko/git-release:latest` to `anton-yurchenko/git-release@master`
