@@ -18,9 +18,9 @@ if (os.arch != `x64`) {
 }
 
 if (os.type == `Windows_NT`) {
-    execute(`.\\build\\git-release-windows-amd64.exe`, os.type);
+    execute(`${__dirname}\\build\\git-release-windows-amd64.exe`, os.type);
 } else if (os.type == `Linux`) {
-    execute(`./build/git-release-linux-amd64`, os.type);
+    execute(`${__dirname}/build/git-release-linux-amd64`, os.type);
 } else {
     core.setFailed(`[wrapper] runner operation system is not supported: '${os.type}'`);
 }
