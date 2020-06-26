@@ -3,15 +3,15 @@ const os = require('os');
 
 function execute(binary, system) {
     core.info(`[wrapper] runner platform: '${system}'`);
-    core.debug(`[wrapper] arguments: '${process.argv.slice(2).join(" ")}'`);
+    core.info(`[wrapper] arguments: '${process.argv.slice(2).join(" ")}'`);
 
     require('child_process').execSync(
         `${binary} ${process.argv.slice(2).join(" ")}`,
         { stdio: 'inherit' }
     );
-
-    core.info(`[wrapper] finished`);
 }
+
+core.warning(`[wrapper] executing this action via wrapper is not recommended! see README for more information`);
 
 if (os.arch != `x64`) {
     core.setFailed(`[wrapper] runner cpu architecture is not supported: '${os.arch}'`);
