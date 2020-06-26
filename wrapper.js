@@ -5,8 +5,9 @@ function execute(binary, system) {
     core.info(`[wrapper] runner platform: '${system}'`);
     core.info(`[wrapper] arguments: '${core.getInput('args')}'`);
 
-    require('child_process').execSync(
-        `${binary} ${core.getInput('args')}`,
+    require('child_process').execFileSync(
+        binary,
+        [core.getInput('args')],
         { stdio: 'inherit' }
     );
 }
