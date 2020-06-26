@@ -9,4 +9,4 @@
 # project
 coverage.txt
 /vendor/
-/release/
+package-lock.json

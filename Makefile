@@ -1,7 +1,7 @@
 # global
 BINARY := $(notdir $(CURDIR))
 GO_BIN_DIR := $(GOPATH)/bin
-OSES := windows
+OSES := windows linux
 ARCHS := amd64
 
 # unit tests
