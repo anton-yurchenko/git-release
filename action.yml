@@ -1,8 +1,12 @@
-name: 'Git Release'
-description: 'Create a GitHub Release with Assets and Changelog'
+name: "Git Release"
+description: "Create a GitHub Release with Assets and Changelog"
 branding:
-  icon: 'tag'
-  color: 'black'
+  icon: "tag"
+  color: "black"
+inputs:
+  args:
+    description: "Release Assets"
+    required: false
 runs:
-  using: 'docker'
-  image: 'Dockerfile'
+  using: "node12"
+  main: "wrapper.js"
