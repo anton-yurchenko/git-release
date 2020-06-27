@@ -12,9 +12,11 @@ A **GitHub Action** for creating a **GitHub Release** with **Assets** and **Chan
 ![PIC](docs/images/release.png)
 
 ## Features:
-- Parse Tag to match Semantic Versioning.  
-- Upload build artifacts (assets) to the release.  
-- Add a changelog to the release.  
+- Parse Tag to match Semantic Versioning
+- Upload build artifacts (assets) to the release
+- Add a changelog to the release
+- Linux/Windows runners supported
+- Filename pattern matching
 
 ## Manual:
 1. Add changes to `CHANGELOG.md` in the following format (according to [keepachangelog.com](https://keepachangelog.com/en/1.0.0/ "Keep a ChangeLog")):
@@ -59,12 +61,8 @@ on:
         ALLOW_TAG_PREFIX: "true"
       with:
         args: |
-            build/darwin-amd64.zip
-            build/linux-amd64.zip
-            build/windows-amd64.zip
+            build/*-amd64.zip
 ```
-
-:information_source: [Configuration Examples](docs/example.md#examples)
 
 <details><summary>:information_source: All Configuration Options</summary>
 
@@ -81,9 +79,9 @@ on:
 
 </details>  
 
-<details><summary>:information_source: Execute on Windows runner</summary>
+<details><summary>:information_source: Windows Runners</summary>
 
-In case you need to execute 'git-release' from a Windows Runner, you may do that by running the action through JavaScript runner.  
+Execute **git-release** through JavaScrip Wrapper on Windows Runners.
 
 Example:
 ```
@@ -104,6 +102,8 @@ Example:
 ```
 
 </details>
+
+:information_source: [Configuration Examples](docs/example.md#examples)
 
 ## Remarks:
 - **Git Tag** should be identical to **Changelog Version** in order for changes to be parsed properly. This does not include **Tag Prefix** like `v*`.
