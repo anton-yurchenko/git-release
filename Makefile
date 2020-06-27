@@ -49,3 +49,9 @@ build: test
 .PHONY: codecov
 codecov: test
 	@go tool cover -html=coverage.txt
+
+.PHONY: release
+release: build
+	@git push
+	@git tag $(tag)
+	@git push --tags
