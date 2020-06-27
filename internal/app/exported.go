@@ -110,7 +110,7 @@ func GetConfig(release release.Interface, changes changelog.Interface, fs afero.
 		}
 	}
 
-	release.SetAssets(GetAssets(dir, fs, args))
+	release.SetAssets(GetAssets(fs, args))
 
 	return conf, token, nil
 }
