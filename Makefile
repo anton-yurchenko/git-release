@@ -7,7 +7,7 @@ ARCHS := amd64
 # unit tests
 test: lint
 	@echo "unit testing..."
-	@go test $$(go list ./... | grep -v vendor | grep -v mocks) -race -coverprofile=coverage.txt -covermode=atomic
+	@go test -v $$(go list ./... | grep -v vendor | grep -v mocks) -race -coverprofile=coverage.txt -covermode=atomic
 
 # lint
 .PHONY: lint

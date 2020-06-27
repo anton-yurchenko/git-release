@@ -1,7 +1,6 @@
 package app
 
 import (
-	"fmt"
 	"path/filepath"
 	"strings"
 
@@ -11,7 +10,7 @@ import (
 )
 
 // GetAssets returns validated assets supplied via 'args'
-func GetAssets(dir string, fs afero.Fs, args []string) []asset.Asset {
+func GetAssets(fs afero.Fs, args []string) []asset.Asset {
 	assets := make([]asset.Asset, 0)
 	arguments := make([]string, 0)
 
@@ -31,21 +30,18 @@ func GetAssets(dir string, fs afero.Fs, args []string) []asset.Asset {
 	}
 
 	for _, argument := range arguments {
-		file := fmt.Sprintf("%v/%v", dir, filepath.Clean(argument))
-
-		b, err := IsExists(file, fs)
+		files, err := afero.Glob(fs, filepath.Clean(argument))
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		if b {
+		for _, file := range files {
 			asset := asset.Asset{
-				Name: filepath.Base(argument),
+				Name: filepath.Base(file),
 				Path: file,
 			}
+
 			assets = append(assets, asset)
-		} else {
-			log.Fatalf("file '%v' not found!", file)
 		}
 	}
 
