@@ -9,6 +9,7 @@ import (
 	"github.com/anton-yurchenko/git-release/internal/pkg/repository"
 	"github.com/anton-yurchenko/git-release/pkg/changelog"
 	"github.com/google/go-github/github"
+	"github.com/pkg/errors"
 )
 
 // Release represents a github.com release
@@ -30,7 +31,11 @@ type Interface interface {
 }
 
 // Publish a new github.com release
-func (r *Release) Publish(repo repository.Interface, service interfaces.GitHub, messages chan string, errors chan error) error {
+func (r *Release) Publish(repo repository.Interface, service interfaces.GitHub, messages chan string, errs chan error) error {
+	if r.Changes == nil {
+		return errors.New("receiver contains a nil pointer")
+	}
+
 	// create release
 	release, _, err := service.CreateRelease(
 		context.Background(),
@@ -57,7 +62,7 @@ func (r *Release) Publish(repo repository.Interface, service interfaces.GitHub, 
 
 		for _, asset := range r.Assets {
 			x := asset
-			go x.Upload(release.GetID(), repo, service, wg, messages, errors)
+			go x.Upload(release.GetID(), repo, service, wg, messages, errs)
 		}
 	}
 
