@@ -17,19 +17,21 @@ func TestIsExists(t *testing.T) {
 
 	// TEST: file not exist
 	expected := false
-	result, err := app.IsExists("./not-exist.zip", fs)
+	t.Log("Test Case 1/2 - File Does Not Exist")
+
+	result, err := app.IsExists("does-not-exist", fs)
 
 	assert.Equal(nil, err)
 	assert.Equal(expected, result)
 
 	// TEST: file exist
 	expected = true
+	t.Log("Test Case 2/2 - File Exist")
 
-	file, err := fs.Create("./file1")
-	file.Close()
-	assert.Equal(nil, err, "preparation: error creating test file 'file1'")
+	_, err = fs.Create("exist")
+	assert.Equal(nil, err, "preparation: error creating test file 'exist'")
 
-	result, err = app.IsExists("./file1", fs)
+	result, err = app.IsExists("exist", fs)
 
 	assert.Equal(nil, err)
 	assert.Equal(expected, result)
@@ -206,6 +208,18 @@ file6`,
 				{
 					Name: "file3",
 					Path: "file3",
+				},
+				{
+					Name: "file4",
+					Path: "file4",
+				},
+				{
+					Name: "file5",
+					Path: "file5",
+				},
+				{
+					Name: "file6",
+					Path: "file6",
 				},
 			},
 		},

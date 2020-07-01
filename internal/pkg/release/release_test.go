@@ -18,117 +18,87 @@ func TestPublish(t *testing.T) {
 	assert := assert.New(t)
 	log.SetLevel(log.FatalLevel)
 
-	// TEST: successfull release without assets
-	messages := make(chan string)
-	errs := make(chan error)
-	m := new(mocks.GitHub)
-	repo := new(repository.Repository)
-	rel := new(release.Release)
-	rel.Changes = new(changelog.Changes)
-	var id int64 = 12
+	type test struct {
+		Release            *release.Release
+		ExpectedError      string
+		CreateReleaseError error
+	}
 
-	m.On("CreateRelease").Return(&github.RepositoryRelease{ID: &id}, new(github.Response), nil).Once()
-
-	err := rel.Publish(repo, m, messages, errs)
-
-	assert.Equal(nil, err)
-
-	// TEST: successfull release with single asset
-	m = new(mocks.GitHub)
-	repo = new(repository.Repository)
-	messages = make(chan string, 1)
-	errs = make(chan error, 1)
-	rel = &release.Release{
-		Assets: []asset.Asset{
-			asset.Asset{
-				Name: "file1",
-				Path: "release_test.go",
+	suite := map[string]test{
+		"Functionality": {
+			Release: &release.Release{
+				Changes: &changelog.Changes{},
 			},
+			ExpectedError:      "",
+			CreateReleaseError: nil,
+		},
+		"Nil Pointer Trap": {
+			Release:            &release.Release{},
+			ExpectedError:      "receiver contains a nil pointer",
+			CreateReleaseError: nil,
+		},
+		"Single Asset": {
+			Release: &release.Release{
+				Assets: []asset.Asset{
+					{
+						Name: "file",
+						Path: "release_test.go",
+					},
+				},
+				Changes: &changelog.Changes{},
+			},
+			ExpectedError:      "",
+			CreateReleaseError: nil,
+		},
+		"Multiple Assets": {
+			Release: &release.Release{
+				Assets: []asset.Asset{
+					{
+						Name: "file1",
+						Path: "release_test.go",
+					},
+					{
+						Name: "file2",
+						Path: "asset_test.go",
+					},
+				},
+				Changes: &changelog.Changes{},
+			},
+			ExpectedError:      "",
+			CreateReleaseError: nil,
+		},
+		"Error Creating Release": {
+			Release: &release.Release{
+				Changes: &changelog.Changes{},
+			},
+			ExpectedError:      "error",
+			CreateReleaseError: errors.New("error"),
 		},
 	}
-	rel.Changes = new(changelog.Changes)
-	id = 124
 
-	m.On("CreateRelease").Return(&github.RepositoryRelease{ID: &id}, new(github.Response), nil).Once()
-	m.On("UploadReleaseAsset").Return(new(github.ReleaseAsset), new(github.Response), nil).Once()
+	var counter int
+	for name, test := range suite {
+		counter++
+		t.Logf("Test Case %v/%v - %s", counter, len(suite), name)
 
-	err = rel.Publish(repo, m, messages, errs)
+		var id int64 = 1
+		m := new(mocks.GitHub)
+		m.On("CreateRelease").Return(&github.RepositoryRelease{ID: &id}, new(github.Response), test.CreateReleaseError).Once()
+		m.On("UploadReleaseAsset").Return(new(github.ReleaseAsset), new(github.Response), nil)
 
-	assert.Equal(nil, err)
+		err := test.Release.Publish(new(repository.Repository), m, make(chan string, len(test.Release.Assets)), make(chan error, len(test.Release.Assets)))
 
-	// TEST: successfull release with multiple assets
-	m = new(mocks.GitHub)
-	repo = new(repository.Repository)
-	messages = make(chan string, 2)
-	errs = make(chan error, 2)
-	rel = &release.Release{
-		Assets: []asset.Asset{
-			asset.Asset{
-				Name: "file1",
-				Path: "release_test.go",
-			},
-			asset.Asset{
-				Name: "file1",
-				Path: "asset_test.go",
-			},
-		},
+		if test.ExpectedError != "" {
+			assert.EqualError(err, test.ExpectedError)
+		} else {
+			assert.Equal(nil, err)
+		}
 	}
-	rel.Changes = new(changelog.Changes)
-	id = 124
-
-	m.On("CreateRelease").Return(&github.RepositoryRelease{ID: &id}, new(github.Response), nil).Once()
-	m.On("UploadReleaseAsset").Return(new(github.ReleaseAsset), new(github.Response), nil).Twice()
-
-	err = rel.Publish(repo, m, messages, errs)
-
-	assert.Equal(nil, err)
-
-	// TEST: failed release with single asset, test function abort mechanism
-	m = new(mocks.GitHub)
-	repo = new(repository.Repository)
-	messages = make(chan string, 1)
-	errs = make(chan error, 1)
-	rel = &release.Release{
-		Assets: []asset.Asset{
-			asset.Asset{
-				Name: "file1",
-				Path: "file-not-found.zip",
-			},
-		},
-	}
-	rel.Changes = new(changelog.Changes)
-	id = 124
-
-	m.On("CreateRelease").Return(&github.RepositoryRelease{ID: &id}, new(github.Response), nil).Once()
-	m.On("UploadReleaseAsset").Return(new(github.ReleaseAsset), new(github.Response), nil).Once()
-
-	err = rel.Publish(repo, m, messages, errs)
-
-	assert.Equal(nil, err)
-
-	err = <-errs
-
-	assert.EqualError(err, "open file-not-found.zip: no such file or directory")
-
-	// TEST: failed release creation
-	m = new(mocks.GitHub)
-	messages = make(chan string)
-	errs = make(chan error)
-	repo = new(repository.Repository)
-
-	rel = new(release.Release)
-	rel.Changes = new(changelog.Changes)
-	id = 964
-
-	m.On("CreateRelease").Return(&github.RepositoryRelease{ID: &id}, new(github.Response), errors.New("release creation failed")).Once()
-
-	err = rel.Publish(repo, m, messages, errs)
-
-	assert.EqualError(err, "release creation failed")
 }
 
 func TestEnableDraft(t *testing.T) {
 	assert := assert.New(t)
+	t.Log("Test Case 1/1 - Functionality")
 
 	expected := true
 
@@ -143,6 +113,7 @@ func TestEnableDraft(t *testing.T) {
 
 func TestEnablePreRelease(t *testing.T) {
 	assert := assert.New(t)
+	t.Log("Test Case 1/1 - Functionality")
 
 	expected := true
 
@@ -157,15 +128,16 @@ func TestEnablePreRelease(t *testing.T) {
 
 func TestSetAssets(t *testing.T) {
 	assert := assert.New(t)
+	t.Log("Test Case 1/1 - Functionality")
 
 	m := new(release.Release)
 
 	expected := []asset.Asset{
-		asset.Asset{
+		{
 			Name: "file1",
 			Path: "release_test.go",
 		},
-		asset.Asset{
+		{
 			Name: "file1",
 			Path: "asset_test.go",
 		},
@@ -178,13 +150,14 @@ func TestSetAssets(t *testing.T) {
 
 func TestGetAssets(t *testing.T) {
 	assert := assert.New(t)
+	t.Log("Test Case 1/1 - Functionality")
 
 	expected := []asset.Asset{
-		asset.Asset{
+		{
 			Name: "file1",
 			Path: "release_test.go",
 		},
-		asset.Asset{
+		{
 			Name: "file1",
 			Path: "asset_test.go",
 		},
