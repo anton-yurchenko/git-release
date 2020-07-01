@@ -3,6 +3,7 @@ package repository_test
 import (
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/anton-yurchenko/git-release/internal/pkg/repository"
@@ -12,70 +13,71 @@ import (
 func TestReadTag(t *testing.T) {
 	assert := assert.New(t)
 
-	// TEST: env.var correct
-	tag := "refs/tags/v1.0.0"
-	var version string
+	type test struct {
+		Ref           string
+		Version       string
+		AllowPrefix   bool
+		ExpectedError string
+	}
 
-	err := os.Setenv("GITHUB_REF", tag)
-	assert.Equal(nil, err, "preparation: error setting env.var 'GITHUB_REF'")
+	suite := map[string]test{
+		"Functionality": {
+			Ref:           "refs/tags/v1.0.0",
+			Version:       "1.0.0",
+			AllowPrefix:   true,
+			ExpectedError: "",
+		},
+		"Incorrect Environment Variable": {
+			Ref:           "v1.0.0",
+			Version:       "1.0.0",
+			AllowPrefix:   true,
+			ExpectedError: "malformed env.var 'GITHUB_REF' (control tag prefix via env.var 'ALLOW_TAG_PREFIX'): expected to match regex '^refs/tags/(?P<prefix>.*)(?P<major>0|[1-9]\\d*)\\.(?P<minor>0|[1-9]\\d*)\\.(?P<patch>0|[1-9]\\d*)(?:(?P<sep1>-)(?P<prerelease>(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:(?P<sep2>\\+)(?P<buildmetadata>[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$', got 'v1.0.0'",
+		},
+		"Missing Environment Variable": {
+			Ref:           "",
+			Version:       "1.0.0",
+			AllowPrefix:   true,
+			ExpectedError: "env.var 'GITHUB_REF' is empty or not defined",
+		},
+		"Disabled AllowPrefix and Complex Version": {
+			Ref:           "refs/tags/1.2.3----RC-SNAPSHOT.44.5.6--.77",
+			Version:       "1.2.3----RC-SNAPSHOT.44.5.6--.77",
+			AllowPrefix:   false,
+			ExpectedError: "",
+		},
+	}
 
-	m := new(repository.Repository)
+	var counter int
+	for name, test := range suite {
+		counter++
+		t.Logf("Test Case %v/%v - %s", counter, len(suite), name)
 
-	err = m.ReadTag(&version, true)
+		err := os.Setenv("GITHUB_REF", test.Ref)
+		assert.Equal(nil, err, "preparation: error setting env.var 'GITHUB_REF'")
 
-	assert.Equal(nil, err)
-	assert.Equal("v1.0.0", m.Tag)
-	assert.Equal("1.0.0", version)
+		var version string
+		m := new(repository.Repository)
+		err = m.ReadTag(&version, test.AllowPrefix)
 
-	// TEST: env.var incorrect
-	err = os.Setenv("GITHUB_REF", "malformed-var")
-	assert.Equal(nil, err, "preparation: error setting env.var 'GITHUB_REF'")
+		if test.ExpectedError != "" {
+			assert.EqualError(err, test.ExpectedError)
+		} else {
+			assert.Equal(nil, err)
 
-	m = new(repository.Repository)
-	//		TEST 1
-	err = m.ReadTag(&version, false)
+			assert.Equal(strings.TrimPrefix(test.Ref, "refs/tags/"), m.Tag)
+			assert.Equal(test.Version, version)
+		}
 
-	expression := "(?P<major>0|[1-9]\\d*)\\.(?P<minor>0|[1-9]\\d*)\\.(?P<patch>0|[1-9]\\d*)(?:(?P<sep1>-)(?P<prerelease>(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:(?P<sep2>\\+)(?P<buildmetadata>[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?"
-
-	e := fmt.Sprintf("malformed env.var 'GITHUB_REF' (control tag prefix via env.var 'ALLOW_TAG_PREFIX'): expected to match regex '^refs/tags/%s$', got 'malformed-var'", expression)
-	assert.EqualError(err, e)
-
-	//		TEST 2
-	err = m.ReadTag(&version, true)
-
-	e = fmt.Sprintf("malformed env.var 'GITHUB_REF' (control tag prefix via env.var 'ALLOW_TAG_PREFIX'): expected to match regex '^refs/tags/(?P<prefix>.*)%s$', got 'malformed-var'", expression)
-	assert.EqualError(err, e)
-
-	// TEST: env.var not set
-	err = os.Setenv("GITHUB_REF", "")
-	assert.Equal(nil, err, "preparation: error setting env.var 'GITHUB_REF'")
-
-	m = new(repository.Repository)
-
-	err = m.ReadTag(&version, false)
-
-	assert.EqualError(err, "env.var 'GITHUB_REF' is empty or not defined")
-
-	// TEST: allowPrefix is disabled env.var correct
-	tag = "refs/tags/1.2.3----RC-SNAPSHOT.44.5.6--.77"
-	version = ""
-
-	err = os.Setenv("GITHUB_REF", tag)
-	assert.Equal(nil, err, "preparation: error setting env.var 'GITHUB_REF'")
-
-	m = new(repository.Repository)
-
-	err = m.ReadTag(&version, false)
-
-	assert.Equal(nil, err)
-	assert.Equal("1.2.3----RC-SNAPSHOT.44.5.6--.77", m.Tag)
-	assert.Equal("1.2.3----RC-SNAPSHOT.44.5.6--.77", version)
+		err = os.Unsetenv("GITHUB_REF")
+		assert.Equal(nil, err, "cleanup: error unsetting env.var 'GITHUB_REF'")
+	}
 }
 
 func TestReadCommitHash(t *testing.T) {
 	assert := assert.New(t)
 
 	// TEST: env.var set
+	t.Log("Test Case 1/2 - Functionality")
 	expected := "123abc"
 
 	err := os.Setenv("GITHUB_SHA", expected)
@@ -89,6 +91,7 @@ func TestReadCommitHash(t *testing.T) {
 	assert.Equal(expected, m.CommitHash)
 
 	// TEST: env.var not set
+	t.Log("Test Case 1/2 - Missing Environment Variable")
 	err = os.Setenv("GITHUB_SHA", "")
 	assert.Equal(nil, err, "preparation: error setting env.var 'GITHUB_SHA'")
 
@@ -103,6 +106,7 @@ func TestReadProjectName(t *testing.T) {
 	assert := assert.New(t)
 
 	// TEST: env.var correct
+	t.Log("Test Case 1/3 - Functionality")
 	user := "user"
 	project := "project"
 
@@ -118,6 +122,7 @@ func TestReadProjectName(t *testing.T) {
 	assert.Equal(project, m.Project)
 
 	// TEST: env.var incorrect
+	t.Log("Test Case 2/3 - Incorrect Environmetal Variable")
 	err = os.Setenv("GITHUB_REPOSITORY", "value")
 	assert.Equal(nil, err, "preparation: error setting env.var 'GITHUB_REPOSITORY'")
 
@@ -128,6 +133,7 @@ func TestReadProjectName(t *testing.T) {
 	assert.EqualError(err, "malformed env.var 'GITHUB_REPOSITORY': expected to match regex '^(?P<owner>[\\w,\\-,\\_\\.]+)\\/(?P<repo>[\\w\\,\\-\\_\\.]+)$', got 'value'")
 
 	// TEST: env.var not set
+	t.Log("Test Case 3/3 - Missing Environment Vriable")
 	err = os.Setenv("GITHUB_REPOSITORY", "")
 	assert.Equal(nil, err, "preparation: error setting env.var 'GITHUB_REPOSITORY'")
 
@@ -140,6 +146,7 @@ func TestReadProjectName(t *testing.T) {
 
 func TestGetOwner(t *testing.T) {
 	assert := assert.New(t)
+	t.Log("Test Case 1/1 - Functionality")
 
 	expected := "user"
 
@@ -154,6 +161,7 @@ func TestGetOwner(t *testing.T) {
 
 func TestGetProject(t *testing.T) {
 	assert := assert.New(t)
+	t.Log("Test Case 1/1 - Functionality")
 
 	expected := "project"
 
@@ -168,6 +176,7 @@ func TestGetProject(t *testing.T) {
 
 func TestGetTag(t *testing.T) {
 	assert := assert.New(t)
+	t.Log("Test Case 1/1 - Functionality")
 
 	expected := "1.0.0"
 
@@ -182,6 +191,7 @@ func TestGetTag(t *testing.T) {
 
 func TestGetCommitHash(t *testing.T) {
 	assert := assert.New(t)
+	t.Log("Test Case 1/1 - Functionality")
 
 	expected := "123"
 

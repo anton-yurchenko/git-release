@@ -1,8 +1,10 @@
 package app_test
 
 import (
+	"fmt"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/anton-yurchenko/git-release/internal/app"
 	"github.com/anton-yurchenko/git-release/internal/pkg/asset"
@@ -20,318 +22,430 @@ func TestGetConfig(t *testing.T) {
 	assert := assert.New(t)
 	log.SetLevel(log.FatalLevel)
 	fs := afero.NewMemMapFs()
-	rel := new(release.Release)
-	rel.Changes = new(changelog.Changes)
 
-	err := os.Setenv("GITHUB_WORKSPACE", ".")
-	assert.Equal(nil, err, "preparation: error setting env.var 'GITHUB_WORKSPACE'")
-	file, err := fs.Create("CHANGELOG.md")
-	file.Close()
-	assert.Equal(nil, err, "preparation: error creating test file 'CHANGELOG.md'")
-
-	// TEST: missing GITHUB_TOKEN
-	_, _, err = app.GetConfig(rel, rel.Changes, fs, []string{})
-
-	assert.EqualError(err, "'GITHUB_TOKEN' is not defined")
-
-	// TEST: token
-	err = os.Setenv("GITHUB_TOKEN", "value")
-	assert.Equal(nil, err, "preparation: error setting env.var 'GITHUB_TOKEN'")
-
-	expectedToken := "value"
-
-	_, token, err := app.GetConfig(rel, rel.Changes, fs, []string{})
-
-	assert.Equal(expectedToken, token)
-	assert.Equal(nil, err)
-
-	// TEST: Configuration: AllowEmptyChangelog
-	err = os.Setenv("ALLOW_EMPTY_CHANGELOG", "true")
-	assert.Equal(nil, err, "preparation: error setting env.var 'ALLOW_EMPTY_CHANGELOG'")
-
-	rel = new(release.Release)
-	rel.Changes = new(changelog.Changes)
-	expectedConfig := &app.Configuration{
-		AllowEmptyChangelog: true,
-		AllowTagPrefix:      false,
-		IgnoreChangelog:     false,
-	}
-	expectedToken = "value"
-
-	config, token, err := app.GetConfig(rel, rel.Changes, fs, []string{})
-
-	assert.Equal(expectedConfig, config)
-	assert.Equal(expectedToken, token)
-	assert.Equal(nil, err)
-
-	// TEST: Configuration: AllowTagPrefix
-	err = os.Setenv("ALLOW_TAG_PREFIX", "true")
-	assert.Equal(nil, err, "preparation: error setting env.var 'ALLOW_TAG_PREFIX'")
-
-	rel = new(release.Release)
-	rel.Changes = new(changelog.Changes)
-	expectedConfig = &app.Configuration{
-		AllowEmptyChangelog: true,
-		AllowTagPrefix:      true,
-		IgnoreChangelog:     false,
-	}
-	expectedToken = "value"
-
-	config, token, err = app.GetConfig(rel, rel.Changes, fs, []string{})
-
-	assert.Equal(expectedConfig, config)
-	assert.Equal(expectedToken, token)
-	assert.Equal(nil, err)
-
-	// TEST: Configuration: ReleaseName
-	err = os.Setenv("RELEASE_NAME", "CodeName")
-	assert.Equal(nil, err, "preparation: error setting env.var 'RELEASE_NAME'")
-
-	rel = new(release.Release)
-	rel.Changes = new(changelog.Changes)
-	expectedConfig = &app.Configuration{
-		AllowEmptyChangelog: true,
-		AllowTagPrefix:      true,
-		IgnoreChangelog:     false,
-		ReleaseName:         "CodeName",
+	type expected struct {
+		Config  *app.Configuration
+		Token   string
+		Error   string
+		Release *release.Release
 	}
 
-	config, token, err = app.GetConfig(rel, rel.Changes, fs, []string{})
-
-	assert.Equal(expectedConfig, config)
-	assert.Equal(expectedToken, token)
-	assert.Equal(nil, err)
-
-	// TEST: Configuration: ReleaseNamePrefix
-	err = os.Setenv("RELEASE_NAME", "")
-	assert.Equal(nil, err, "preparation: error setting env.var 'RELEASE_NAME'")
-
-	err = os.Setenv("RELEASE_NAME_PREFIX", "Release: ")
-	assert.Equal(nil, err, "preparation: error setting env.var 'RELEASE_NAME'")
-
-	rel = new(release.Release)
-	rel.Changes = new(changelog.Changes)
-	expectedConfig = &app.Configuration{
-		AllowEmptyChangelog: true,
-		AllowTagPrefix:      true,
-		IgnoreChangelog:     false,
-		ReleaseNamePrefix:   "Release: ",
+	type test struct {
+		EnvVars   map[string]string
+		Changelog string
+		Expected  expected
 	}
 
-	config, token, err = app.GetConfig(rel, rel.Changes, fs, []string{})
-
-	assert.Equal(expectedConfig, config)
-	assert.Equal(expectedToken, token)
-	assert.Equal(nil, err)
-
-	// TEST: Configuration: ReleaseNamePrefix + ReleaseNamePostfix
-	err = os.Setenv("RELEASE_NAME_POSTFIX", " (codename: netscape)")
-	assert.Equal(nil, err, "preparation: error setting env.var 'RELEASE_NAME_POSTFIX'")
-
-	rel = new(release.Release)
-	rel.Changes = new(changelog.Changes)
-	expectedConfig = &app.Configuration{
-		AllowEmptyChangelog: true,
-		AllowTagPrefix:      true,
-		IgnoreChangelog:     false,
-		ReleaseNamePrefix:   "Release: ",
-		ReleaseNamePostfix:  " (codename: netscape)",
-	}
-
-	config, token, err = app.GetConfig(rel, rel.Changes, fs, []string{})
-
-	assert.Equal(expectedConfig, config)
-	assert.Equal(expectedToken, token)
-	assert.Equal(nil, err)
-
-	err = os.Unsetenv("RELEASE_NAME_POSTFIX")
-	assert.Equal(nil, err, "cleanup: error unsetting env.var 'RELEASE_NAME_POSTFIX'")
-
-	// TEST: Configuration: ReleaseNamePrefix
-	err = os.Setenv("RELEASE_NAME_PREFIX", "")
-	assert.Equal(nil, err, "preparation: error setting env.var 'RELEASE_NAME_PREFIX'")
-
-	err = os.Setenv("RELEASE_NAME_POSTFIX", " (codename: netscape)")
-	assert.Equal(nil, err, "preparation: error setting env.var 'RELEASE_NAME_POSTFIX'")
-
-	rel = new(release.Release)
-	rel.Changes = new(changelog.Changes)
-	expectedConfig = &app.Configuration{
-		AllowEmptyChangelog: true,
-		AllowTagPrefix:      true,
-		IgnoreChangelog:     false,
-		ReleaseNamePostfix:  " (codename: netscape)",
-	}
-
-	config, token, err = app.GetConfig(rel, rel.Changes, fs, []string{})
-
-	assert.Equal(expectedConfig, config)
-	assert.Equal(expectedToken, token)
-	assert.Equal(nil, err)
-
-	err = os.Unsetenv("RELEASE_NAME_POSTFIX")
-	assert.Equal(nil, err, "cleanup: error unsetting env.var 'RELEASE_NAME_POSTFIX'")
-
-	// TEST: Draft setting
-	err = os.Setenv("DRAFT_RELEASE", "true")
-	assert.Equal(nil, err, "preparation: error setting env.var 'DRAFT_RELEASE'")
-
-	rel = new(release.Release)
-	rel.Changes = new(changelog.Changes)
-	expectedRelease := &release.Release{
-		Draft: true,
-		Changes: &changelog.Changes{
-			File: "./CHANGELOG.md",
+	suite := map[string]test{
+		"Missing Required Env.Var: GITHUB_TOKEN": {
+			EnvVars: map[string]string{
+				"GITHUB_WORKSPACE": ".",
+				"GITHUB_TOKEN":     "",
+			},
+			Changelog: "CHANGELOG.md",
+			Expected: expected{
+				Config: new(app.Configuration),
+				Token:  "",
+				Error:  "'GITHUB_TOKEN' is not defined",
+			},
 		},
-		Assets: []asset.Asset{},
-	}
-
-	_, _, err = app.GetConfig(rel, rel.Changes, fs, []string{})
-
-	assert.Equal(nil, err)
-	assert.Equal(expectedRelease, rel)
-
-	// TEST: PreRelease setting
-	err = os.Setenv("PRE_RELEASE", "true")
-	assert.Equal(nil, err, "preparation: error setting env.var 'PRE_RELEASE'")
-
-	rel = new(release.Release)
-	rel.Changes = new(changelog.Changes)
-	expectedRelease = &release.Release{
-		Draft:      true,
-		PreRelease: true,
-		Changes: &changelog.Changes{
-			File: "./CHANGELOG.md",
+		"Required Env.Var: GITHUB_TOKEN": {
+			EnvVars: map[string]string{
+				"GITHUB_WORKSPACE": ".",
+				"GITHUB_TOKEN":     "abc123",
+			},
+			Changelog: "CHANGELOG.md",
+			Expected: expected{
+				Config: new(app.Configuration),
+				Token:  "abc123",
+			},
 		},
-		Assets: []asset.Asset{},
+		"Configuration: ALLOW_EMPTY_CHANGELOG": {
+			EnvVars: map[string]string{
+				"GITHUB_WORKSPACE":      ".",
+				"GITHUB_TOKEN":          "token",
+				"ALLOW_EMPTY_CHANGELOG": "true",
+			},
+			Changelog: "CHANGELOG.md",
+			Expected: expected{
+				Config: &app.Configuration{
+					AllowEmptyChangelog: true,
+				},
+				Token: "token",
+			},
+		},
+		"Configuration: ALLOW_TAG_PREFIX": {
+			EnvVars: map[string]string{
+				"GITHUB_WORKSPACE": ".",
+				"GITHUB_TOKEN":     "token",
+				"ALLOW_TAG_PREFIX": "true",
+			},
+			Changelog: "CHANGELOG.md",
+			Expected: expected{
+				Config: &app.Configuration{
+					AllowTagPrefix: true,
+				},
+				Token: "token",
+			},
+		},
+		"Configuration: RELEASE_NAME": {
+			EnvVars: map[string]string{
+				"GITHUB_WORKSPACE": ".",
+				"GITHUB_TOKEN":     "token",
+				"RELEASE_NAME":     "text",
+			},
+			Changelog: "CHANGELOG.md",
+			Expected: expected{
+				Config: &app.Configuration{
+					ReleaseName: "text",
+				},
+				Token: "token",
+			},
+		},
+		"Configuration: RELEASE_NAME_PREFIX": {
+			EnvVars: map[string]string{
+				"GITHUB_WORKSPACE":    ".",
+				"GITHUB_TOKEN":        "token",
+				"RELEASE_NAME_PREFIX": "text",
+			},
+			Changelog: "CHANGELOG.md",
+			Expected: expected{
+				Config: &app.Configuration{
+					ReleaseNamePrefix: "text",
+				},
+				Token: "token",
+			},
+		},
+		"Configuration: RELEASE_NAME_POSTFIX": {
+			EnvVars: map[string]string{
+				"GITHUB_WORKSPACE":     ".",
+				"GITHUB_TOKEN":         "token",
+				"RELEASE_NAME_POSTFIX": "text",
+			},
+			Changelog: "CHANGELOG.md",
+			Expected: expected{
+				Config: &app.Configuration{
+					ReleaseNamePostfix: "text",
+				},
+				Token: "token",
+			},
+		},
+		"Configuration: RELEASE_NAME_PREFIX & RELEASE_NAME_POSTFIX": {
+			EnvVars: map[string]string{
+				"GITHUB_WORKSPACE":     ".",
+				"GITHUB_TOKEN":         "token",
+				"RELEASE_NAME_PREFIX":  "text",
+				"RELEASE_NAME_POSTFIX": "text",
+			},
+			Changelog: "CHANGELOG.md",
+			Expected: expected{
+				Config: &app.Configuration{
+					ReleaseNamePrefix:  "text",
+					ReleaseNamePostfix: "text",
+				},
+				Token: "token",
+			},
+		},
+		"Configuration: DRAFT_RELEASE": {
+			EnvVars: map[string]string{
+				"GITHUB_WORKSPACE": ".",
+				"GITHUB_TOKEN":     "token",
+				"DRAFT_RELEASE":    "true",
+			},
+			Changelog: "CHANGELOG.md",
+			Expected: expected{
+				Config: new(app.Configuration),
+				Token:  "token",
+				Release: &release.Release{
+					Assets: make([]asset.Asset, 0),
+					Draft:  true,
+					Changes: &changelog.Changes{
+						File: "./CHANGELOG.md",
+					},
+				},
+			},
+		},
+		"Configuration: PRE_RELEASE": {
+			EnvVars: map[string]string{
+				"GITHUB_WORKSPACE": ".",
+				"GITHUB_TOKEN":     "token",
+				"PRE_RELEASE":      "true",
+			},
+			Changelog: "CHANGELOG.md",
+			Expected: expected{
+				Config: new(app.Configuration),
+				Token:  "token",
+				Release: &release.Release{
+					Assets:     make([]asset.Asset, 0),
+					PreRelease: true,
+					Changes: &changelog.Changes{
+						File: "./CHANGELOG.md",
+					},
+				},
+			},
+		},
+		"Configuration: Ignore Changelog": {
+			EnvVars: map[string]string{
+				"GITHUB_WORKSPACE": ".",
+				"GITHUB_TOKEN":     "token",
+				"CHANGELOG_FILE":   "none",
+			},
+			Changelog: "none",
+			Expected: expected{
+				Config: &app.Configuration{
+					IgnoreChangelog: true,
+				},
+				Token: "token",
+				Release: &release.Release{
+					Assets:  make([]asset.Asset, 0),
+					Changes: new(changelog.Changes),
+				},
+			},
+		},
 	}
 
-	_, _, err = app.GetConfig(rel, rel.Changes, fs, []string{})
+	var counter int
+	for name, test := range suite {
+		counter++
+		t.Logf("Test Case %v/%v - %s", counter, len(suite), name)
 
-	assert.Equal(nil, err)
-	assert.Equal(expectedRelease, rel)
+		// preperations
+		if test.Changelog != "" {
+			_, err := fs.Create(test.Changelog)
+			assert.Equal(nil, err, fmt.Sprintf("preparation: error creating test file '%v'", test.Changelog))
+			time.Sleep(5 * time.Millisecond)
+		}
 
-	// TEST: Configuration: IgnoreChangelog
-	err = os.Setenv("CHANGELOG_FILE", "none")
-	assert.Equal(nil, err, "preparation: error setting env.var 'CHANGELOG_FILE'")
+		for variable, value := range test.EnvVars {
+			err := os.Setenv(variable, value)
+			assert.Equal(nil, err, fmt.Sprintf("preparation: error setting environment variable '%v=%v'", variable, value))
+		}
 
-	rel = new(release.Release)
-	rel.Changes = new(changelog.Changes)
-	expectedConfig = &app.Configuration{
-		AllowEmptyChangelog: true,
-		AllowTagPrefix:      true,
-		IgnoreChangelog:     true,
+		// test
+		rel := new(release.Release)
+		rel.Changes = new(changelog.Changes)
+
+		config, token, err := app.GetConfig(rel, rel.Changes, fs, []string{})
+
+		assert.Equal(test.Expected.Config, config)
+		assert.Equal(test.Expected.Token, token)
+		if test.Expected.Error != "" {
+			assert.EqualError(err, test.Expected.Error)
+		}
+		if test.Expected.Release != nil {
+			assert.Equal(test.Expected.Release, rel)
+		}
+
+		// cleanup
+		for variable := range test.EnvVars {
+			err := os.Unsetenv(variable)
+			assert.Equal(nil, err, fmt.Sprintf("preparation: error unsetting environment variable '%v'", variable))
+		}
+
+		if test.Changelog != "" {
+			os.Remove(test.Changelog)
+			time.Sleep(5 * time.Millisecond)
+		}
 	}
-	expectedToken = "value"
-
-	config, token, err = app.GetConfig(rel, rel.Changes, fs, []string{})
-
-	assert.Equal(expectedConfig, config)
-	assert.Equal(expectedToken, token)
-	assert.Equal(nil, err)
 }
 
 func TestHydrate(t *testing.T) {
 	assert := assert.New(t)
 
-	m := new(mocks.Repository)
-	c := new(app.Configuration)
-	v := "1.0.0"
-	n := "v1.0.0"
+	type test struct {
+		Config               app.Configuration
+		Release              release.Release
+		Tag                  string
+		ReadProjectNameError error
+		ReadCommitHashError  error
+		ReadTagError         error
+		GetTagResult         string
+		ExpectedError        string
+	}
 
-	m.On("ReadProjectName").Return(nil).Once()
-	m.On("ReadCommitHash").Return(nil).Once()
-	m.On("ReadTag", &v, false).Return(nil).Once()
-	m.On("GetTag").Return(&n).Once()
+	suite := map[string]test{
+		"Functionality": {
+			Config: app.Configuration{},
+			Release: release.Release{
+				Changes: new(changelog.Changes),
+			},
+			Tag:                  "v1.0.0",
+			ReadProjectNameError: nil,
+			ReadCommitHashError:  nil,
+			ReadTagError:         nil,
+			ExpectedError:        "",
+		},
+		"ReadProjectName Error": {
+			Config: app.Configuration{},
+			Release: release.Release{
+				Changes: new(changelog.Changes),
+			},
+			Tag:                  "v1.0.0",
+			ReadProjectNameError: errors.New("error"),
+			ReadCommitHashError:  nil,
+			ReadTagError:         nil,
+			ExpectedError:        "error",
+		},
+		"ReadCommitHash Error": {
+			Config: app.Configuration{},
+			Release: release.Release{
+				Changes: new(changelog.Changes),
+			},
+			Tag:                  "v1.0.0",
+			ReadProjectNameError: nil,
+			ReadCommitHashError:  errors.New("error"),
+			ReadTagError:         nil,
+			ExpectedError:        "error",
+		},
+		"ReadTag Error": {
+			Config: app.Configuration{},
+			Release: release.Release{
+				Changes: new(changelog.Changes),
+			},
+			Tag:                  "v1.0.0",
+			ReadProjectNameError: nil,
+			ReadCommitHashError:  nil,
+			ReadTagError:         errors.New("error"),
+			ExpectedError:        "error",
+		},
+		"Empty Release Name": {
+			Config: app.Configuration{},
+			Release: release.Release{
+				Changes: new(changelog.Changes),
+			},
+			Tag:                  "v1.0.0",
+			ReadProjectNameError: nil,
+			ReadCommitHashError:  nil,
+			ReadTagError:         nil,
+			ExpectedError:        "",
+		},
+		"Release Name with Prefix": {
+			Config: app.Configuration{
+				ReleaseNamePrefix: "Prefix",
+			},
+			Release: release.Release{
+				Changes: new(changelog.Changes),
+			},
+			Tag:                  "v1.0.0",
+			ReadProjectNameError: nil,
+			ReadCommitHashError:  nil,
+			ReadTagError:         nil,
+			ExpectedError:        "",
+		},
+		"Release Name with Postfix": {
+			Config: app.Configuration{
+				ReleaseNamePostfix: "Postfix",
+			},
+			Release: release.Release{
+				Changes: new(changelog.Changes),
+			},
+			Tag:                  "v1.0.0",
+			ReadProjectNameError: nil,
+			ReadCommitHashError:  nil,
+			ReadTagError:         nil,
+			ExpectedError:        "",
+		},
+		"Release Name with Prefix and Postfix": {
+			Config: app.Configuration{
+				ReleaseNamePrefix:  "Prefix",
+				ReleaseNamePostfix: "Postfix",
+			},
+			Release: release.Release{
+				Changes: new(changelog.Changes),
+			},
+			Tag:                  "v1.0.0",
+			ReadProjectNameError: nil,
+			ReadCommitHashError:  nil,
+			ReadTagError:         nil,
+			ExpectedError:        "",
+		},
+	}
 
-	err := c.Hydrate(m, &v, &n)
+	var counter int
+	for name, test := range suite {
+		counter++
+		t.Logf("Test Case %v/%v - %s", counter, len(suite), name)
 
-	assert.Equal(nil, err)
+		m := new(mocks.Repository)
+		m.On("ReadProjectName").Return(test.ReadProjectNameError).Once()
+		m.On("ReadCommitHash").Return(test.ReadCommitHashError).Once()
+		m.On("ReadTag", &test.Release.Changes.Version, false).Return(test.ReadTagError).Once()
+		m.On("GetTag").Return(&test.Tag).Once()
 
-	// TEST: ReadProjectName error
-	m = new(mocks.Repository)
-	c = new(app.Configuration)
+		err := test.Config.Hydrate(m, &test.Release.Changes.Version, &test.Release.Name)
 
-	m.On("ReadProjectName").Return(errors.New("failure1")).Once()
-	m.On("ReadCommitHash").Return(nil).Once()
-	m.On("ReadTag", &v, false).Return(nil).Once()
-	m.On("GetTag").Return(&n).Once()
+		if test.ExpectedError != "" {
+			assert.EqualError(err, test.ExpectedError)
+			assert.Equal("", test.Release.Changes.Version)
+			assert.Equal("", test.Release.Name)
+		} else {
+			assert.Equal(nil, err)
 
-	err = c.Hydrate(m, &v, &n)
-
-	assert.EqualError(err, "failure1")
-
-	// TEST: ReadCommitHash error
-	m = new(mocks.Repository)
-	c = new(app.Configuration)
-
-	m.On("ReadProjectName").Return(nil).Once()
-	m.On("ReadCommitHash").Return(errors.New("failure2")).Once()
-	m.On("ReadTag", &v, false).Return(nil).Once()
-	m.On("GetTag").Return(&n).Once()
-
-	err = c.Hydrate(m, &v, &n)
-
-	assert.EqualError(err, "failure2")
-
-	// TEST: ReadTag error
-	m = new(mocks.Repository)
-	c = new(app.Configuration)
-
-	m.On("ReadProjectName").Return(nil).Once()
-	m.On("ReadCommitHash").Return(nil).Once()
-	m.On("ReadTag", &v, false).Return(errors.New("failure3")).Once()
-	m.On("GetTag").Return(&n).Once()
-
-	err = c.Hydrate(m, &v, &n)
-
-	assert.EqualError(err, "failure3")
+			if test.Config.ReleaseName != "" {
+				assert.Equal(test.Release.Name, test.Config.ReleaseName)
+			} else if test.Config.ReleaseNamePrefix != "" || test.Config.ReleaseNamePostfix != "" {
+				assert.Equal(fmt.Sprintf("%v%v%v", test.Config.ReleaseNamePrefix, test.Tag, test.Config.ReleaseNamePostfix), test.Release.Name)
+			} else {
+				assert.Equal(test.Release.Name, test.Tag)
+			}
+		}
+	}
 }
 
 func TestGetReleaseBody(t *testing.T) {
 	assert := assert.New(t)
-
-	// TEST: valid content
-	m := new(mocks.Changelog)
 	fs := afero.NewMemMapFs()
-	conf := new(app.Configuration)
-
-	m.On("ReadChanges", fs).Return(nil).Once()
-	m.On("GetBody").Return("content").Once()
-
-	err := conf.GetReleaseBody(m, fs)
-
-	assert.Equal(nil, err)
-
-	// TEST: empty content and AllowEmptyChangelog is enabled
-	m = new(mocks.Changelog)
-	fs = afero.NewMemMapFs()
-	conf = &app.Configuration{
-		AllowEmptyChangelog: false,
-	}
-
-	m.On("ReadChanges", fs).Return(nil).Once()
-	m.On("GetBody").Return("").Once()
-
-	err = conf.GetReleaseBody(m, fs)
-
-	assert.EqualError(err, "changelog does not contain changes for requested project version")
-
-	// TEST: changelog error
 	log.SetLevel(log.FatalLevel)
-	m = new(mocks.Changelog)
-	fs = afero.NewMemMapFs()
-	conf = &app.Configuration{
-		AllowEmptyChangelog: true,
+
+	type test struct {
+		Config           app.Configuration
+		ReadChangesError error
+		GetBodyResult    string
+		ExpectedError    string
 	}
 
-	m.On("ReadChanges", fs).Return(errors.New("failure")).Once()
-	m.On("GetBody").Return("").Once()
+	suite := map[string]test{
+		"Functionality": {
+			Config:           app.Configuration{},
+			ReadChangesError: nil,
+			GetBodyResult:    "content",
+			ExpectedError:    "",
+		},
+		"Empty Content with AllowEmptyChangelog Enabled": {
+			Config: app.Configuration{
+				AllowEmptyChangelog: false,
+			},
+			ReadChangesError: nil,
+			GetBodyResult:    "",
+			ExpectedError:    "changelog does not contain changes for requested project version",
+		},
+		"Changelog Error": {
+			Config: app.Configuration{
+				AllowEmptyChangelog: false,
+			},
+			ReadChangesError: errors.New("error"),
+			GetBodyResult:    "content",
+			ExpectedError:    "error",
+		},
+	}
 
-	err = conf.GetReleaseBody(m, fs)
+	var counter int
+	for name, test := range suite {
+		counter++
+		t.Logf("Test Case %v/%v - %s", counter, len(suite), name)
 
-	assert.EqualError(err, "failure")
+		m := new(mocks.Changelog)
+		m.On("ReadChanges", fs).Return(test.ReadChangesError).Once()
+		m.On("GetBody").Return(test.GetBodyResult).Once()
 
+		err := test.Config.GetReleaseBody(m, fs)
+
+		if test.ExpectedError != "" {
+			assert.EqualError(err, test.ExpectedError)
+		} else {
+			assert.Equal(nil, err)
+		}
+	}
 }
 
 func TestPublish(t *testing.T) {
@@ -339,6 +453,8 @@ func TestPublish(t *testing.T) {
 	log.SetLevel(log.FatalLevel)
 
 	// TEST: no exec errors
+	t.Log("Test Case 1/1 - Functionality")
+
 	m := new(mocks.Release)
 	svc := new(mocks.GitHub)
 	repo := new(repository.Repository)
