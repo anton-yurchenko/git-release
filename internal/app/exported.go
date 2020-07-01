@@ -199,7 +199,7 @@ func (c *Configuration) Publish(repo repository.Interface, release release.Inter
 	}
 
 	if failure {
-		log.Fatal("error uploading assets (release partly published)")
+		log.Fatal("error uploading assets (release partially published)")
 	}
 
 	return nil
