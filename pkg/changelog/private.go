@@ -104,6 +104,10 @@ func (c *Changes) GetMargins(content []string) map[string]int {
 func GetContent(margins map[string]int, content []string) []string {
 	releseContent := make([]string, 0)
 
+	if margins["start"] > len(content) || margins["end"] > len(content) {
+		return releseContent
+	}
+
 	for i := margins["start"]; i < margins["end"]; i++ {
 		releseContent = append(releseContent, content[i])
 	}
