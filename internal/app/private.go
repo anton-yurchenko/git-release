@@ -36,15 +36,16 @@ func GetAssets(fs afero.Fs, args []string) []asset.Asset {
 		}
 
 		for _, file := range files {
-			asset := asset.Asset{
-				Name: filepath.Base(file),
-				Path: file,
-			}
+			if file != "." {
+				asset := asset.Asset{
+					Name: filepath.Base(file),
+					Path: file,
+				}
 
-			assets = append(assets, asset)
+				assets = append(assets, asset)
+			}
 		}
 	}
-
 	return assets
 }
 
