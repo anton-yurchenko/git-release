@@ -9,7 +9,7 @@ import (
 
 	"github.com/anton-yurchenko/git-release/internal/pkg/interfaces"
 	"github.com/anton-yurchenko/git-release/internal/pkg/repository"
-	"github.com/google/go-github/github"
+	"github.com/google/go-github/v32/github"
 )
 
 // Asset represents a single release artifact

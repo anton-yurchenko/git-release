@@ -10,7 +10,7 @@ import (
 	"github.com/anton-yurchenko/git-release/internal/pkg/release"
 	"github.com/anton-yurchenko/git-release/internal/pkg/repository"
 	"github.com/anton-yurchenko/git-release/pkg/changelog"
-	"github.com/google/go-github/github"
+	"github.com/google/go-github/v32/github"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
