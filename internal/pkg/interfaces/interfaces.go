@@ -4,7 +4,7 @@ import (
 	"context"
 	"os"
 
-	"github.com/google/go-github/github"
+	"github.com/google/go-github/v32/github"
 )
 
 // GitHub is a 'github.client' interface
