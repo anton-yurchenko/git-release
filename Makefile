@@ -50,8 +50,21 @@ build: test
 codecov: test
 	@go tool cover -html=coverage.txt
 
+GO_VER := $$(grep -oE "const Version string = \"[0-9]+.[0-9]+.[0-9]+\"" main.go | tr -d 'const Version string = "')
+DOCKER_VER := $$(grep -oE "LABEL \"version\"=\"[0-9]+.[0-9]+.[0-9]+\"" Dockerfile | tr -d 'LABEL "version"="')
 .PHONY: release
 release: build
+	@if [ "${tag}" != "${DOCKER_VER}" ] || [ "${tag}" != "${DOCKER_VER}" ]; then\
+		echo "---> Inconsistent Versioning!";\
+		echo "git tag:		${tag}";\
+		echo "main.go version:	${GO_VER}";\
+		echo "Dockerfile version:	${DOCKER_VER}";\
+		exit 1;\
+	fi
+	@echo "CAUGHT IT :-)"
+	@exit 1
+	@git add -A
+	@git commit -m $(tag)
 	@git push
 	@git tag $(tag)
-	@git push --tags
+	@git push origin $(tag)

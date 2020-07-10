@@ -12,6 +12,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// Version of an application
+const Version string = "3.3.0"
+
 func init() {
 	log.SetReportCaller(false)
 	log.SetFormatter(&log.TextFormatter{
@@ -22,6 +25,8 @@ func init() {
 	})
 	log.SetOutput(os.Stdout)
 	log.SetLevel(log.InfoLevel)
+
+	log.Info("'git-release' version: ", Version)
 }
 
 func main() {
