@@ -13,7 +13,7 @@ import (
 )
 
 // Version of an application
-const Version string = "3.3.0"
+const Version string = "3.4.0"
 
 func init() {
 	log.SetReportCaller(false)
@@ -26,7 +26,7 @@ func init() {
 	log.SetOutput(os.Stdout)
 	log.SetLevel(log.InfoLevel)
 
-	log.Info("'git-release' version: ", Version)
+	log.Info("version: ", Version)
 }
 
 func main() {

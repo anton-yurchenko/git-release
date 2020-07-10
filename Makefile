@@ -52,13 +52,15 @@ codecov: test
 
 GO_VER := $$(grep -oE "const Version string = \"[0-9]+.[0-9]+.[0-9]+\"" main.go | tr -d 'const Version string = "')
 DOCKER_VER := $$(grep -oE "LABEL \"version\"=\"[0-9]+.[0-9]+.[0-9]+\"" Dockerfile | tr -d 'LABEL "version"="')
+JS_VER := $$(jq -r '.version' package.json)
 .PHONY: release
 release: build
-	@if [ "${tag}" != "${DOCKER_VER}" ] || [ "${tag}" != "${DOCKER_VER}" ]; then\
+	@if [ "${tag}" != "${DOCKER_VER}" ] || [ "${tag}" != "${DOCKER_VER}" ] || [ "${tag}" != "${JS_VER}" ]; then\
 		echo "---> Inconsistent Versioning!";\
 		echo "git tag:		${tag}";\
 		echo "main.go version:	${GO_VER}";\
 		echo "Dockerfile version:	${DOCKER_VER}";\
+		echo "package.json version:	${JS_VER}";\
 		exit 1;\
 	fi
 	@git add -A
