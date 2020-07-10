@@ -2,6 +2,7 @@
 .circleci/
 .vscode/
 .idea/
+build/
 docs/
 action.yml
 .gitignore

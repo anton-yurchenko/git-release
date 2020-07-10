@@ -63,6 +63,7 @@ release: build
 		echo "package.json version:	${JS_VER}";\
 		exit 1;\
 	fi
+	@echo $$(date +"%Y-%m-%dT%H:%M:%S") > .github/release_timestamp
 	@git add -A
 	@git commit -m $(tag)
 	@git push
