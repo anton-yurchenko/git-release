@@ -1,3 +1,16 @@
+## [3.4.0] - 2020-07-10
+### Added
+- Glob pattern support
+- Unit Tests
+- Log version
+
+### Fixed
+- Exception on margins larger than context of changelog
+- Nil pointer exception in 'release' package
+
+### Changed
+- Refactor JavaScript wrapper
+
 ## [3.3.0] - 2020-06-27
 ### Added
 - Wrapper script: allow execution on Windows runners
