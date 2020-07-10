@@ -61,8 +61,6 @@ release: build
 		echo "Dockerfile version:	${DOCKER_VER}";\
 		exit 1;\
 	fi
-	@echo "CAUGHT IT :-)"
-	@exit 1
 	@git add -A
 	@git commit -m $(tag)
 	@git push
