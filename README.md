@@ -96,9 +96,9 @@ Example:
         ALLOW_TAG_PREFIX: "true"
       with:
         args: |
-            build/darwin-amd64.zip
-            build/linux-amd64.zip
-            build/windows-amd64.zip
+            build\\darwin-amd64.zip
+            build\\linux-amd64.zip
+            build\\windows-amd64.zip
 ```
 
 </details>
