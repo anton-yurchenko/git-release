@@ -30,7 +30,7 @@ jobs:
         run: go test $(go list ./... | grep -v vendor | grep -v mocks) -race -coverprofile=coverage.txt -covermode=atomic
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v1.0.10
+        uses: codecov/codecov-action@v1.0.12
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: ./coverage.txt
