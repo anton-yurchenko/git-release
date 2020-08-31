@@ -41,7 +41,7 @@ A **GitHub Action** for creating a **GitHub Release** with **Assets** and **Chan
 ```
 
 2. Tag a commit with Version (according to [semver.org](https://semver.org/ "Semantic Versioning")).
-3. Push and watch **Git-Release** publishing a Release on GitHub ;-)  
+3. Push and watch **Git-Release** publishing a Release on GitHub :wink:  
 ![PIC](docs/images/log.png)
 
 ## Configuration
