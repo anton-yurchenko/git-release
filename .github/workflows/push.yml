@@ -1,6 +1,6 @@
-name: pull-request
+name: push
 on:
-  pull_request:
+  push:
     branches:
       - master
 
@@ -40,8 +40,8 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: ./coverage.txt
-          flags: tests
-          name: pull-request
+          flags: coverage
+          name: commit
           fail_ci_if_error: true
 
   analyze:
@@ -50,11 +50,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-        with:
-          fetch-depth: 2
-
-      - run: git checkout HEAD^2
-        if: ${{ github.event_name == 'pull_request' }}
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v1

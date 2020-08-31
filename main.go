@@ -13,7 +13,7 @@ import (
 )
 
 // Version of an application
-const Version string = "3.4.0"
+const Version string = "3.4.1"
 
 func init() {
 	log.SetReportCaller(false)

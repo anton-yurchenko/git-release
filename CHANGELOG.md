@@ -1,3 +1,7 @@
+## [3.4.1] - 2020-08-31
+### Changed
+- Update Dependencies
+
 ## [3.4.0] - 2020-07-10
 ### Added
 - Glob pattern support
