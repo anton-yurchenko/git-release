@@ -117,7 +117,7 @@ Example:
 
 ## Remarks
 
-- **Git Tag** should be identical to **Changelog Version** in order for changes to be parsed properly. This does not include **Tag Prefix** like `v*`.
+- **Git Tag** should be identical to **Changelog Version** (without prefixes), for example **tag** `v1.0.0` and **changelog version** `1.0.0`.
 - This action is automatically built at **Docker Hub**, and tagged with `latest / v3 / v3.4 / v3.4.1`. You may lock to a certain version instead of using **latest**.  
 (*Recommended to lock against a major version, for example* `v3`)
 - Instead of using a pre-built Docker image, you may execute the action through JavaScript wrapper by changing `docker://antonyurchenko/git-release:latest` to `anton-yurchenko/git-release@master`
