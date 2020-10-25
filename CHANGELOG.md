@@ -1,3 +1,8 @@
+## [3.4.2] - 2020-10-25
+### Changed
+- Update Dependencies
+- Make `version` output more specific
+
 ## [3.4.1] - 2020-08-31
 ### Changed
 - Update Dependencies
@@ -24,17 +29,19 @@
 
 ## [3.2.0] - 2020-06-04
 ### Fixed
-- Ignored `ALLOW_EMPTY_CHANGELOG=true` failed to create a release.
+- Ignored `ALLOW_EMPTY_CHANGELOG=true` failed to create a release
 
 ### Added
-- `CHANGELOG_FILE=none` will skip changelog file validation. This allows to create a release from empty workspace.
+- `CHANGELOG_FILE=none` will skip changelog file validation. This allows to create a release from empty workspace
+
+### Changed
 - Upgrade GoLang to 1.14.4
 - Upgrade dependencies
 
 ## [3.1.2] - 2020-04-10
 ### Fixed
 - [Issue #16](https://github.com/anton-yurchenko/git-release/issues/16) - Error parsing tags with slashes. (*Thanks to [Jonathan Hilgart](https://github.com/jonhilgart22)*)
-- Support `.` in organization and repository names.
+- Support `.` in organization and repository names
 
 ## [3.1.1] - 2020-03-25
 ### Fixed
@@ -83,7 +90,7 @@ This is a major release because of a certain behavior change:
 - Disable unit testing on Docker Hub auto builds
 
 ## [2.0.0] - 2019-12-28
-This is a major release as most of the code was refactored and some behavior was changed, for example "Tag version is set as a release title".
+This is a major release as most of the code was refactored and some behavior was changed, for example "Tag version is set as a release title"
 
 ### Fixed
 - Artifact files not found caused panic - all files now being validated before release creation
@@ -92,7 +99,7 @@ This is a major release as most of the code was refactored and some behavior was
 
 ### Added
 - Unit testing
-- Docker image now built from scratch, resulting in decreased size 139.73MB -> 2.43MB, improving action overall speed.
+- Docker image now built from scratch, resulting in decreased size 139.73MB -> 2.43MB, improving action overall speed
 - **app** package
 - `ALLOW_EMPTY_CHANGELOG` env.var to allow publishing a release without changelog (default **false**)
 - Artifacts (provided as arguments) can now be separated by one of: `new line '\n', pipe '|', space ' ', comma ','`
@@ -110,36 +117,55 @@ This is a major release as most of the code was refactored and some behavior was
 - [PR #3](https://github.com/anton-yurchenko/git-release/pull/3) - PreRelease overwriting Draft configuration. (*Thanks to [Taylor Becker](https://github.com/tajobe) for reporting an issue*)
 
 ## [1.0.0] - 2019-10-01
-- First stable release.
+- First stable release
 
 ## [0.2.1] - 2019-10-01
 ### Fixed
-- Wrong PRE_RELEASE message when set.
-- Correct 'creating release' log message.
+- Wrong PRE_RELEASE message when set
+- Correct 'creating release' log message
 
 ## [0.2.0] - 2019-10-01
 ### Added
-- Changelog reader.
-- MIT License.
+- Changelog reader
+- MIT License
 
 ### Changed
-- Remove 'v' from release name.
+- Remove 'v' from release name
 
 ### Fixed
-- Create release without assets.
+- Create release without assets
 
 ## [0.1.1] - 2019-09-29
 ### Added
-- Tag regex to match v1.0.0 and 1.0.0.
-- Log when procedure finished.
+- Tag regex to match v1.0.0 and 1.0.0
+- Log when procedure finished
 
 ### Removed
-- 'DRAFT_RELEASE=false' warning logging.
-- 'PRE_RELEASE=false' warning logging.
+- 'DRAFT_RELEASE=false' warning logging
+- 'PRE_RELEASE=false' warning logging
 
 ## [0.1.0] - 2019-09-29
 ### Added
-- Create GitHub Release.
-- Upload Assets.
-- Control Release Draft through env.var 'DRAFT_RELEASE'.
-- Control Release Pre Release through env.var 'PRE_RELEASE'.
+- Create GitHub Release
+- Upload Assets
+- Control Release Draft through env.var 'DRAFT_RELEASE'
+- Control Release Pre Release through env.var 'PRE_RELEASE'
+
+[3.4.2]: https://github.com/anton-yurchenko/git-release/compare/v3.4.1...v3.4.2
+[3.4.1]: https://github.com/anton-yurchenko/git-release/compare/v3.4.0...v3.4.1
+[3.4.0]: https://github.com/anton-yurchenko/git-release/compare/v3.3.0...v3.4.0
+[3.3.0]: https://github.com/anton-yurchenko/git-release/compare/v3.2.0...v3.3.0
+[3.2.0]: https://github.com/anton-yurchenko/git-release/compare/v3.1.2...v3.2.0
+[3.1.2]: https://github.com/anton-yurchenko/git-release/compare/v3.1.1...v3.1.2
+[3.1.1]: https://github.com/anton-yurchenko/git-release/compare/v3.1.0...v3.1.1
+[3.1.0]: https://github.com/anton-yurchenko/git-release/compare/v3.0.1...v3.1.0
+[3.0.1]: https://github.com/anton-yurchenko/git-release/compare/v2.0.2...v3.0.1
+[2.0.2]: https://github.com/anton-yurchenko/git-release/compare/v2.0.1...v2.0.2
+[2.0.1]: https://github.com/anton-yurchenko/git-release/compare/v2.0.0...v2.0.1
+[2.0.0]: https://github.com/anton-yurchenko/git-release/compare/v1.1.0...v2.0.0
+[1.1.0]: https://github.com/anton-yurchenko/git-release/compare/v1.0.0...v1.1.0
+[1.0.0]: https://github.com/anton-yurchenko/git-release/compare/v0.2.1...v1.0.0
+[0.2.1]: https://github.com/anton-yurchenko/git-release/compare/v0.2.0...v0.2.1
+[0.2.0]: https://github.com/anton-yurchenko/git-release/compare/v0.1.1...v0.2.0
+[0.1.1]: https://github.com/anton-yurchenko/git-release/compare/v0.1.0...v0.1.1
+[0.1.0]: https://github.com/anton-yurchenko/git-release/releases/tag/v0.1.0

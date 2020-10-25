@@ -22,22 +22,32 @@ A **GitHub Action** for creating a **GitHub Release** with **Assets** and **Chan
 
 ## Manual
 
-1. Add changes to `CHANGELOG.md` in the following format (according to [keepachangelog.com](https://keepachangelog.com/en/1.0.0/ "Keep a ChangeLog")):
+1. Add changes to `CHANGELOG.md` according to [keepachangelog.com](https://keepachangelog.com/en/1.0.0/ "Keep a ChangeLog").
+*For example:*
 
 ```markdown
-## [3.1.0-rc.1] - 2019-12-21
+## [3.4.0] - 2020-07-10
 ### Added
-- Feature A
-- Feature B
-- GitHub Actions as a CI system
-- GitHub Release as an Artifactory system
+- Glob pattern support
+- Unit Tests
+- Log version
+
+### Fixed
+- Exception on margins larger than context of changelog
+- Nil pointer exception in 'release' package
 
 ### Changed
-- User API
+- Refactor JavaScript wrapper
 
-### Removed
-- Previous CI build
-- Previous Artifactory
+## [3.3.0] - 2020-06-27
+### Added
+- Wrapper script: allow execution on Windows runners
+
+### Changed
+- Action execution through Git: from Docker to NodeJS
+
+[3.4.0]: https://github.com/anton-yurchenko/git-release/compare/v3.3.0...v3.4.0
+[3.3.0]: https://github.com/anton-yurchenko/git-release/releases/tag/v3.3.0
 ```
 
 2. Tag a commit with Version (according to [semver.org](https://semver.org/ "Semantic Versioning")).
