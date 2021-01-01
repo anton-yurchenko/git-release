@@ -39,7 +39,7 @@ func (r *Repository) ReadTag(version *string, allowPrefix bool) error {
 
 	var expression string
 	if allowPrefix {
-		expression = fmt.Sprintf("^refs/tags/(?P<prefix>.*)%v$", semver)
+		expression = fmt.Sprintf("^refs/tags/(?P<prefix>.*?)%v$", semver)
 	} else {
 		expression = fmt.Sprintf("^refs/tags/%v$", semver)
 	}
