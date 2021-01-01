@@ -31,7 +31,7 @@ func TestReadTag(t *testing.T) {
 			Ref:           "v1.0.0",
 			Version:       "1.0.0",
 			AllowPrefix:   true,
-			ExpectedError: "malformed env.var 'GITHUB_REF' (control tag prefix via env.var 'ALLOW_TAG_PREFIX'): expected to match regex '^refs/tags/(?P<prefix>.*)(?P<major>0|[1-9]\\d*)\\.(?P<minor>0|[1-9]\\d*)\\.(?P<patch>0|[1-9]\\d*)(?:(?P<sep1>-)(?P<prerelease>(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:(?P<sep2>\\+)(?P<buildmetadata>[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$', got 'v1.0.0'",
+			ExpectedError: "malformed env.var 'GITHUB_REF' (control tag prefix via env.var 'ALLOW_TAG_PREFIX'): expected to match regex '^refs/tags/(?P<prefix>.*?)(?P<major>0|[1-9]\\d*)\\.(?P<minor>0|[1-9]\\d*)\\.(?P<patch>0|[1-9]\\d*)(?:(?P<sep1>-)(?P<prerelease>(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:(?P<sep2>\\+)(?P<buildmetadata>[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$', got 'v1.0.0'",
 		},
 		"Missing Environment Variable": {
 			Ref:           "",
