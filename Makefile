@@ -34,8 +34,8 @@ $(GO_LINTER):
 
 .PHONY: build
 build: test
-	@rm -rf ./release
-	@mkdir -p release
+	@rm -rf ./build
+	@mkdir -p build
 	@for ARCH in $(ARCHS); do \
 		for OS in $(OSES); do \
 			if test "$$OS" = "windows"; then \
