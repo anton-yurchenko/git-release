@@ -86,7 +86,7 @@ func GetConfig(release release.Interface, changes changelog.Interface, fs afero.
 	} else if os.Getenv("RELEASE_NAME_POSTFIX") != "" { // NOTE: backward compatibility before upcoming deprecation
 		rNameSuffix = os.Getenv("RELEASE_NAME_POSTFIX")
 		log.Warnf("'RELEASE_NAME_POSTFIX' is set to '%v'", rNameSuffix)
-		log.Warn("'RELEASE_NAME_POSTFIX' will be deprecated in the next release, please change to `RELEASE_NAME_SUFFIX`")
+		log.Error("'RELEASE_NAME_POSTFIX' will be deprecated in the next release, please change to `RELEASE_NAME_SUFFIX`")
 		conf.ReleaseNameSuffix = rNameSuffix
 	}
 
