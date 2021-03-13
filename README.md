@@ -131,6 +131,7 @@ Example:
 - This action is automatically built at **Docker Hub**, and tagged with `latest / v3 / v3.4 / v3.4.1`. You may lock to a certain version instead of using **latest**.  
 (*Recommended to lock against a major version, for example* `v3`)
 - Instead of using a pre-built Docker image, you may execute the action through JavaScript wrapper by changing `docker://antonyurchenko/git-release:latest` to `anton-yurchenko/git-release@master`
+- `git-release` operates assets with pattern matching, this means that it is unable to validate whether an asset exists or not.
 
 ## License
 

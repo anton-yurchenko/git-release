@@ -1,3 +1,11 @@
+## [3.4.4] - 2021-03-13
+
+### Changed
+- Update Dependencies
+
+### Deprecated
+- `RELEASE_NAME_POSTFIX` will be changed to `RELEASE_NAME_SUFFIX` in the next release
+
 ## [3.4.3] - 2021-01-02
 ### Fixed
 - [PR #38](https://github.com/anton-yurchenko/git-release/pull/38) - Version prefix greedy quantifier caused incorrect parsing of major version higher then `9`. (*Thanks to [rgriebl](https://github.com/rgriebl)*)
@@ -158,6 +166,7 @@ This is a major release as most of the code was refactored and some behavior was
 - Control Release Draft through env.var 'DRAFT_RELEASE'
 - Control Release Pre Release through env.var 'PRE_RELEASE'
 
+[3.4.4]: https://github.com/anton-yurchenko/git-release/compare/v3.4.3...v3.4.4
 [3.4.3]: https://github.com/anton-yurchenko/git-release/compare/v3.4.2...v3.4.3
 [3.4.2]: https://github.com/anton-yurchenko/git-release/compare/v3.4.1...v3.4.2
 [3.4.1]: https://github.com/anton-yurchenko/git-release/compare/v3.4.0...v3.4.1
