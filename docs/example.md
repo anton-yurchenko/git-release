@@ -104,8 +104,8 @@ jobs:
 
 </details>
 
-## Release title with postfix:
-![PIC](images/example-postfix.png)
+## Release title with suffix:
+![PIC](images/example-suffix.png)
 
 <details><summary>Workflow</summary>
 
@@ -133,7 +133,7 @@ jobs:
           CHANGELOG_FILE: "CHANGELOG.md"
           ALLOW_EMPTY_CHANGELOG: "false"
           ALLOW_TAG_PREFIX: "false"
-          RELEASE_NAME_POSTFIX: " (nightly build)"
+          RELEASE_NAME_SUFFIX: " (nightly build)"
         with:
           args: |
             darwin-amd64.zip
@@ -143,8 +143,8 @@ jobs:
 
 </details>
 
-## Release title with prefix and postfix:
-![PIC](images/example-prefix-postfix.png)
+## Release title with prefix and suffix:
+![PIC](images/example-prefix-suffix.png)
 
 <details><summary>Workflow</summary>
 
@@ -165,9 +165,9 @@ jobs:
 
       - run: |
           export PREFIX="Release: "
-          export POSTFIX=" (Codename: 'Ragnarok')"
+          export SUFFIX=" (Codename: 'Ragnarok')"
           echo "::set-env name=RELEASE_NAME_PREFIX::$PREFIX"
-          echo "::set-env name=RELEASE_NAME_POSTFIX::$POSTFIX"
+          echo "::set-env name=RELEASE_NAME_SUFFIX::$SUFFIX"
 
       - name: Release
         uses: docker://antonyurchenko/git-release:latest

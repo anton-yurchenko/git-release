@@ -24,7 +24,7 @@ type Configuration struct {
 	AllowTagPrefix      bool
 	ReleaseName         string
 	ReleaseNamePrefix   string
-	ReleaseNamePostfix  string
+	ReleaseNameSuffix   string
 }
 
 // GetConfig sets validated Release/Changelog configuration and returns github.com Token
@@ -79,14 +79,19 @@ func GetConfig(release release.Interface, changes changelog.Interface, fs afero.
 		conf.ReleaseNamePrefix = rNamePrefix
 	}
 
-	rNamePostfix := os.Getenv("RELEASE_NAME_POSTFIX")
-	if rNamePostfix != "" {
-		log.Warnf("'RELEASE_NAME_POSTFIX' is set to '%v'", rNamePostfix)
-		conf.ReleaseNamePostfix = rNamePostfix
+	rNameSuffix := os.Getenv("RELEASE_NAME_SUFFIX")
+	if rNameSuffix != "" {
+		log.Warnf("'RELEASE_NAME_SUFFIX' is set to '%v'", rNameSuffix)
+		conf.ReleaseNameSuffix = rNameSuffix
+	} else if os.Getenv("RELEASE_NAME_POSTFIX") != "" { // NOTE: backward compatibility before upcoming deprecation
+		rNameSuffix = os.Getenv("RELEASE_NAME_POSTFIX")
+		log.Warnf("'RELEASE_NAME_POSTFIX' is set to '%v'", rNameSuffix)
+		log.Warn("'RELEASE_NAME_POSTFIX' will be deprecated in the next release, please change to `RELEASE_NAME_SUFFIX`")
+		conf.ReleaseNameSuffix = rNameSuffix
 	}
 
-	if rName != "" && ((rNamePrefix != "" && rNamePostfix != "") || (rNamePrefix != "" || rNamePostfix != "")) {
-		log.Fatal("both 'RELEASE_NAME' and 'RELEASE_NAME_PREFIX'/'RELEASE_NAME_POSTFIX' are set (expected 'RELEASE_NAME' or combination/one of 'RELEASE_NAME_PREFIX' 'RELEASE_NAME_POSTFIX')")
+	if rName != "" && ((rNamePrefix != "" && rNameSuffix != "") || (rNamePrefix != "" || rNameSuffix != "")) {
+		log.Fatal("both 'RELEASE_NAME' and 'RELEASE_NAME_PREFIX'/'RELEASE_NAME_SUFFIX' are set (expected 'RELEASE_NAME' or combination/one of 'RELEASE_NAME_PREFIX' 'RELEASE_NAME_SUFFIX')")
 	}
 
 	c := os.Getenv("CHANGELOG_FILE")
@@ -141,8 +146,8 @@ func (c *Configuration) Hydrate(local repository.Interface, version *string, rel
 
 	if c.ReleaseName != "" {
 		*releaseName = c.ReleaseName
-	} else if c.ReleaseNamePrefix != "" || c.ReleaseNamePostfix != "" {
-		*releaseName = fmt.Sprintf("%v%v%v", c.ReleaseNamePrefix, *local.GetTag(), c.ReleaseNamePostfix)
+	} else if c.ReleaseNamePrefix != "" || c.ReleaseNameSuffix != "" {
+		*releaseName = fmt.Sprintf("%v%v%v", c.ReleaseNamePrefix, *local.GetTag(), c.ReleaseNameSuffix)
 	} else {
 		*releaseName = *local.GetTag()
 	}

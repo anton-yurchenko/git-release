@@ -30,7 +30,7 @@ func (c *Changes) Read(fs afero.Fs) ([]string, error) {
 // GetEndOfFirstRelease returns line number on which the first release ends.
 // It may be an end of file or a start of an 'Unreleased Versions'.
 func GetEndOfFirstRelease(content []string) int {
-	expression := "^(?P<prefix>\\[)(?P<unreleased>[^\\]]*)(?P<postfix>\\][^(].*)$"
+	expression := "^(?P<prefix>\\[)(?P<unreleased>[^\\]]*)(?P<suffix>\\][^(].*)$"
 	regex := regexp.MustCompile(expression)
 
 	for i := 0; i < len(content); i++ {
@@ -46,7 +46,7 @@ func GetEndOfFirstRelease(content []string) int {
 func GetReleasesLines(content []string) []int {
 	lines := make([]int, 0)
 
-	expression := "^(?P<prefix>##\\s*\\[)(?P<major>0|[1-9]\\d*)\\.(?P<minor>0|[1-9]\\d*)\\.(?P<patch>0|[1-9]\\d*)(?:-(?P<prerelease>(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+(?P<buildmetadata>[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?(?P<postfix>\\])(?P<title>.*)$"
+	expression := "^(?P<prefix>##\\s*\\[)(?P<major>0|[1-9]\\d*)\\.(?P<minor>0|[1-9]\\d*)\\.(?P<patch>0|[1-9]\\d*)(?:-(?P<prerelease>(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+(?P<buildmetadata>[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?(?P<suffix>\\])(?P<title>.*)$"
 	regex := regexp.MustCompile(expression)
 
 	for i, line := range content {
@@ -65,7 +65,7 @@ func (c *Changes) GetMargins(content []string) map[string]int {
 	releaseLines := GetReleasesLines(content)
 
 	for i, line := range releaseLines {
-		expression := "^(?P<prefix>##\\s*\\[)(?P<major>0|[1-9]\\d*)\\.(?P<minor>0|[1-9]\\d*)\\.(?P<patch>0|[1-9]\\d*)(?:(?P<sep1>-)(?P<prerelease>(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:(?P<sep2>\\+)(?P<buildmetadata>[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?(?P<postfix>\\])(?P<date>.*)$"
+		expression := "^(?P<prefix>##\\s*\\[)(?P<major>0|[1-9]\\d*)\\.(?P<minor>0|[1-9]\\d*)\\.(?P<patch>0|[1-9]\\d*)(?:(?P<sep1>-)(?P<prerelease>(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:(?P<sep2>\\+)(?P<buildmetadata>[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?(?P<suffix>\\])(?P<date>.*)$"
 		regex := regexp.MustCompile(expression)
 		var v string
 

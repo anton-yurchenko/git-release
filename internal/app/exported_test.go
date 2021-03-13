@@ -116,32 +116,32 @@ func TestGetConfig(t *testing.T) {
 				Token: "token",
 			},
 		},
-		"Configuration: RELEASE_NAME_POSTFIX": {
+		"Configuration: RELEASE_NAME_SUFFIX": {
 			EnvVars: map[string]string{
-				"GITHUB_WORKSPACE":     ".",
-				"GITHUB_TOKEN":         "token",
-				"RELEASE_NAME_POSTFIX": "text",
+				"GITHUB_WORKSPACE":    ".",
+				"GITHUB_TOKEN":        "token",
+				"RELEASE_NAME_SUFFIX": "text",
 			},
 			Changelog: "CHANGELOG.md",
 			Expected: expected{
 				Config: &app.Configuration{
-					ReleaseNamePostfix: "text",
+					ReleaseNameSuffix: "text",
 				},
 				Token: "token",
 			},
 		},
-		"Configuration: RELEASE_NAME_PREFIX & RELEASE_NAME_POSTFIX": {
+		"Configuration: RELEASE_NAME_PREFIX & RELEASE_NAME_SUFFIX": {
 			EnvVars: map[string]string{
-				"GITHUB_WORKSPACE":     ".",
-				"GITHUB_TOKEN":         "token",
-				"RELEASE_NAME_PREFIX":  "text",
-				"RELEASE_NAME_POSTFIX": "text",
+				"GITHUB_WORKSPACE":    ".",
+				"GITHUB_TOKEN":        "token",
+				"RELEASE_NAME_PREFIX": "text",
+				"RELEASE_NAME_SUFFIX": "text",
 			},
 			Changelog: "CHANGELOG.md",
 			Expected: expected{
 				Config: &app.Configuration{
-					ReleaseNamePrefix:  "text",
-					ReleaseNamePostfix: "text",
+					ReleaseNamePrefix: "text",
+					ReleaseNameSuffix: "text",
 				},
 				Token: "token",
 			},
@@ -332,9 +332,9 @@ func TestHydrate(t *testing.T) {
 			ReadTagError:         nil,
 			ExpectedError:        "",
 		},
-		"Release Name with Postfix": {
+		"Release Name with Suffix": {
 			Config: app.Configuration{
-				ReleaseNamePostfix: "Postfix",
+				ReleaseNameSuffix: "Suffix",
 			},
 			Release: release.Release{
 				Changes: new(changelog.Changes),
@@ -345,10 +345,10 @@ func TestHydrate(t *testing.T) {
 			ReadTagError:         nil,
 			ExpectedError:        "",
 		},
-		"Release Name with Prefix and Postfix": {
+		"Release Name with Prefix and Suffix": {
 			Config: app.Configuration{
-				ReleaseNamePrefix:  "Prefix",
-				ReleaseNamePostfix: "Postfix",
+				ReleaseNamePrefix: "Prefix",
+				ReleaseNameSuffix: "Suffix",
 			},
 			Release: release.Release{
 				Changes: new(changelog.Changes),
@@ -383,8 +383,8 @@ func TestHydrate(t *testing.T) {
 
 			if test.Config.ReleaseName != "" {
 				assert.Equal(test.Release.Name, test.Config.ReleaseName)
-			} else if test.Config.ReleaseNamePrefix != "" || test.Config.ReleaseNamePostfix != "" {
-				assert.Equal(fmt.Sprintf("%v%v%v", test.Config.ReleaseNamePrefix, test.Tag, test.Config.ReleaseNamePostfix), test.Release.Name)
+			} else if test.Config.ReleaseNamePrefix != "" || test.Config.ReleaseNameSuffix != "" {
+				assert.Equal(fmt.Sprintf("%v%v%v", test.Config.ReleaseNamePrefix, test.Tag, test.Config.ReleaseNameSuffix), test.Release.Name)
 			} else {
 				assert.Equal(test.Release.Name, test.Tag)
 			}

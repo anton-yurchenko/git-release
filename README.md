@@ -92,9 +92,9 @@ on:
   - Set to `none` in order to completely ignore changelog. This enables to run the action without repository checkout.
 - `ALLOW_EMPTY_CHANGELOG (true/false as string)` - Allow publishing a release without changelog (default `false`).
 - `ALLOW_TAG_PREFIX (true/false as string)` - Allow prefix on version Tag, for example `v3.2.0` or `release-3.2.0` (default: `false`).
-- `RELEASE_NAME (string)` - Complete release title (may not be combined with PREFIX or POSTFIX).
+- `RELEASE_NAME (string)` - Complete release title (may not be combined with PREFIX or SUFFIX).
 - `RELEASE_NAME_PREFIX (string)` - Release title prefix.
-- `RELEASE_NAME_POSTFIX (string)` - Release title postfix.
+- `RELEASE_NAME_SUFFIX (string)` - Release title suffix.
 
 </details>  
 
