@@ -1,15 +1,12 @@
-# global
 BINARY := $(notdir $(CURDIR))
 GO_BIN_DIR := $(GOPATH)/bin
 OSES := windows linux
 ARCHS := amd64
 
-# unit tests
 test: lint
 	@echo "unit testing..."
 	@go test -v $$(go list ./... | grep -v vendor | grep -v mocks) -race -coverprofile=coverage.txt -covermode=atomic
 
-# lint
 .PHONY: lint
 lint: $(GO_LINTER)
 	@echo "vendoring..."
@@ -18,13 +15,12 @@ lint: $(GO_LINTER)
 	@echo "linting..."
 	@golangci-lint run ./...
 
-# initialize
 .PHONY: init
 init:
 	@rm -f go.mod
 	@rm -f go.sum
 	@rm -rf ./vendor
-	@go mod init
+	@go mod init $$(pwd | awk -F'/' '{print "github.com/"$$(NF-1)"/"$$NF}')
 
 # linter
 GO_LINTER := $(GO_BIN_DIR)/golangci-lint
