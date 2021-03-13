@@ -7,11 +7,11 @@ assignees: anton-yurchenko
 
 ---
 
-### Description:  
+### Description
 A clear and concise description of what an enhancement is about
 
-### Reference:
+### Reference
 - External documentation links
 
-### Screenshots:
+### Screenshots
 If applicable, add screenshots to help explain your problem.

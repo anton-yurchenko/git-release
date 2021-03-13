@@ -1,8 +1,10 @@
-# Examples:
+# Examples
+
 - You may pass data between steps in a workflow using [environmental variables](https://help.github.com/en/actions/automating-your-workflow-with-github-actions/development-tools-for-github-actions#set-an-environment-variable-set-env)
 - Some examples are based on `run` instruction, which may be easily replaces with another **GitHub Action**
 
-## Pure SemVer tag:
+## Pure SemVer tag
+
 ![PIC](images/release.png)
 
 <details><summary>Workflow</summary>
@@ -35,7 +37,8 @@ jobs:
 
 </details>
 
-## SemVer tag with prefix:
+## SemVer tag with prefix
+
 ![PIC](images/example-tag-prefix.png)
 
 <details><summary>Workflow</summary>
@@ -69,7 +72,8 @@ jobs:
 
 </details>
 
-## Release title with prefix:
+## Release title with prefix
+
 ![PIC](images/example-prefix.png)
 
 <details><summary>Workflow</summary>
@@ -104,7 +108,8 @@ jobs:
 
 </details>
 
-## Release title with suffix:
+## Release title with suffix
+
 ![PIC](images/example-suffix.png)
 
 <details><summary>Workflow</summary>
@@ -143,7 +148,8 @@ jobs:
 
 </details>
 
-## Release title with prefix and suffix:
+## Release title with prefix and suffix
+
 ![PIC](images/example-prefix-suffix.png)
 
 <details><summary>Workflow</summary>
@@ -182,7 +188,8 @@ jobs:
 
 </details>
 
-## Release title:
+## Release title
+
 ![PIC](images/example-name.png)
 
 <details><summary>Workflow</summary>
@@ -222,7 +229,8 @@ jobs:
 
 </details>
 
-## Asset Filename Pattern Matching:
+## Asset Filename Pattern Matching
+
 ![PIC](images/release.png)
 
 <details><summary>Workflow</summary>
@@ -252,7 +260,8 @@ jobs:
 
 </details>
 
-## Windows Runner:
+## Windows Runner
+
 ![PIC](images/release.png)
 
 <details><summary>Workflow</summary>

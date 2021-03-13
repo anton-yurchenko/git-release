@@ -7,20 +7,20 @@ assignees: anton-yurchenko
 
 ---
 
-### Description:  
+### Description
 A clear and concise description of what the bug is
 
-### Tag:
+### Tag
 `Provide Git Tag`
 
-### Workflow:
+### Workflow
 ```Attach your GitHub Action Workflow YAML```
 
-### Changelog:
+### Changelog
 ```Attach a full changelog```  
 
-### Log:
+### Log
 ```Attach an execution log```
 
-### Screenshots:
+### Screenshots
 If applicable, add screenshots to help explain your problem.
