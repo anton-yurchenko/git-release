@@ -1,9 +1,9 @@
 # git-release
 
 [![Release](https://img.shields.io/github/v/release/anton-yurchenko/git-release)](https://github.com/anton-yurchenko/git-release/releases/latest)
-[![codecov](https://codecov.io/gh/anton-yurchenko/git-release/branch/master/graph/badge.svg)](https://codecov.io/gh/anton-yurchenko/git-release)
+[![Code Coverage](https://codecov.io/gh/anton-yurchenko/git-release/branch/master/graph/badge.svg)](https://codecov.io/gh/anton-yurchenko/git-release)
 [![Go Report Card](https://goreportcard.com/badge/github.com/anton-yurchenko/git-release)](https://goreportcard.com/report/github.com/anton-yurchenko/git-release)
-[![tests](https://github.com/anton-yurchenko/git-release/actions/workflows/tests.yml/badge.svg)](https://github.com/anton-yurchenko/git-release/actions/workflows/tests.yml)
+[![Release](https://github.com/anton-yurchenko/git-release/actions/workflows/release.yml/badge.svg)](https://github.com/anton-yurchenko/git-release/actions/workflows/release.yml)
 [![Docker Build](https://img.shields.io/docker/cloud/build/antonyurchenko/git-release)](https://hub.docker.com/r/antonyurchenko/git-release)
 [![Docker Pulls](https://img.shields.io/docker/pulls/antonyurchenko/git-release)](https://hub.docker.com/r/antonyurchenko/git-release)
 [![License](https://img.shields.io/github/license/anton-yurchenko/git-release)](LICENSE.md)
@@ -17,7 +17,7 @@ A **GitHub Action** for creating a **GitHub Release** with **Assets** and **Chan
 - Parse Tag to match Semantic Versioning
 - Upload build artifacts (assets) to the release
 - Add a changelog to the release
-- Linux/Windows runners supported
+- Linux/Windows/ARM runners supported
 - Filename pattern matching
 
 ## Manual
@@ -130,8 +130,9 @@ Example:
 - **Git Tag** should be identical to **Changelog Version** (without prefixes), for example **tag** `v1.0.0` and **changelog version** `1.0.0`.
 - This action is automatically built at **Docker Hub**, and tagged with `latest / v3 / v3.4 / v3.4.1`. You may lock to a certain version instead of using **latest**.  
 (*Recommended to lock against a major version, for example* `v3`)
-- Instead of using a pre-built Docker image, you may execute the action through JavaScript wrapper by changing `docker://antonyurchenko/git-release:latest` to `anton-yurchenko/git-release@master`
+- Instead of using a pre-built Docker image, you may execute the action through JavaScript wrapper by changing `docker://antonyurchenko/git-release:latest` to `anton-yurchenko/git-release@master` (*might be unstable*)
 - `git-release` operates assets with pattern matching, this means that it is unable to validate whether an asset exists or not.
+- Docker image is published both to [**Docker Hub**](https://hub.docker.com/r/antonyurchenko/git-release) and [**GitHub Packages**](https://github.com/anton-yurchenko/git-release/packages). If you don't want to rely on **Docker Hub** but still want to use the dockerized action, you may switch from `uses: docker://antonyurchenko/git-release:v3` to `uses: docker://ghcr.io/anton-yurchenko/git-release:v1`
 
 ## License
 

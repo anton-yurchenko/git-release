@@ -1,0 +1,103 @@
+name: release
+on:
+  push:
+    tags:
+      - v[0-9]+.[0-9]+.[0-9]+
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Init
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.15
+        id: go
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install Dependencies
+        run: |
+          go get -v -t -d ./...
+
+      - name: Lint
+        run: |
+          export PATH=$PATH:$(go env GOPATH)/bin
+          curl -s https://api.github.com/repos/golangci/golangci-lint/releases/latest | grep browser_download_url | grep linux-amd64 | cut -d : -f 2,3 | tr -d \" | wget -i -
+          tar -xvf golangci-lint-*-linux-amd64.tar.gz --strip=1 --no-anchored golangci-lint
+          ./golangci-lint run ./...
+
+      - name: Test
+        run: go test -v $(go list ./... | grep -v vendor | grep -v mocks) -race -coverprofile=coverage.txt -covermode=atomic
+
+  scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v1
+        with:
+          languages: go
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v1
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v1
+
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    needs: [test, scan]
+    env:
+      APP_NAME: git-release
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Prepare Version Tags
+        run: |
+          echo "MAJOR=$(echo ${GITHUB_REF/refs\/tags\//} | awk -F'.' '{print $1}')" >> $GITHUB_ENV
+          echo "MINOR=$(echo ${GITHUB_REF/refs\/tags\//} | awk -F'.' '{print $1"."$2}')" >> $GITHUB_ENV
+          echo "PATCH=$(echo ${GITHUB_REF/refs\/tags\//} | awk -F'.' '{print $1"."$2"."$3}')" >> $GITHUB_ENV
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: antonyurchenko
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+      - name: Login to GitHub Packages Docker Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Docker Image
+        run: |
+          docker buildx build \
+            --tag ghcr.io/anton-yurchenko/${{ env.APP_NAME }}:${{ env.PATCH}} \
+            --tag ghcr.io/anton-yurchenko/${{ env.APP_NAME }}:${{ env.MINOR}} \
+            --tag ghcr.io/anton-yurchenko/${{ env.APP_NAME }}:${{ env.MAJOR}} \
+            --tag ghcr.io/anton-yurchenko/${{ env.APP_NAME }}:latest \
+            --tag antonyurchenko/${{ env.APP_NAME }}:${{ env.PATCH}} \
+            --tag antonyurchenko/${{ env.APP_NAME }}:${{ env.MINOR}} \
+            --tag antonyurchenko/${{ env.APP_NAME }}:${{ env.MAJOR}} \
+            --tag antonyurchenko/${{ env.APP_NAME }}:latest \
+            --platform linux/arm64/v8,linux/amd64 --output type=registry .
+
+      - name: Release
+        uses: docker://antonyurchenko/git-release:latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ALLOW_TAG_PREFIX: "true"
