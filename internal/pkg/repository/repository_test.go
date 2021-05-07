@@ -37,13 +37,13 @@ func TestReadTag(t *testing.T) {
 			Ref:           "v1.0.0",
 			Version:       "1.0.0",
 			Prefix:        "",
-			ExpectedError: "malformed env.var 'GITHUB_REF' (control tag prefix via env.var 'TAG_PREFIX'): expected to match regex '^refs/tags/[v]?(?P<major>0|[1-9]\\d*)\\.(?P<minor>0|[1-9]\\d*)\\.(?P<patch>0|[1-9]\\d*)(?:(?P<sep1>-)(?P<prerelease>(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:(?P<sep2>\\+)(?P<buildmetadata>[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$', got 'v1.0.0'",
+			ExpectedError: "malformed env.var 'GITHUB_REF' (control tag prefix via env.var 'TAG_PREFIX_REGEX'): expected to match regex '^refs/tags/[v]?(?P<major>0|[1-9]\\d*)\\.(?P<minor>0|[1-9]\\d*)\\.(?P<patch>0|[1-9]\\d*)(?:(?P<sep1>-)(?P<prerelease>(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:(?P<sep2>\\+)(?P<buildmetadata>[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$', got 'v1.0.0'",
 		},
 		"Invalid Semver": {
 			Ref:           "refs/tags/1.3----RC-SNAPSHOT.44.5.6--.77",
 			Version:       "1.3----RC-SNAPSHOT.44.5.6--.77",
 			Prefix:        "",
-			ExpectedError: "malformed env.var 'GITHUB_REF' (control tag prefix via env.var 'TAG_PREFIX'): expected to match regex '^refs/tags/[v]?(?P<major>0|[1-9]\\d*)\\.(?P<minor>0|[1-9]\\d*)\\.(?P<patch>0|[1-9]\\d*)(?:(?P<sep1>-)(?P<prerelease>(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:(?P<sep2>\\+)(?P<buildmetadata>[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$', got 'refs/tags/1.3----RC-SNAPSHOT.44.5.6--.77'",
+			ExpectedError: "malformed env.var 'GITHUB_REF' (control tag prefix via env.var 'TAG_PREFIX_REGEX'): expected to match regex '^refs/tags/[v]?(?P<major>0|[1-9]\\d*)\\.(?P<minor>0|[1-9]\\d*)\\.(?P<patch>0|[1-9]\\d*)(?:(?P<sep1>-)(?P<prerelease>(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:(?P<sep2>\\+)(?P<buildmetadata>[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$', got 'refs/tags/1.3----RC-SNAPSHOT.44.5.6--.77'",
 		},
 		"Matching Regex Prefix": {
 			Ref:           "refs/tags/asdfqwasc-1.1.1",
@@ -55,7 +55,7 @@ func TestReadTag(t *testing.T) {
 			Ref:           "refs/tags/asdfqwasz-1.1.1",
 			Version:       "1.1.1",
 			Prefix:        "[a-y-]*",
-			ExpectedError: "malformed env.var 'GITHUB_REF' (control tag prefix via env.var 'TAG_PREFIX'): expected to match regex '^refs/tags/(?P<prefix>[a-y-]*)[v]?(?P<major>0|[1-9]\\d*)\\.(?P<minor>0|[1-9]\\d*)\\.(?P<patch>0|[1-9]\\d*)(?:(?P<sep1>-)(?P<prerelease>(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:(?P<sep2>\\+)(?P<buildmetadata>[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$', got 'refs/tags/asdfqwasz-1.1.1'",
+			ExpectedError: "malformed env.var 'GITHUB_REF' (control tag prefix via env.var 'TAG_PREFIX_REGEX'): expected to match regex '^refs/tags/(?P<prefix>[a-y-]*)[v]?(?P<major>0|[1-9]\\d*)\\.(?P<minor>0|[1-9]\\d*)\\.(?P<patch>0|[1-9]\\d*)(?:(?P<sep1>-)(?P<prerelease>(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:(?P<sep2>\\+)(?P<buildmetadata>[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$', got 'refs/tags/asdfqwasz-1.1.1'",
 		},
 	}
 

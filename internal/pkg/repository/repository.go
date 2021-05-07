@@ -56,7 +56,7 @@ func (r *Repository) ReadTag(version *string, prefix string) error {
 		return nil
 	}
 
-	return errors.New(fmt.Sprintf("malformed env.var 'GITHUB_REF' (control tag prefix via env.var 'TAG_PREFIX'): expected to match regex '%s', got '%v'", expression, ref))
+	return errors.New(fmt.Sprintf("malformed env.var 'GITHUB_REF' (control tag prefix via env.var 'TAG_PREFIX_REGEX'): expected to match regex '%s', got '%v'", expression, ref))
 }
 
 // ReadCommitHash sets current commit hash

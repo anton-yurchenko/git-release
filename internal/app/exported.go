@@ -61,7 +61,7 @@ func GetConfig(release release.Interface, changes changelog.Interface, fs afero.
 		conf.AllowEmptyChangelog = true
 	}
 
-	conf.TagPrefix = os.Getenv("TAG_PREFIX")
+	conf.TagPrefix = os.Getenv("TAG_PREFIX_REGEX")
 	conf.ReleaseName = os.Getenv("RELEASE_NAME")
 	conf.ReleaseNamePrefix = os.Getenv("RELEASE_NAME_PREFIX")
 	conf.ReleaseNameSuffix = os.Getenv("RELEASE_NAME_SUFFIX")

@@ -73,9 +73,9 @@ func TestGetConfig(t *testing.T) {
 				},
 			},
 		},
-		"Configuration: TAG_PREFIX": {
+		"Configuration: TAG_PREFIX_REGEX": {
 			EnvVars: map[string]string{
-				"TAG_PREFIX": "[a-z-]*",
+				"TAG_PREFIX_REGEX": "[a-z-]*",
 			},
 			Changelog: "CHANGELOG.md",
 			Expected: expected{
