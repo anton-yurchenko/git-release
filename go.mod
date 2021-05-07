@@ -1,9 +1,9 @@
 module github.com/anton-yurchenko/git-release
 
-go 1.15
+go 1.16
 
 require (
-	github.com/google/go-github/v32 v32.1.0
+	github.com/google/go-github/v35 v35.1.0
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/afero v1.6.0
