@@ -48,56 +48,35 @@ func GetConfig(release release.Interface, changes changelog.Interface, fs afero.
 		}
 	}
 
-	d := os.Getenv("DRAFT_RELEASE")
-	if strings.ToLower(d) == "true" {
+	if strings.ToLower(os.Getenv("DRAFT_RELEASE")) == "true" {
 		release.EnableDraft()
-	} else if strings.ToLower(d) != "false" {
-		log.Warn("'DRAFT_RELEASE' is not equal to 'true', assuming 'false'")
 	}
 
-	p := os.Getenv("PRE_RELEASE")
-	if strings.ToLower(p) == "true" {
+	if strings.ToLower(os.Getenv("PRE_RELEASE")) == "true" {
 		release.EnablePreRelease()
-	} else if strings.ToLower(p) != "false" {
-		log.Warn("'PRE_RELEASE' is not equal to 'true', assuming 'false'")
 	}
 
-	t := os.Getenv("ALLOW_EMPTY_CHANGELOG")
-	if strings.ToLower(t) == "true" {
-		log.Warn("'ALLOW_EMPTY_CHANGELOG' enabled")
+	if strings.ToLower(os.Getenv("ALLOW_EMPTY_CHANGELOG")) == "true" {
 		conf.AllowEmptyChangelog = true
 	}
 
-	t = os.Getenv("ALLOW_TAG_PREFIX")
-	if strings.ToLower(t) == "true" {
-		log.Warn("'ALLOW_TAG_PREFIX' enabled")
+	if strings.ToLower(os.Getenv("ALLOW_TAG_PREFIX")) == "true" {
 		conf.AllowTagPrefix = true
 	}
 
-	rName := os.Getenv("RELEASE_NAME")
-	if rName != "" {
-		log.Warnf("'RELEASE_NAME' is set to '%v'", rName)
-		conf.ReleaseName = rName
+	if os.Getenv("RELEASE_NAME") != "" {
+		conf.ReleaseName = os.Getenv("RELEASE_NAME")
 	}
 
-	rNamePrefix := os.Getenv("RELEASE_NAME_PREFIX")
-	if rNamePrefix != "" {
-		log.Warnf("'RELEASE_NAME_PREFIX' is set to '%v'", rNamePrefix)
-		conf.ReleaseNamePrefix = rNamePrefix
+	if os.Getenv("RELEASE_NAME_PREFIX") != "" {
+		conf.ReleaseNamePrefix = os.Getenv("RELEASE_NAME_PREFIX")
 	}
 
-	rNameSuffix := os.Getenv("RELEASE_NAME_SUFFIX")
-	if rNameSuffix != "" {
-		log.Warnf("'RELEASE_NAME_SUFFIX' is set to '%v'", rNameSuffix)
-		conf.ReleaseNameSuffix = rNameSuffix
-	} else if os.Getenv("RELEASE_NAME_POSTFIX") != "" { // NOTE: backward compatibility before upcoming deprecation
-		rNameSuffix = os.Getenv("RELEASE_NAME_POSTFIX")
-		log.Warnf("'RELEASE_NAME_POSTFIX' is set to '%v'", rNameSuffix)
-		log.Error("'RELEASE_NAME_POSTFIX' will be deprecated in the next release, please change to `RELEASE_NAME_SUFFIX`")
-		conf.ReleaseNameSuffix = rNameSuffix
+	if os.Getenv("RELEASE_NAME_SUFFIX") != "" {
+		conf.ReleaseNameSuffix = os.Getenv("RELEASE_NAME_SUFFIX")
 	}
 
-	if rName != "" && ((rNamePrefix != "" && rNameSuffix != "") || (rNamePrefix != "" || rNameSuffix != "")) {
+	if conf.ReleaseName != "" && ((conf.ReleaseNamePrefix != "" && conf.ReleaseNameSuffix != "") || (conf.ReleaseNamePrefix != "" || conf.ReleaseNameSuffix != "")) {
 		log.Fatal("both 'RELEASE_NAME' and 'RELEASE_NAME_PREFIX'/'RELEASE_NAME_SUFFIX' are set (expected 'RELEASE_NAME' or combination/one of 'RELEASE_NAME_PREFIX' 'RELEASE_NAME_SUFFIX')")
 	}
 
