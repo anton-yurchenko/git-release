@@ -81,24 +81,23 @@ func GetConfig(release release.Interface, changes changelog.Interface, fs afero.
 	}
 
 	c := os.Getenv("CHANGELOG_FILE")
-	if c == "none" {
-		log.Warn("'CHANGELOG_FILE' is set to 'none'")
-		conf.IgnoreChangelog = true
-	} else if c == "" {
-		log.Warn("'CHANGELOG_FILE' is not defined, assuming 'CHANGELOG.md'")
+	if c == "" {
 		c = "CHANGELOG.md"
 	}
 
-	if !conf.IgnoreChangelog {
-		changes.SetFile(fmt.Sprintf("%v/%v", os.Getenv("GITHUB_WORKSPACE"), c))
-		b, err := IsExists(changes.GetFile(), fs)
-		if err != nil {
-			log.Fatal(err)
+	changes.SetFile(path.Join(os.Getenv("GITHUB_WORKSPACE"), c))
+	b, err := IsExists(changes.GetFile(), fs)
+	if err != nil {
+		log.Fatal(errors.Wrap(err, "error validating changelog file"))
+	}
+
+	if !b {
+		if c != "none" {
+			log.Errorf("changelog file '%v' not found!", changes.GetFile())
 		}
 
-		if !b {
-			log.Fatalf("changelog file '%v' not found!", changes.GetFile())
-		}
+		changes.SetFile("")
+		conf.IgnoreChangelog = true
 	}
 
 	release.SetAssets(GetAssets(fs, args))

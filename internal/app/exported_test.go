@@ -141,7 +141,7 @@ func TestGetConfig(t *testing.T) {
 					Assets: make([]asset.Asset, 0),
 					Draft:  true,
 					Changes: &changelog.Changes{
-						File: "./CHANGELOG.md",
+						File: "CHANGELOG.md",
 					},
 				},
 			},
@@ -157,7 +157,7 @@ func TestGetConfig(t *testing.T) {
 					Assets:     make([]asset.Asset, 0),
 					PreRelease: true,
 					Changes: &changelog.Changes{
-						File: "./CHANGELOG.md",
+						File: "CHANGELOG.md",
 					},
 				},
 			},
@@ -185,7 +185,7 @@ func TestGetConfig(t *testing.T) {
 		t.Logf("Test Case %v/%v - %s", counter, len(suite), name)
 
 		// preperations
-		if test.Changelog != "" {
+		if test.Changelog != "" && test.Changelog != "none" {
 			_, err := fs.Create(test.Changelog)
 			assert.Equal(nil, err, fmt.Sprintf("preparation: error creating test file '%v'", test.Changelog))
 			time.Sleep(5 * time.Millisecond)
