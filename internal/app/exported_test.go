@@ -73,14 +73,14 @@ func TestGetConfig(t *testing.T) {
 				},
 			},
 		},
-		"Configuration: ALLOW_TAG_PREFIX": {
+		"Configuration: TAG_PREFIX": {
 			EnvVars: map[string]string{
-				"ALLOW_TAG_PREFIX": "true",
+				"TAG_PREFIX": "[a-z-]*",
 			},
 			Changelog: "CHANGELOG.md",
 			Expected: expected{
 				Config: &app.Configuration{
-					AllowTagPrefix: true,
+					TagPrefix: "[a-z-]*",
 				},
 			},
 		},
@@ -337,7 +337,7 @@ func TestHydrate(t *testing.T) {
 		m := new(mocks.Repository)
 		m.On("ReadProjectName").Return(test.ReadProjectNameError).Once()
 		m.On("ReadCommitHash").Once()
-		m.On("ReadTag", &test.Release.Changes.Version, false).Return(test.ReadTagError).Once()
+		m.On("ReadTag", &test.Release.Changes.Version, "").Return(test.ReadTagError).Once()
 		m.On("GetTag").Return(&test.Tag).Once()
 
 		err := test.Config.Hydrate(m, &test.Release.Changes.Version, &test.Release.Name)

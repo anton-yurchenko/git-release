@@ -24,7 +24,7 @@ const ()
 type Configuration struct {
 	AllowEmptyChangelog bool
 	IgnoreChangelog     bool
-	AllowTagPrefix      bool
+	TagPrefix           string
 	ReleaseName         string
 	ReleaseNamePrefix   string
 	ReleaseNameSuffix   string
@@ -61,21 +61,10 @@ func GetConfig(release release.Interface, changes changelog.Interface, fs afero.
 		conf.AllowEmptyChangelog = true
 	}
 
-	if strings.ToLower(os.Getenv("ALLOW_TAG_PREFIX")) == "true" {
-		conf.AllowTagPrefix = true
-	}
-
-	if os.Getenv("RELEASE_NAME") != "" {
-		conf.ReleaseName = os.Getenv("RELEASE_NAME")
-	}
-
-	if os.Getenv("RELEASE_NAME_PREFIX") != "" {
-		conf.ReleaseNamePrefix = os.Getenv("RELEASE_NAME_PREFIX")
-	}
-
-	if os.Getenv("RELEASE_NAME_SUFFIX") != "" {
-		conf.ReleaseNameSuffix = os.Getenv("RELEASE_NAME_SUFFIX")
-	}
+	conf.TagPrefix = os.Getenv("TAG_PREFIX")
+	conf.ReleaseName = os.Getenv("RELEASE_NAME")
+	conf.ReleaseNamePrefix = os.Getenv("RELEASE_NAME_PREFIX")
+	conf.ReleaseNameSuffix = os.Getenv("RELEASE_NAME_SUFFIX")
 
 	if conf.ReleaseName != "" && ((conf.ReleaseNamePrefix != "" && conf.ReleaseNameSuffix != "") || (conf.ReleaseNamePrefix != "" || conf.ReleaseNameSuffix != "")) {
 		log.Fatal("both 'RELEASE_NAME' and 'RELEASE_NAME_PREFIX'/'RELEASE_NAME_SUFFIX' are set (expected 'RELEASE_NAME' or combination/one of 'RELEASE_NAME_PREFIX' 'RELEASE_NAME_SUFFIX')")
@@ -139,7 +128,7 @@ func (c *Configuration) Hydrate(local repository.Interface, version *string, rel
 
 	local.ReadCommitHash()
 
-	if err := local.ReadTag(version, c.AllowTagPrefix); err != nil {
+	if err := local.ReadTag(version, c.TagPrefix); err != nil {
 		return err
 	}
 

@@ -16,28 +16,46 @@ func TestReadTag(t *testing.T) {
 	type test struct {
 		Ref           string
 		Version       string
-		AllowPrefix   bool
+		Prefix        string
 		ExpectedError string
 	}
 
 	suite := map[string]test{
-		"Functionality": {
+		"Semver": {
+			Ref:           "refs/tags/1.0.0",
+			Version:       "1.0.0",
+			Prefix:        "",
+			ExpectedError: "",
+		},
+		"Semver with Prefix": {
 			Ref:           "refs/tags/v1.0.0",
 			Version:       "1.0.0",
-			AllowPrefix:   true,
+			Prefix:        "",
 			ExpectedError: "",
 		},
-		"Incorrect Environment Variable": {
+		"Malformed REF": {
 			Ref:           "v1.0.0",
 			Version:       "1.0.0",
-			AllowPrefix:   true,
-			ExpectedError: "malformed env.var 'GITHUB_REF' (control tag prefix via env.var 'ALLOW_TAG_PREFIX'): expected to match regex '^refs/tags/(?P<prefix>.*?)[v]?(?P<major>0|[1-9]\\d*)\\.(?P<minor>0|[1-9]\\d*)\\.(?P<patch>0|[1-9]\\d*)(?:(?P<sep1>-)(?P<prerelease>(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:(?P<sep2>\\+)(?P<buildmetadata>[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$', got 'v1.0.0'",
+			Prefix:        "",
+			ExpectedError: "malformed env.var 'GITHUB_REF' (control tag prefix via env.var 'TAG_PREFIX'): expected to match regex '^refs/tags/[v]?(?P<major>0|[1-9]\\d*)\\.(?P<minor>0|[1-9]\\d*)\\.(?P<patch>0|[1-9]\\d*)(?:(?P<sep1>-)(?P<prerelease>(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:(?P<sep2>\\+)(?P<buildmetadata>[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$', got 'v1.0.0'",
 		},
-		"Disabled AllowPrefix and Complex Version": {
-			Ref:           "refs/tags/1.2.3----RC-SNAPSHOT.44.5.6--.77",
-			Version:       "1.2.3----RC-SNAPSHOT.44.5.6--.77",
-			AllowPrefix:   false,
+		"Invalid Semver": {
+			Ref:           "refs/tags/1.3----RC-SNAPSHOT.44.5.6--.77",
+			Version:       "1.3----RC-SNAPSHOT.44.5.6--.77",
+			Prefix:        "",
+			ExpectedError: "malformed env.var 'GITHUB_REF' (control tag prefix via env.var 'TAG_PREFIX'): expected to match regex '^refs/tags/[v]?(?P<major>0|[1-9]\\d*)\\.(?P<minor>0|[1-9]\\d*)\\.(?P<patch>0|[1-9]\\d*)(?:(?P<sep1>-)(?P<prerelease>(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:(?P<sep2>\\+)(?P<buildmetadata>[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$', got 'refs/tags/1.3----RC-SNAPSHOT.44.5.6--.77'",
+		},
+		"Matching Regex Prefix": {
+			Ref:           "refs/tags/asdfqwasc-1.1.1",
+			Version:       "1.1.1",
+			Prefix:        "[a-z-]*",
 			ExpectedError: "",
+		},
+		"Not Matching Regex Prefix": {
+			Ref:           "refs/tags/asdfqwasz-1.1.1",
+			Version:       "1.1.1",
+			Prefix:        "[a-y-]*",
+			ExpectedError: "malformed env.var 'GITHUB_REF' (control tag prefix via env.var 'TAG_PREFIX'): expected to match regex '^refs/tags/(?P<prefix>[a-y-]*)[v]?(?P<major>0|[1-9]\\d*)\\.(?P<minor>0|[1-9]\\d*)\\.(?P<patch>0|[1-9]\\d*)(?:(?P<sep1>-)(?P<prerelease>(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:(?P<sep2>\\+)(?P<buildmetadata>[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$', got 'refs/tags/asdfqwasz-1.1.1'",
 		},
 	}
 
@@ -51,7 +69,7 @@ func TestReadTag(t *testing.T) {
 
 		var version string
 		m := new(repository.Repository)
-		err = m.ReadTag(&version, test.AllowPrefix)
+		err = m.ReadTag(&version, test.Prefix)
 
 		if test.ExpectedError != "" {
 			assert.EqualError(err, test.ExpectedError)
