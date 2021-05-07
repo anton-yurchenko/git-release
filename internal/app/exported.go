@@ -116,7 +116,7 @@ func Login(token string) (*github.Client, error) {
 		log.Info("running on GitHub Enterprise")
 
 		if os.Getenv("GODEBUG") != "" {
-			log.Debug("baseURL: %v, uploadURL: %v", os.Getenv("GITHUB_API_URL"), os.Getenv("GITHUB_SERVER_URL"))
+			log.Debugf("baseURL: %v, uploadURL: %v", os.Getenv("GITHUB_API_URL"), os.Getenv("GITHUB_SERVER_URL"))
 		}
 
 		c, err := github.NewEnterpriseClient(os.Getenv("GITHUB_API_URL"), os.Getenv("GITHUB_SERVER_URL"), tc)
