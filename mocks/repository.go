@@ -68,17 +68,8 @@ func (_m *Repository) GetTag() *string {
 }
 
 // ReadCommitHash provides a mock function with given fields:
-func (_m *Repository) ReadCommitHash() error {
-	ret := _m.Called()
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func() error); ok {
-		r0 = rf()
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
+func (_m *Repository) ReadCommitHash() {
+	_m.Called()
 }
 
 // ReadProjectName provides a mock function with given fields:

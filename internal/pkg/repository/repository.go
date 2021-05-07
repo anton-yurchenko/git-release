@@ -20,7 +20,7 @@ type Repository struct {
 // Interface of 'Repository'
 type Interface interface {
 	ReadTag(*string, bool) error
-	ReadCommitHash() error
+	ReadCommitHash()
 	ReadProjectName() error
 	GetOwner() string
 	GetProject() string
@@ -32,7 +32,7 @@ type Interface interface {
 func (r *Repository) ReadTag(version *string, allowPrefix bool) error {
 	ref := os.Getenv("GITHUB_REF")
 
-	semver := "(?P<major>0|[1-9]\\d*)\\.(?P<minor>0|[1-9]\\d*)\\.(?P<patch>0|[1-9]\\d*)(?:(?P<sep1>-)(?P<prerelease>(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:(?P<sep2>\\+)(?P<buildmetadata>[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?"
+	semver := "[v]?(?P<major>0|[1-9]\\d*)\\.(?P<minor>0|[1-9]\\d*)\\.(?P<patch>0|[1-9]\\d*)(?:(?P<sep1>-)(?P<prerelease>(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:(?P<sep2>\\+)(?P<buildmetadata>[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?"
 
 	var expression string
 	if allowPrefix {
@@ -60,14 +60,8 @@ func (r *Repository) ReadTag(version *string, allowPrefix bool) error {
 }
 
 // ReadCommitHash sets current commit hash
-func (r *Repository) ReadCommitHash() error {
-	o := os.Getenv("GITHUB_SHA")
-	if o == "" {
-		return errors.New("env.var 'GITHUB_SHA' is empty or not defined")
-	}
-
-	r.CommitHash = o
-	return nil
+func (r *Repository) ReadCommitHash() {
+	r.CommitHash = os.Getenv("GITHUB_SHA")
 }
 
 // ReadProjectName sets parsed owner and project names

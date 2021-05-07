@@ -39,6 +39,7 @@ func GetConfig(release release.Interface, changes changelog.Interface, fs afero.
 		"GITHUB_API_URL",
 		"GITHUB_SERVER_URL",
 		"GITHUB_REF",
+		"GITHUB_SHA",
 	}
 
 	for _, v := range l {

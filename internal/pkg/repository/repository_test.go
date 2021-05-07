@@ -31,13 +31,7 @@ func TestReadTag(t *testing.T) {
 			Ref:           "v1.0.0",
 			Version:       "1.0.0",
 			AllowPrefix:   true,
-			ExpectedError: "malformed env.var 'GITHUB_REF' (control tag prefix via env.var 'ALLOW_TAG_PREFIX'): expected to match regex '^refs/tags/(?P<prefix>.*?)(?P<major>0|[1-9]\\d*)\\.(?P<minor>0|[1-9]\\d*)\\.(?P<patch>0|[1-9]\\d*)(?:(?P<sep1>-)(?P<prerelease>(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:(?P<sep2>\\+)(?P<buildmetadata>[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$', got 'v1.0.0'",
-		},
-		"Missing Environment Variable": {
-			Ref:           "",
-			Version:       "1.0.0",
-			AllowPrefix:   true,
-			ExpectedError: "env.var 'GITHUB_REF' is empty or not defined",
+			ExpectedError: "malformed env.var 'GITHUB_REF' (control tag prefix via env.var 'ALLOW_TAG_PREFIX'): expected to match regex '^refs/tags/(?P<prefix>.*?)[v]?(?P<major>0|[1-9]\\d*)\\.(?P<minor>0|[1-9]\\d*)\\.(?P<patch>0|[1-9]\\d*)(?:(?P<sep1>-)(?P<prerelease>(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:(?P<sep2>\\+)(?P<buildmetadata>[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$', got 'v1.0.0'",
 		},
 		"Disabled AllowPrefix and Complex Version": {
 			Ref:           "refs/tags/1.2.3----RC-SNAPSHOT.44.5.6--.77",
@@ -77,7 +71,7 @@ func TestReadCommitHash(t *testing.T) {
 	assert := assert.New(t)
 
 	// TEST: env.var set
-	t.Log("Test Case 1/2 - Functionality")
+	t.Log("Test Case 1/1 - Functionality")
 	expected := "123abc"
 
 	err := os.Setenv("GITHUB_SHA", expected)
@@ -85,21 +79,9 @@ func TestReadCommitHash(t *testing.T) {
 
 	m := new(repository.Repository)
 
-	err = m.ReadCommitHash()
+	m.ReadCommitHash()
 
-	assert.Equal(nil, err)
 	assert.Equal(expected, m.CommitHash)
-
-	// TEST: env.var not set
-	t.Log("Test Case 1/2 - Missing Environment Variable")
-	err = os.Setenv("GITHUB_SHA", "")
-	assert.Equal(nil, err, "preparation: error setting env.var 'GITHUB_SHA'")
-
-	m = new(repository.Repository)
-
-	err = m.ReadCommitHash()
-
-	assert.EqualError(err, "env.var 'GITHUB_SHA' is empty or not defined")
 }
 
 func TestReadProjectName(t *testing.T) {

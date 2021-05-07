@@ -25,7 +25,6 @@ func TestGetConfig(t *testing.T) {
 
 	type expected struct {
 		Config  *app.Configuration
-		Token   string
 		Error   string
 		Release *release.Release
 	}
@@ -36,34 +35,35 @@ func TestGetConfig(t *testing.T) {
 		Expected  expected
 	}
 
+	envVars := map[string]string{
+		"GITHUB_TOKEN":      "token",
+		"GITHUB_WORKSPACE":  ".",
+		"GITHUB_API_URL":    "https://api.github.com",
+		"GITHUB_SERVER_URL": "https://github.com",
+		"GITHUB_REF":        "refs/tags/v0.1.0",
+		"GITHUB_SHA":        "00000000",
+	}
+
 	suite := map[string]test{
 		"Missing Required Env.Var: GITHUB_TOKEN": {
 			EnvVars: map[string]string{
-				"GITHUB_WORKSPACE": ".",
-				"GITHUB_TOKEN":     "",
+				"GITHUB_TOKEN": "",
 			},
 			Changelog: "CHANGELOG.md",
 			Expected: expected{
 				Config: new(app.Configuration),
-				Token:  "",
 				Error:  "'GITHUB_TOKEN' is not defined",
 			},
 		},
 		"Required Env.Var: GITHUB_TOKEN": {
-			EnvVars: map[string]string{
-				"GITHUB_WORKSPACE": ".",
-				"GITHUB_TOKEN":     "abc123",
-			},
+			EnvVars:   map[string]string{},
 			Changelog: "CHANGELOG.md",
 			Expected: expected{
 				Config: new(app.Configuration),
-				Token:  "abc123",
 			},
 		},
 		"Configuration: ALLOW_EMPTY_CHANGELOG": {
 			EnvVars: map[string]string{
-				"GITHUB_WORKSPACE":      ".",
-				"GITHUB_TOKEN":          "token",
 				"ALLOW_EMPTY_CHANGELOG": "true",
 			},
 			Changelog: "CHANGELOG.md",
@@ -71,13 +71,10 @@ func TestGetConfig(t *testing.T) {
 				Config: &app.Configuration{
 					AllowEmptyChangelog: true,
 				},
-				Token: "token",
 			},
 		},
 		"Configuration: ALLOW_TAG_PREFIX": {
 			EnvVars: map[string]string{
-				"GITHUB_WORKSPACE": ".",
-				"GITHUB_TOKEN":     "token",
 				"ALLOW_TAG_PREFIX": "true",
 			},
 			Changelog: "CHANGELOG.md",
@@ -85,27 +82,21 @@ func TestGetConfig(t *testing.T) {
 				Config: &app.Configuration{
 					AllowTagPrefix: true,
 				},
-				Token: "token",
 			},
 		},
 		"Configuration: RELEASE_NAME": {
 			EnvVars: map[string]string{
-				"GITHUB_WORKSPACE": ".",
-				"GITHUB_TOKEN":     "token",
-				"RELEASE_NAME":     "text",
+				"RELEASE_NAME": "text",
 			},
 			Changelog: "CHANGELOG.md",
 			Expected: expected{
 				Config: &app.Configuration{
 					ReleaseName: "text",
 				},
-				Token: "token",
 			},
 		},
 		"Configuration: RELEASE_NAME_PREFIX": {
 			EnvVars: map[string]string{
-				"GITHUB_WORKSPACE":    ".",
-				"GITHUB_TOKEN":        "token",
 				"RELEASE_NAME_PREFIX": "text",
 			},
 			Changelog: "CHANGELOG.md",
@@ -113,13 +104,10 @@ func TestGetConfig(t *testing.T) {
 				Config: &app.Configuration{
 					ReleaseNamePrefix: "text",
 				},
-				Token: "token",
 			},
 		},
 		"Configuration: RELEASE_NAME_SUFFIX": {
 			EnvVars: map[string]string{
-				"GITHUB_WORKSPACE":    ".",
-				"GITHUB_TOKEN":        "token",
 				"RELEASE_NAME_SUFFIX": "text",
 			},
 			Changelog: "CHANGELOG.md",
@@ -127,13 +115,10 @@ func TestGetConfig(t *testing.T) {
 				Config: &app.Configuration{
 					ReleaseNameSuffix: "text",
 				},
-				Token: "token",
 			},
 		},
 		"Configuration: RELEASE_NAME_PREFIX & RELEASE_NAME_SUFFIX": {
 			EnvVars: map[string]string{
-				"GITHUB_WORKSPACE":    ".",
-				"GITHUB_TOKEN":        "token",
 				"RELEASE_NAME_PREFIX": "text",
 				"RELEASE_NAME_SUFFIX": "text",
 			},
@@ -143,19 +128,15 @@ func TestGetConfig(t *testing.T) {
 					ReleaseNamePrefix: "text",
 					ReleaseNameSuffix: "text",
 				},
-				Token: "token",
 			},
 		},
 		"Configuration: DRAFT_RELEASE": {
 			EnvVars: map[string]string{
-				"GITHUB_WORKSPACE": ".",
-				"GITHUB_TOKEN":     "token",
-				"DRAFT_RELEASE":    "true",
+				"DRAFT_RELEASE": "true",
 			},
 			Changelog: "CHANGELOG.md",
 			Expected: expected{
 				Config: new(app.Configuration),
-				Token:  "token",
 				Release: &release.Release{
 					Assets: make([]asset.Asset, 0),
 					Draft:  true,
@@ -167,14 +148,11 @@ func TestGetConfig(t *testing.T) {
 		},
 		"Configuration: PRE_RELEASE": {
 			EnvVars: map[string]string{
-				"GITHUB_WORKSPACE": ".",
-				"GITHUB_TOKEN":     "token",
-				"PRE_RELEASE":      "true",
+				"PRE_RELEASE": "true",
 			},
 			Changelog: "CHANGELOG.md",
 			Expected: expected{
 				Config: new(app.Configuration),
-				Token:  "token",
 				Release: &release.Release{
 					Assets:     make([]asset.Asset, 0),
 					PreRelease: true,
@@ -186,16 +164,13 @@ func TestGetConfig(t *testing.T) {
 		},
 		"Configuration: Ignore Changelog": {
 			EnvVars: map[string]string{
-				"GITHUB_WORKSPACE": ".",
-				"GITHUB_TOKEN":     "token",
-				"CHANGELOG_FILE":   "none",
+				"CHANGELOG_FILE": "none",
 			},
 			Changelog: "none",
 			Expected: expected{
 				Config: &app.Configuration{
 					IgnoreChangelog: true,
 				},
-				Token: "token",
 				Release: &release.Release{
 					Assets:  make([]asset.Asset, 0),
 					Changes: new(changelog.Changes),
@@ -216,6 +191,11 @@ func TestGetConfig(t *testing.T) {
 			time.Sleep(5 * time.Millisecond)
 		}
 
+		for variable, value := range envVars {
+			err := os.Setenv(variable, value)
+			assert.Equal(nil, err, fmt.Sprintf("preparation: error setting environment variable '%v=%v'", variable, value))
+		}
+
 		for variable, value := range test.EnvVars {
 			err := os.Setenv(variable, value)
 			assert.Equal(nil, err, fmt.Sprintf("preparation: error setting environment variable '%v=%v'", variable, value))
@@ -225,10 +205,9 @@ func TestGetConfig(t *testing.T) {
 		rel := new(release.Release)
 		rel.Changes = new(changelog.Changes)
 
-		config, token, err := app.GetConfig(rel, rel.Changes, fs, []string{})
+		config, err := app.GetConfig(rel, rel.Changes, fs, []string{})
 
 		assert.Equal(test.Expected.Config, config)
-		assert.Equal(test.Expected.Token, token)
 		if test.Expected.Error != "" {
 			assert.EqualError(err, test.Expected.Error)
 		}
@@ -283,17 +262,6 @@ func TestHydrate(t *testing.T) {
 			Tag:                  "v1.0.0",
 			ReadProjectNameError: errors.New("error"),
 			ReadCommitHashError:  nil,
-			ReadTagError:         nil,
-			ExpectedError:        "error",
-		},
-		"ReadCommitHash Error": {
-			Config: app.Configuration{},
-			Release: release.Release{
-				Changes: new(changelog.Changes),
-			},
-			Tag:                  "v1.0.0",
-			ReadProjectNameError: nil,
-			ReadCommitHashError:  errors.New("error"),
 			ReadTagError:         nil,
 			ExpectedError:        "error",
 		},
@@ -368,7 +336,7 @@ func TestHydrate(t *testing.T) {
 
 		m := new(mocks.Repository)
 		m.On("ReadProjectName").Return(test.ReadProjectNameError).Once()
-		m.On("ReadCommitHash").Return(test.ReadCommitHashError).Once()
+		m.On("ReadCommitHash").Once()
 		m.On("ReadTag", &test.Release.Changes.Version, false).Return(test.ReadTagError).Once()
 		m.On("GetTag").Return(&test.Tag).Once()
 
