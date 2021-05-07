@@ -92,6 +92,14 @@ func GetConfig(release release.Interface, changes changelog.Interface, fs afero.
 
 	release.SetAssets(GetAssets(fs, args))
 
+	// NOTE: deprecation warnings
+	if os.Getenv("RELEASE_NAME_POSTFIX") != "" {
+		log.Fatalf("'RELEASE_NAME_POSTFIX' was deprecated, use 'RELEASE_NAME_SUFFIX' instead")
+	}
+	if os.Getenv("ALLOW_TAG_PREFIX") != "" {
+		log.Fatalf("'ALLOW_TAG_PREFIX' was deprecated, use 'TAG_PREFIX_REGEX' instead")
+	}
+
 	return conf, nil
 }
 
