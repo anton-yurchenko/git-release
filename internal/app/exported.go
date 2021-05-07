@@ -136,9 +136,7 @@ func (c *Configuration) Hydrate(local repository.Interface, version *string, rel
 		return err
 	}
 
-	if err := local.ReadCommitHash(); err != nil {
-		return err
-	}
+	local.ReadCommitHash()
 
 	if err := local.ReadTag(version, c.AllowTagPrefix); err != nil {
 		return err
