@@ -10,12 +10,14 @@ import (
 	"github.com/anton-yurchenko/git-release/internal/pkg/release"
 	"github.com/anton-yurchenko/git-release/internal/pkg/repository"
 	"github.com/anton-yurchenko/git-release/pkg/changelog"
-	"github.com/google/go-github/v32/github"
+	"github.com/google/go-github/v35/github"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 	"golang.org/x/oauth2"
 )
+
+const ()
 
 // Configuration is a git-release settings struct
 type Configuration struct {
@@ -28,12 +30,21 @@ type Configuration struct {
 }
 
 // GetConfig sets validated Release/Changelog configuration and returns github.com Token
-func GetConfig(release release.Interface, changes changelog.Interface, fs afero.Fs, args []string) (*Configuration, string, error) {
+func GetConfig(release release.Interface, changes changelog.Interface, fs afero.Fs, args []string) (*Configuration, error) {
 	conf := new(Configuration)
 
-	token := os.Getenv("GITHUB_TOKEN")
-	if token == "" {
-		return conf, "", errors.New("'GITHUB_TOKEN' is not defined")
+	l := []string{
+		"GITHUB_TOKEN",
+		"GITHUB_WORKSPACE",
+		"GITHUB_API_URL",
+		"GITHUB_SERVER_URL",
+		"GITHUB_REF",
+	}
+
+	for _, v := range l {
+		if os.Getenv(v) == "" {
+			return conf, errors.New(fmt.Sprintf("'%v' is not defined", v))
+		}
 	}
 
 	d := os.Getenv("DRAFT_RELEASE")
@@ -48,11 +59,6 @@ func GetConfig(release release.Interface, changes changelog.Interface, fs afero.
 		release.EnablePreRelease()
 	} else if strings.ToLower(p) != "false" {
 		log.Warn("'PRE_RELEASE' is not equal to 'true', assuming 'false'")
-	}
-
-	dir := os.Getenv("GITHUB_WORKSPACE")
-	if dir == "" {
-		log.Fatal("'GITHUB_WORKSPACE' is not defined")
 	}
 
 	t := os.Getenv("ALLOW_EMPTY_CHANGELOG")
@@ -104,7 +110,7 @@ func GetConfig(release release.Interface, changes changelog.Interface, fs afero.
 	}
 
 	if !conf.IgnoreChangelog {
-		changes.SetFile(fmt.Sprintf("%v/%v", dir, c))
+		changes.SetFile(fmt.Sprintf("%v/%v", os.Getenv("GITHUB_WORKSPACE"), c))
 		b, err := IsExists(changes.GetFile(), fs)
 		if err != nil {
 			log.Fatal(err)
@@ -117,17 +123,32 @@ func GetConfig(release release.Interface, changes changelog.Interface, fs afero.
 
 	release.SetAssets(GetAssets(fs, args))
 
-	return conf, token, nil
+	return conf, nil
 }
 
 // Login to github.com and return authenticated client
-func Login(token string) *github.Client {
+func Login(token string) (*github.Client, error) {
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: token},
 	)
 	tc := oauth2.NewClient(context.Background(), ts)
 
-	return github.NewClient(tc)
+	if os.Getenv("GITHUB_API_URL") != "https://api.github.com" && os.Getenv("GITHUB_SERVER_URL") != "https://github.com" {
+		log.Info("running on GitHub Enterprise")
+
+		if os.Getenv("GODEBUG") != "" {
+			log.Debug("baseURL: %v, uploadURL: %v", os.Getenv("GITHUB_API_URL"), os.Getenv("GITHUB_SERVER_URL"))
+		}
+
+		c, err := github.NewEnterpriseClient(os.Getenv("GITHUB_API_URL"), os.Getenv("GITHUB_SERVER_URL"), tc)
+		if err != nil {
+			return nil, errors.Wrap(err, "error connecting to a private github instance")
+		}
+
+		return c, nil
+	}
+
+	return github.NewClient(tc), nil
 }
 
 // Hydrate fetches project's git repository information

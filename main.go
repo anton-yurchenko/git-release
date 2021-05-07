@@ -21,9 +21,9 @@ func init() {
 		DisableTimestamp:       true,
 	})
 	log.SetOutput(os.Stdout)
-	log.SetLevel(log.InfoLevel)
+	log.SetLevel(log.DebugLevel)
 
-	log.Info("'git-release' version: ", app.Version)
+	log.Info("version: ", app.Version)
 }
 
 func main() {
@@ -32,12 +32,15 @@ func main() {
 	release := new(release.Release)
 	release.Changes = new(changelog.Changes)
 
-	conf, token, err := app.GetConfig(release, release.Changes, fs, os.Args[1:])
+	conf, err := app.GetConfig(release, release.Changes, fs, os.Args[1:])
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	cli := app.Login(token)
+	cli, err := app.Login(os.Getenv("GITHUB_TOKEN"))
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	if err := conf.Hydrate(repo, &release.Changes.Version, &release.Name); err != nil {
 		log.Fatal(err)

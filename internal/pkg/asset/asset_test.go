@@ -9,7 +9,7 @@ import (
 	"github.com/anton-yurchenko/git-release/internal/pkg/asset"
 	"github.com/anton-yurchenko/git-release/internal/pkg/repository"
 	"github.com/anton-yurchenko/git-release/mocks"
-	"github.com/google/go-github/v32/github"
+	"github.com/google/go-github/v35/github"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
