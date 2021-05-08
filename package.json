@@ -1,6 +1,6 @@
 {
   "name": "git-release",
-  "version": "3.4.4",
+  "version": "4.0.0",
   "description": "A GitHub Action for creating a GitHub Release with Assets and Changelog whenever a new Tag is pushed to the repository.",
   "main": "wrapper.js",
   "directories": {
@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/anton-yurchenko/git-release#readme",
   "dependencies": {
-    "@actions/core": "^1.2.6"
-  }
+    "@actions/core": "^1.2.7"
+  },
+  "devDependencies": {}
 }
