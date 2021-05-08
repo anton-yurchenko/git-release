@@ -23,7 +23,7 @@ func init() {
 	log.SetOutput(os.Stdout)
 	log.SetLevel(log.DebugLevel)
 
-	log.Info("version: ", app.Version)
+	log.Info("version: ", Version)
 }
 
 func main() {
