@@ -1,3 +1,19 @@
+## [4.0.0](https://github.com/anton-yurchenko/git-release/releases/tag/v4.0.0) - 2021-05-07
+### Changed
+- Allow `v` prefix without `ALOW_TAG_PREFIX` (*still required for other prefixes*)
+- Update Dependencies
+- Update to Golang 1.16
+- Not existing changelog file won't fail the execution, but will log this as error. Set `CHANGELOG_FILE=none` do silence an error message
+
+### Added
+- Support GitHub Enterprise
+- Use regex expression in `TAG_PREFIX_REGEX`
+
+### Removed
+- `ALLOW_TAG_PREFIX` was replaced with `TAG_PREFIX_REGEX`
+- `RELEASE_NAME_POSTFIX` was replaced with `RELEASE_NAME_SUFFIX`
+- Logs on empty (default) variables: [`DRAFT_RELEASE`, `PRE_RELEASE`, `ALLOW_EMPTY_CHANGELOG`, `RELEASE_NAME`, `RELEASE_NAME_PREFIX`, `RELEASE_NAME_SUFFIX`, `CHANGELOG_FILE`]
+
 ## [3.5.0](https://github.com/anton-yurchenko/git-release/releases/tag/v3.5.0) - 2021-05-01
 ### Changed
 - Update Dependencies

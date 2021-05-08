@@ -21,7 +21,12 @@ func init() {
 		DisableTimestamp:       true,
 	})
 	log.SetOutput(os.Stdout)
-	log.SetLevel(log.DebugLevel)
+
+	if os.Getenv("GODEBUG") != "" {
+		log.SetLevel(log.DebugLevel)
+	} else {
+		log.SetLevel(log.InfoLevel)
+	}
 
 	log.Info("version: ", Version)
 }
