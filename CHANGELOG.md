@@ -1,51 +1,50 @@
-## [4.0.0](https://github.com/anton-yurchenko/git-release/releases/tag/v4.0.0) - 2021-05-07
+## [Unreleased]
 ### Changed
 - Allow `v` prefix without `ALOW_TAG_PREFIX` (*still required for other prefixes*)
 - Update Dependencies
 - Update to Golang 1.16
-- Not existing changelog file won't fail the execution, but will log this as error. Set `CHANGELOG_FILE=none` do silence an error message
+- Not existing changelog file won't fail the execution, but will log this as error. Set `CHANGELOG_FILE=none` to silence an error message
 
 ### Added
-- Support GitHub Enterprise
-- Use regex expression in `TAG_PREFIX_REGEX`
+- [Issue #46](https://github.com/anton-yurchenko/git-release/issues/46) Support GitHub Enterprise (*Thanks to [cb80](https://github.com/cb80)*)
 
 ### Removed
 - `ALLOW_TAG_PREFIX` was replaced with `TAG_PREFIX_REGEX`
 - `RELEASE_NAME_POSTFIX` was replaced with `RELEASE_NAME_SUFFIX`
 - Logs on empty (default) variables: [`DRAFT_RELEASE`, `PRE_RELEASE`, `ALLOW_EMPTY_CHANGELOG`, `RELEASE_NAME`, `RELEASE_NAME_PREFIX`, `RELEASE_NAME_SUFFIX`, `CHANGELOG_FILE`]
 
-## [3.5.0](https://github.com/anton-yurchenko/git-release/releases/tag/v3.5.0) - 2021-05-01
+## [3.5.0] - 2021-05-01
 ### Changed
 - Update Dependencies
 - Build project on GitHub Actions
 
 ### Added
-- Support ARM64 by building a multi-arch docker image
+- [Issue #44](https://github.com/anton-yurchenko/git-release/issues/44) - Support ARM64 by building a multi-arch docker image (*Thanks to [rsliotta](https://github.com/rsliotta)*)
 
-## [3.4.4](https://github.com/anton-yurchenko/git-release/releases/tag/v3.4.4) - 2021-03-13
+## [3.4.4] - 2021-03-13
 ### Changed
 - Update Dependencies
 
 ### Deprecated
 - `RELEASE_NAME_POSTFIX` will be changed to `RELEASE_NAME_SUFFIX` in the next release
 
-## [3.4.3](https://github.com/anton-yurchenko/git-release/releases/tag/v3.4.3) - 2021-01-02
+## [3.4.3] - 2021-01-02
 ### Fixed
 - [PR #38](https://github.com/anton-yurchenko/git-release/pull/38) - Version prefix greedy quantifier caused incorrect parsing of major version higher then `9`. (*Thanks to [rgriebl](https://github.com/rgriebl)*)
 
 ### Changed
 - Update Dependencies
 
-## [3.4.2](https://github.com/anton-yurchenko/git-release/releases/tag/v3.4.2) - 2020-10-25
+## [3.4.2] - 2020-10-25
 ### Changed
 - Update Dependencies
 - Make `version` output more specific
 
-## [3.4.1](https://github.com/anton-yurchenko/git-release/releases/tag/v3.4.1) - 2020-08-31
+## [3.4.1] - 2020-08-31
 ### Changed
 - Update Dependencies
 
-## [3.4.0](https://github.com/anton-yurchenko/git-release/releases/tag/v3.4.0) - 2020-07-10
+## [3.4.0] - 2020-07-10
 ### Added
 - Glob pattern support
 - Unit Tests
@@ -58,14 +57,14 @@
 ### Changed
 - Refactor JavaScript wrapper
 
-## [3.3.0](https://github.com/anton-yurchenko/git-release/releases/tag/v3.3.0) - 2020-06-27
+## [3.3.0] - 2020-06-27
 ### Added
 - Wrapper script: allow execution on Windows runners
 
 ### Changed
 - Action execution through Git: from Docker to NodeJS
 
-## [3.2.0](https://github.com/anton-yurchenko/git-release/releases/tag/v3.2.0) - 2020-06-04
+## [3.2.0] - 2020-06-04
 ### Fixed
 - Ignored `ALLOW_EMPTY_CHANGELOG=true` failed to create a release
 
@@ -76,12 +75,12 @@
 - Upgrade GoLang to 1.14.4
 - Upgrade dependencies
 
-## [3.1.2](https://github.com/anton-yurchenko/git-release/releases/tag/v3.1.2) - 2020-04-10
+## [3.1.2] - 2020-04-10
 ### Fixed
 - [Issue #16](https://github.com/anton-yurchenko/git-release/issues/16) - Error parsing tags with slashes. (*Thanks to [Jonathan Hilgart](https://github.com/jonhilgart22)*)
 - Support `.` in organization and repository names
 
-## [3.1.1](https://github.com/anton-yurchenko/git-release/releases/tag/v3.1.1) - 2020-03-25
+## [3.1.1] - 2020-03-25
 ### Fixed
 - [Issue #14](https://github.com/anton-yurchenko/git-release/issues/14) - Ignored first release link in a comment. (*Thanks to [Luiz Ferraz](https://github.com/Fryuni)*)
 
@@ -89,15 +88,15 @@
 - Upgrade GoLang to 1.14.1
 - Upgrade dependencies
 
-## [3.1.0](https://github.com/anton-yurchenko/git-release/releases/tag/v3.1.0) - 2020-02-17
+## [3.1.0] - 2020-02-17
 ### Added
 - [Issue #10](https://github.com/anton-yurchenko/git-release/issues/10) - Release Title manipulation through `RELEASE_NAME`, `RELEASE_NAME_PREFIX`, `RELEASE_NAME_POSTFIX`. (*Thanks to [Victor](https://github.com/victoraugustolls) for suggesting a change*)
 
-## [3.0.1](https://github.com/anton-yurchenko/git-release/releases/tag/v3.0.1) - 2020-01-08
+## [3.0.1] - 2020-01-08
 ### Fixed
 - Empty release name
 
-## [3.0.0](https://github.com/anton-yurchenko/git-release/releases/tag/v3.0.0) - 2020-01-05
+## [3.0.0] - 2020-01-05
 This is a major release because of a certain behavior change:  
 - *Tag (without prefix) should be identical to Changelog Version in order for changes to be mapped (for example tag `v3.0.0-rc.1` is expected to be listed as `3.0.0-rc.1` in changelog).*
 - *By default valid semver version is expected. Prefix should be explicitly allowed by enabling `ALLOW_TAG_PREFIX`*
@@ -114,7 +113,7 @@ This is a major release because of a certain behavior change:
 ### Added
 - `ALLOW_TAG_PREFIX` to control version prefix like `v` or `release`
 
-## [2.0.2](https://github.com/anton-yurchenko/git-release/releases/tag/v2.0.2) - 2019-12-29
+## [2.0.2] - 2019-12-29
 ### Added
 - CircleCI integrated as a Continuous Integration system
 - GolangCI integrated as a Continuous Code Quality system
@@ -123,11 +122,11 @@ This is a major release because of a certain behavior change:
 ### Changed
 - DockerHub setup as a Continuous Delivery system
 
-## [2.0.1](https://github.com/anton-yurchenko/git-release/releases/tag/v2.0.1) - 2019-12-28
+## [2.0.1] - 2019-12-28
 ### Changed
 - Disable unit testing on Docker Hub auto builds
 
-## [2.0.0](https://github.com/anton-yurchenko/git-release/releases/tag/v2.0.0) - 2019-12-28
+## [2.0.0] - 2019-12-28
 This is a major release as most of the code was refactored and some behavior was changed, for example "Tag version is set as a release title"
 
 ### Fixed
@@ -147,22 +146,22 @@ This is a major release as most of the code was refactored and some behavior was
 - **remote** package splitted into 2 packages: **asset**, **release**
 - Tag version is set as a release title
 
-## [1.1.0](https://github.com/anton-yurchenko/git-release/releases/tag/v1.1.0) - 2019-12-21
+## [1.1.0] - 2019-12-21
 ### Added
 - [PR #3](https://github.com/anton-yurchenko/git-release/pull/3) - Allow any prefix to semver tag. (*Thanks to [Taylor Becker](https://github.com/tajobe) for the PR*)
 
 ### Fixed
 - [PR #3](https://github.com/anton-yurchenko/git-release/pull/3) - PreRelease overwriting Draft configuration. (*Thanks to [Taylor Becker](https://github.com/tajobe) for reporting an issue*)
 
-## [1.0.0](https://github.com/anton-yurchenko/git-release/releases/tag/v1.0.0) - 2019-10-01
+## [1.0.0] - 2019-10-01
 - First stable release
 
-## [0.2.1](https://github.com/anton-yurchenko/git-release/releases/tag/v0.2.1) - 2019-10-01
+## [0.2.1] - 2019-10-01
 ### Fixed
 - Wrong PRE_RELEASE message when set
 - Correct 'creating release' log message
 
-## [0.2.0](https://github.com/anton-yurchenko/git-release/releases/tag/v0.2.0) - 2019-10-01
+## [0.2.0] - 2019-10-01
 ### Added
 - Changelog reader
 - MIT License
@@ -173,7 +172,7 @@ This is a major release as most of the code was refactored and some behavior was
 ### Fixed
 - Create release without assets
 
-## [0.1.1](https://github.com/anton-yurchenko/git-release/releases/tag/v0.1.1) - 2019-09-29
+## [0.1.1] - 2019-09-29
 ### Added
 - Tag regex to match v1.0.0 and 1.0.0
 - Log when procedure finished
@@ -182,9 +181,34 @@ This is a major release as most of the code was refactored and some behavior was
 - 'DRAFT_RELEASE=false' warning logging
 - 'PRE_RELEASE=false' warning logging
 
-## [0.1.0](https://github.com/anton-yurchenko/git-release/releases/tag/v0.1.0) - 2019-09-29
+## [0.1.0] - 2019-09-29
 ### Added
 - Create GitHub Release
 - Upload Assets
 - Control Release Draft through env.var 'DRAFT_RELEASE'
 - Control Release Pre Release through env.var 'PRE_RELEASE'
+
+[Unreleased]: https://github.com/anton-yurchenko/git-release/compare/v3.5.0...HEAD
+[3.5.0]: https://github.com/anton-yurchenko/git-release/compare/v3.5.0...v3.4.4
+[3.4.4]: https://github.com/anton-yurchenko/git-release/compare/v3.4.4...v3.4.3
+[3.4.3]: https://github.com/anton-yurchenko/git-release/compare/v3.4.3...v3.4.2
+[3.4.2]: https://github.com/anton-yurchenko/git-release/compare/v3.4.2...v3.4.1
+[3.4.1]: https://github.com/anton-yurchenko/git-release/compare/v3.4.1...v3.4.0
+[3.4.0]: https://github.com/anton-yurchenko/git-release/compare/v3.4.0...v3.3.0
+[3.3.0]: https://github.com/anton-yurchenko/git-release/compare/v3.3.0...v3.2.0
+[3.2.0]: https://github.com/anton-yurchenko/git-release/compare/v3.2.0...v3.1.2
+[3.1.2]: https://github.com/anton-yurchenko/git-release/compare/v3.1.2...v3.1.1
+[3.1.1]: https://github.com/anton-yurchenko/git-release/compare/v3.1.1...v3.1.0
+[3.1.0]: https://github.com/anton-yurchenko/git-release/compare/v3.1.0...v3.0.1
+[3.0.1]: https://github.com/anton-yurchenko/git-release/compare/v3.0.1...v3.0.0
+[3.0.0]: https://github.com/anton-yurchenko/git-release/compare/v3.0.0...v2.0.2
+[2.0.2]: https://github.com/anton-yurchenko/git-release/compare/v2.0.2...v2.0.1
+[2.0.1]: https://github.com/anton-yurchenko/git-release/compare/v2.0.1...v2.0.0
+[2.0.0]: https://github.com/anton-yurchenko/git-release/compare/v2.0.0...v1.1.0
+[2.0.0]: https://github.com/anton-yurchenko/git-release/compare/v2.0.0...v1.1.0
+[1.1.0]: https://github.com/anton-yurchenko/git-release/compare/v1.1.0...v1.0.0
+[1.0.0]: https://github.com/anton-yurchenko/git-release/compare/v1.0.0...v0.2.1
+[0.2.1]: https://github.com/anton-yurchenko/git-release/compare/v0.2.0...v0.2.1
+[0.2.0]: https://github.com/anton-yurchenko/git-release/compare/v0.1.1...v0.2.0
+[0.1.1]: https://github.com/anton-yurchenko/git-release/compare/v0.0.1...v0.1.1
+[0.1.0]: https://github.com/anton-yurchenko/git-release/releases/tag/v0.1.0
