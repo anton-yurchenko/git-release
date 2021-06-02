@@ -32,6 +32,15 @@ jobs:
       - name: Test
         run: go test -v $(go list ./... | grep -v vendor | grep -v mocks) -race -coverprofile=coverage.txt -covermode=atomic
 
+      - name: Upload Code Coverage
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./coverage.txt
+          flags: coverage
+          name: release
+          fail_ci_if_error: false
+
   scan:
     name: Security Scan
     runs-on: ubuntu-latest
