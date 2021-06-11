@@ -1,21 +1,23 @@
-package app
+package release
 
 import (
+	"context"
+	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 
-	"github.com/anton-yurchenko/git-release/internal/pkg/asset"
-	log "github.com/sirupsen/logrus"
+	"github.com/google/go-github/github"
 	"github.com/spf13/afero"
 )
 
 // GetAssets returns validated assets supplied via 'args'
-func GetAssets(fs afero.Fs, args []string) []asset.Asset {
-	assets := make([]asset.Asset, 0)
+func GetAssets(fs afero.Fs, args []string) (*[]Asset, error) {
+	assets := make([]Asset, 0)
 	arguments := make([]string, 0)
 
 	for _, arg := range args {
-		// split arguments by space, new line, comma, pipe
 		if len(strings.Split(arg, " ")) > 1 {
 			arguments = append(arguments, strings.Split(arg, " ")...)
 		} else if len(strings.Split(arg, "\n")) > 1 {
@@ -32,12 +34,12 @@ func GetAssets(fs afero.Fs, args []string) []asset.Asset {
 	for _, argument := range arguments {
 		files, err := afero.Glob(fs, filepath.Clean(argument))
 		if err != nil {
-			log.Fatal(err)
+			return nil, err
 		}
 
 		for _, file := range files {
 			if file != "." {
-				asset := asset.Asset{
+				asset := Asset{
 					Name: filepath.Base(file),
 					Path: file,
 				}
@@ -46,10 +48,34 @@ func GetAssets(fs afero.Fs, args []string) []asset.Asset {
 			}
 		}
 	}
-	return assets
+	return &assets, nil
 }
 
-// IsExists validates whether a file exists and returns the result as a bool
-func IsExists(file string, fs afero.Fs) (bool, error) {
-	return afero.Exists(fs, file)
+// Upload an asset to a GitHub release
+func (a *Asset) Upload(release *Release, cli Client, id int64, msgs chan string, errs chan error, wg *sync.WaitGroup) {
+	defer wg.Done()
+	msgs <- fmt.Sprintf("uploading asset %v", a.Name)
+
+	content, err := os.Open(a.Path)
+	if err != nil {
+		errs <- err
+		return
+	}
+
+	_, _, err = cli.UploadReleaseAsset(
+		context.Background(),
+		release.Slug.Owner,
+		release.Slug.Name,
+		id,
+		&github.UploadOptions{
+			Name: strings.ReplaceAll(a.Name, "/", "-"),
+		},
+		content,
+	)
+	if err != nil {
+		errs <- err
+		return
+	}
+
+	errs <- nil
 }
