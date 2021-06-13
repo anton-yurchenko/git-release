@@ -30,14 +30,14 @@ $(GO_LINTER):
 
 .PHONY: build
 build: test
-	@rm -rf ./build
-	@mkdir -p build
+	@rm -rf ./bin
+	@mkdir -p bin
 	@for ARCH in $(ARCHS); do \
 		for OS in $(OSES); do \
 			if test "$$OS" = "windows"; then \
-				GOOS=$$OS GOARCH=$$ARCH go build -o build/$(BINARY)-$$OS-$$ARCH.exe; \
+				GOOS=$$OS GOARCH=$$ARCH go build -o bin/$(BINARY)-$$OS-$$ARCH.exe; \
 			else \
-				GOOS=$$OS GOARCH=$$ARCH go build -o build/$(BINARY)-$$OS-$$ARCH; \
+				GOOS=$$OS GOARCH=$$ARCH go build -o bin/$(BINARY)-$$OS-$$ARCH; \
 			fi; \
 		done; \
 	done
