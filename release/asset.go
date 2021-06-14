@@ -56,11 +56,12 @@ func (a *Asset) Upload(release *Release, cli Client, id int64, msgs chan string,
 	defer wg.Done()
 	msgs <- fmt.Sprintf("uploading asset %v", a.Name)
 
-	content, err := os.Open(a.Path)
+	file, err := os.Open(a.Path)
 	if err != nil {
 		errs <- err
 		return
 	}
+	defer file.Close()
 
 	_, _, err = cli.UploadReleaseAsset(
 		context.Background(),
@@ -70,7 +71,7 @@ func (a *Asset) Upload(release *Release, cli Client, id int64, msgs chan string,
 		&github.UploadOptions{
 			Name: strings.ReplaceAll(a.Name, "/", "-"),
 		},
-		content,
+		file,
 	)
 	if err != nil {
 		errs <- err
