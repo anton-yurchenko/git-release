@@ -55,8 +55,13 @@ func GetRelease(fs afero.Fs, args []string, tagPrefix, name, namePrefix, nameSuf
 
 // GetReference loads a codebase references from workspace
 func GetReference(prefix string) (*Reference, error) {
-	ref := os.Getenv("GITHUB_REF")
-	semver := fmt.Sprintf("[v]?%v", changelog.SemVerRegex)
+	if os.Getenv("GITHUB_REF") == "" {
+		return nil, errors.New("GITHUB_REF is not defined")
+	}
+
+	if os.Getenv("GITHUB_SHA") == "" {
+		return nil, errors.New("GITHUB_SHA is not defined")
+	}
 
 	var expression string
 	if prefix != "" {
@@ -86,6 +91,10 @@ func GetReference(prefix string) (*Reference, error) {
 
 // GetSlug loads project information from a workspace
 func GetSlug() (*Slug, error) {
+	if os.Getenv("GITHUB_REPOSITORY") == "" {
+		return nil, errors.New("GITHUB_REPOSITORY is not defined")
+	}
+
 	i := os.Getenv("GITHUB_REPOSITORY")
 	regex := regexp.MustCompile(SlugRegex)
 
