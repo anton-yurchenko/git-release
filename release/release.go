@@ -87,9 +87,7 @@ func GetReference(prefix string) (*Reference, error) {
 // GetSlug loads project information from a workspace
 func GetSlug() (*Slug, error) {
 	i := os.Getenv("GITHUB_REPOSITORY")
-	// TODO: improve regex expression
-	expression := "^(?P<owner>[\\w,\\-,\\_\\.]+)\\/(?P<repo>[\\w\\,\\-\\_\\.]+)$"
-	regex := regexp.MustCompile(expression)
+	regex := regexp.MustCompile(SlugRegex)
 
 	if regex.MatchString(i) {
 		return &Slug{
@@ -98,7 +96,7 @@ func GetSlug() (*Slug, error) {
 		}, nil
 	}
 
-	return nil, errors.New(fmt.Sprintf("malformed GITHUB_REPOSITORY (expected '%v', received '%v')", expression, i))
+	return nil, errors.New(fmt.Sprintf("malformed GITHUB_REPOSITORY (expected '%v', received '%v')", SlugRegex, i))
 }
 
 // Publish will create a GitHub release and upload assets to it

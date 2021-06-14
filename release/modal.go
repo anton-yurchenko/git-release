@@ -7,6 +7,10 @@ import (
 	"github.com/google/go-github/github"
 )
 
+const (
+	SlugRegex string = `^(?P<owner>[\w,\-,\_\.]+)\/(?P<repo>[\w\,\-\_\.]+)$`
+)
+
 type Release struct {
 	Name       string
 	Slug       *Slug
