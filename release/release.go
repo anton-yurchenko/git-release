@@ -18,12 +18,10 @@ import (
 func GetRelease(fs afero.Fs, args []string, tagPrefix, name, namePrefix, nameSuffix string) (*Release, error) {
 	release := new(Release)
 
-	// TODO: move that outside the function
 	if strings.ToLower(os.Getenv("DRAFT_RELEASE")) == "true" {
 		release.Draft = true
 	}
 
-	// TODO: move that outside the function
 	if strings.ToLower(os.Getenv("PRE_RELEASE")) == "true" {
 		release.PreRelease = true
 	}
@@ -36,7 +34,7 @@ func GetRelease(fs afero.Fs, args []string, tagPrefix, name, namePrefix, nameSuf
 
 	release.Reference, err = GetReference(tagPrefix)
 	if err != nil {
-		return nil, errors.Wrap(err, "error retrieving source code reference")
+		return nil, errors.Wrap(err, "error retrieving source code reference (control tag prefix via env.var TAG_PREFIX_REGEX)")
 	}
 
 	release.Slug, err = GetSlug()
@@ -160,6 +158,8 @@ func (r *Release) Publish(cli Client) error {
 				log.Error(err)
 			}
 		}
+
+		wg.Wait()
 
 		if failure {
 			return errors.New("error uploading assets")
