@@ -65,9 +65,9 @@ func GetReference(prefix string) (*Reference, error) {
 
 	var expression string
 	if prefix != "" {
-		expression = fmt.Sprintf("^refs/tags/(?P<prefix>%v)%v$", prefix, semver)
+		expression = fmt.Sprintf("^refs/tags/(?P<prefix>%v)%v$", prefix, changelog.SemVerRegex)
 	} else {
-		expression = fmt.Sprintf("^refs/tags/%v$", semver)
+		expression = fmt.Sprintf("^refs/tags/[v]?%v$", changelog.SemVerRegex)
 	}
 	regex := regexp.MustCompile(expression)
 
