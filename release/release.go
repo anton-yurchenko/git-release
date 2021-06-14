@@ -71,22 +71,22 @@ func GetReference(prefix string) (*Reference, error) {
 	}
 	regex := regexp.MustCompile(expression)
 
-	if regex.MatchString(ref) {
+	if regex.MatchString(os.Getenv("GITHUB_REF")) {
 		var version string
 		if prefix != "" {
-			version = regex.ReplaceAllString(ref, "${2}.${3}.${4}${5}${6}${7}${8}")
+			version = strings.TrimPrefix(strings.TrimPrefix(os.Getenv("GITHUB_REF"), "refs/tags/"), prefix)
 		} else {
-			version = regex.ReplaceAllString(ref, "${1}.${2}.${3}${4}${5}${6}${7}${8}")
+			version = strings.TrimPrefix(strings.TrimPrefix(os.Getenv("GITHUB_REF"), "refs/tags/"), "v")
 		}
 
 		return &Reference{
 			CommitHash: os.Getenv("GITHUB_SHA"),
-			Tag:        strings.Join(strings.Split(ref, "/")[2:], "/"),
+			Tag:        strings.Join(strings.Split(os.Getenv("GITHUB_REF"), "/")[2:], "/"),
 			Version:    version,
 		}, nil
 	}
 
-	return nil, errors.New(fmt.Sprintf("malformed env.var GITHUB_REF (control tag prefix via env.var TAG_PREFIX_REGEX): expected to match regex '%v', got '%v'", expression, ref))
+	return nil, errors.New(fmt.Sprintf("malformed env.var GITHUB_REF: expected to match regex '%v', got '%v'", expression, os.Getenv("GITHUB_REF")))
 }
 
 // GetSlug loads project information from a workspace
