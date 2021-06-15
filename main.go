@@ -30,6 +30,7 @@ func init() {
 	log.Debugf("git-release v%v ", Version)
 
 	l := []string{
+		"GITHUB_REPOSITORY",
 		"GITHUB_TOKEN",
 		"GITHUB_WORKSPACE",
 		"GITHUB_API_URL",
