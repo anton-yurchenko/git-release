@@ -9,3 +9,4 @@
 # project
 coverage.txt
 /vendor/
+**/testFile*

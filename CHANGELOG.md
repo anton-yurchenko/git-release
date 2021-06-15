@@ -13,6 +13,12 @@
 - `RELEASE_NAME_POSTFIX` was replaced with `RELEASE_NAME_SUFFIX`
 - Logs on empty (default) variables: [`DRAFT_RELEASE`, `PRE_RELEASE`, `ALLOW_EMPTY_CHANGELOG`, `RELEASE_NAME`, `RELEASE_NAME_PREFIX`, `RELEASE_NAME_SUFFIX`, `CHANGELOG_FILE`]
 
+### Fixed
+- Version extraction
+- Custom prefix matching
+- Theoretically possible incomplete assets upload
+- Nil pointer reference on empty release
+
 ## [3.5.0] - 2021-05-01
 ### Changed
 - Update Dependencies
