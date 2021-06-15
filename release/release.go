@@ -129,7 +129,7 @@ func (r *Release) Publish(cli Client) error {
 	log.Info("release created successfully 🎉")
 
 	// upload assets
-	if len(*r.Assets) > 0 {
+	if r.Assets != nil {
 		errs := make(chan error, len(*r.Assets))
 		messages := make(chan string, len(*r.Assets))
 
