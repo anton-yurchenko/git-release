@@ -166,6 +166,28 @@ func TestGetReference(t *testing.T) {
 				Error: "",
 			},
 		},
+		"Tag with Regex Prefix": {
+			GitHubRef: "refs/tags/prerelease-1.0.0",
+			GitHubSha: "111",
+			Prefix:    "[a-z-]*",
+			Expected: expected{
+				Result: &release.Reference{
+					CommitHash: "111",
+					Version:    "1.0.0",
+					Tag:        "prerelease-1.0.0",
+				},
+				Error: "",
+			},
+		},
+		"Tag with not matching Regex Prefix": {
+			GitHubRef: "refs/tags/prerelease-1.0.0",
+			GitHubSha: "111",
+			Prefix:    "[a-b]*",
+			Expected: expected{
+				Result: nil,
+				Error:  fmt.Sprintf("malformed env.var GITHUB_REF: expected to match regex '^refs/tags/(?P<prefix>[a-b]*)%v$', got 'refs/tags/prerelease-1.0.0'", changelog.SemVerRegex),
+			},
+		},
 		"Tag with custom Prefix and 'v' Prefix": {
 			GitHubRef: "refs/tags/av1.0.0",
 			GitHubSha: "111",
