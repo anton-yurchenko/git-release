@@ -1,12 +1,14 @@
 module github.com/anton-yurchenko/git-release
 
-go 1.15
+go 1.16
 
 require (
-	github.com/google/go-github/v32 v32.1.0
+	github.com/anton-yurchenko/go-changelog v1.0.0
+	github.com/google/go-github v17.0.0+incompatible
+	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/afero v1.6.0
-	github.com/stretchr/testify v1.7.0
-	golang.org/x/oauth2 v0.0.0-20210427180440-81ed05c6b58c
+	github.com/stretchr/testify v1.4.0
+	golang.org/x/oauth2 v0.0.0-20210514164344-f6687ab2804c
 )

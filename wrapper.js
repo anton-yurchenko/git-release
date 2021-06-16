@@ -35,7 +35,7 @@ function main () {
     process.exit(1)
   }
 
-  execute(path.join(__dirname, 'build', filename))
+  execute(path.join(__dirname, 'bin', filename))
 }
 
 main()

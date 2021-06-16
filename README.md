@@ -4,7 +4,6 @@
 [![Code Coverage](https://codecov.io/gh/anton-yurchenko/git-release/branch/master/graph/badge.svg)](https://codecov.io/gh/anton-yurchenko/git-release)
 [![Go Report Card](https://goreportcard.com/badge/github.com/anton-yurchenko/git-release)](https://goreportcard.com/report/github.com/anton-yurchenko/git-release)
 [![Release](https://github.com/anton-yurchenko/git-release/actions/workflows/release.yml/badge.svg)](https://github.com/anton-yurchenko/git-release/actions/workflows/release.yml)
-[![Docker Build](https://img.shields.io/docker/cloud/build/antonyurchenko/git-release)](https://hub.docker.com/r/antonyurchenko/git-release)
 [![Docker Pulls](https://img.shields.io/docker/pulls/antonyurchenko/git-release)](https://hub.docker.com/r/antonyurchenko/git-release)
 [![License](https://img.shields.io/github/license/anton-yurchenko/git-release)](LICENSE.md)
 
@@ -17,8 +16,11 @@ A **GitHub Action** for creating a **GitHub Release** with **Assets** and **Chan
 - Parse Tag to match Semantic Versioning
 - Upload build artifacts (assets) to the release
 - Add a changelog to the release
-- Linux/Windows/ARM runners supported
+- Supports Linux AMD64/ARM64 and Windows runners
 - Filename pattern matching
+- Supports GitHub Enterprise
+- Supports standard `v` prefix out of the box
+- Allows custom SemVer prefixes
 
 ## Manual
 
@@ -63,7 +65,7 @@ A **GitHub Action** for creating a **GitHub Release** with **Assets** and **Chan
 on:
   push:
     tags:
-    - 'v*'
+    - "v[0-9]+.[0-9]+.[0-9]+"
 ```
 
 2. Add Release step to your workflow:
@@ -73,28 +75,23 @@ on:
       uses: docker://antonyurchenko/git-release:latest
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        DRAFT_RELEASE: "false"
-        PRE_RELEASE: "false"
-        CHANGELOG_FILE: "CHANGELOG.md"
-        ALLOW_EMPTY_CHANGELOG: "false"
-        ALLOW_TAG_PREFIX: "true"
       with:
         args: |
-            build/*-amd64.zip
+            build/*.zip
 ```
 
 <details><summary>:information_source: All Configuration Options</summary>
 
 - Provide a list of assets as `args` (divided by one of: `new line`, `space`, `comma`, `pipe`)
-- `DRAFT_RELEASE (true/false as string)` - Save release as draft instead of publishing it (default `false`).
-- `PRE_RELEASE (true/false as string)` - GitHub will point out that this release is identified as non-production ready (default: `false`). 
-- `CHANGELOG_FILE (string)` - Changelog filename (default: `CHANGELOG.md`).
-  - Set to `none` in order to completely ignore changelog. This enables to run the action without repository checkout.
-- `ALLOW_EMPTY_CHANGELOG (true/false as string)` - Allow publishing a release without changelog (default `false`).
-- `ALLOW_TAG_PREFIX (true/false as string)` - Allow prefix on version Tag, for example `v3.2.0` or `release-3.2.0` (default: `false`).
-- `RELEASE_NAME (string)` - Complete release title (may not be combined with PREFIX or SUFFIX).
-- `RELEASE_NAME_PREFIX (string)` - Release title prefix.
-- `RELEASE_NAME_SUFFIX (string)` - Release title suffix.
+- `DRAFT_RELEASE (true/false as string)` - Save release as draft instead of publishing it (default `false`)
+- `PRE_RELEASE (true/false as string)` - GitHub will point out that this release is identified as non-production ready (default: `false`)
+- `CHANGELOG_FILE (string)` - Changelog filename (default: `CHANGELOG.md`)
+  - Set to `none` in order to silence an warning message on missing changelog file
+- `ALLOW_EMPTY_CHANGELOG (true/false as string)` - Allow publishing a release without changelog (default `false`)
+- `TAG_PREFIX_REGEX (string)` - Provide a regex for a SemVer prefix, for example `[a-z-]*` in order to parse `prerelease-1.1.0`
+- `RELEASE_NAME (string)` - Complete release title (may not be combined with PREFIX or SUFFIX)
+- `RELEASE_NAME_PREFIX (string)` - Release title prefix
+- `RELEASE_NAME_SUFFIX (string)` - Release title suffix
 
 </details>  
 
@@ -109,11 +106,6 @@ Example:
       uses: anton-yurchenko/git-release@master
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        DRAFT_RELEASE: "false"
-        PRE_RELEASE: "false"
-        CHANGELOG_FILE: "CHANGELOG.md"
-        ALLOW_EMPTY_CHANGELOG: "false"
-        ALLOW_TAG_PREFIX: "true"
       with:
         args: |
             build\\darwin-amd64.zip
@@ -127,12 +119,12 @@ Example:
 
 ## Remarks
 
-- **Git Tag** should be identical to **Changelog Version** (without prefixes), for example **tag** `v1.0.0` and **changelog version** `1.0.0`.
-- This action is automatically built at **Docker Hub**, and tagged with `latest / v3 / v3.4 / v3.4.1`. You may lock to a certain version instead of using **latest**.  
+- This action has multiple tags: `latest / v3 / v3.4 / v3.4.1`. You may lock to a certain version instead of using **latest**.  
 (*Recommended to lock against a major version, for example* `v3`)
-- Instead of using a pre-built Docker image, you may execute the action through JavaScript wrapper by changing `docker://antonyurchenko/git-release:latest` to `anton-yurchenko/git-release@master` (*might be unstable*)
-- `git-release` operates assets with pattern matching, this means that it is unable to validate whether an asset exists or not.
-- Docker image is published both to [**Docker Hub**](https://hub.docker.com/r/antonyurchenko/git-release) and [**GitHub Packages**](https://github.com/anton-yurchenko/git-release/packages). If you don't want to rely on **Docker Hub** but still want to use the dockerized action, you may switch from `uses: docker://antonyurchenko/git-release:v3` to `uses: docker://ghcr.io/anton-yurchenko/git-release:v1`
+- Instead of using a pre-built Docker image, you may execute the action through JavaScript wrapper by changing `docker://antonyurchenko/git-release:latest` to `anton-yurchenko/git-release@master`
+- `git-release` operates assets with pattern matching, this means that it is unable to validate whether an asset exists
+- Docker image is published both to [**Docker Hub**](https://hub.docker.com/r/antonyurchenko/git-release) and [**GitHub Packages**](https://github.com/anton-yurchenko/git-release/packages). If you don't want to rely on **Docker Hub** but still want to use the dockerized action, you may switch from `uses: docker://antonyurchenko/git-release:v3` to `uses: docker://ghcr.io/anton-yurchenko/git-release:v3`
+- Slashes (`/`) in asset filenames will be replaced with dashes (`-`)
 
 ## License
 
