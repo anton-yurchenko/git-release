@@ -72,7 +72,6 @@ func GetReference(prefix string) (*Reference, error) {
 	if regex.MatchString(os.Getenv("GITHUB_REF")) {
 		var version string
 		if prefix != "" {
-			// version = strings.TrimPrefix(strings.TrimPrefix(os.Getenv("GITHUB_REF"), "refs/tags/"), prefix)
 			versionRegex := regexp.MustCompile(fmt.Sprintf("^refs/tags/(?P<prefix>%v)(?P<version>.*)$", prefix))
 			if versionRegex.MatchString(os.Getenv("GITHUB_REF")) {
 				version = versionRegex.ReplaceAllString(os.Getenv("GITHUB_REF"), "${2}")

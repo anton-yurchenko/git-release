@@ -88,7 +88,7 @@ on:
 - `CHANGELOG_FILE (string)` - Changelog filename (default: `CHANGELOG.md`)
   - Set to `none` in order to silence an warning message on missing changelog file
 - `ALLOW_EMPTY_CHANGELOG (true/false as string)` - Allow publishing a release without changelog (default `false`)
-- `TAG_PREFIXREGEX (string)` - Provide a regex for a SemVer prefix, for example `[a-z-]*` in order to parse `prerelease-1.1.0`
+- `TAG_PREFIX_REGEX (string)` - Provide a regex for a SemVer prefix, for example `[a-z-]*` in order to parse `prerelease-1.1.0`
 - `RELEASE_NAME (string)` - Complete release title (may not be combined with PREFIX or SUFFIX)
 - `RELEASE_NAME_PREFIX (string)` - Release title prefix
 - `RELEASE_NAME_SUFFIX (string)` - Release title suffix

@@ -1,4 +1,8 @@
+# Changelog
+
 ## [Unreleased]
+
+## [4.0.0] - 2021-06-16
 ### Changed
 - Allow `v` prefix without `ALOW_TAG_PREFIX` (*still required for other prefixes*)
 - Update Dependencies
@@ -194,7 +198,8 @@ This is a major release as most of the code was refactored and some behavior was
 - Control Release Draft through env.var 'DRAFT_RELEASE'
 - Control Release Pre Release through env.var 'PRE_RELEASE'
 
-[Unreleased]: https://github.com/anton-yurchenko/git-release/compare/v3.5.0...HEAD
+[Unreleased]: https://github.com/anton-yurchenko/git-release/compare/v4.0.0...HEAD
+[4.0.0]: https://github.com/anton-yurchenko/git-release/compare/v4.0.0...v3.5.0
 [3.5.0]: https://github.com/anton-yurchenko/git-release/compare/v3.5.0...v3.4.4
 [3.4.4]: https://github.com/anton-yurchenko/git-release/compare/v3.4.4...v3.4.3
 [3.4.3]: https://github.com/anton-yurchenko/git-release/compare/v3.4.3...v3.4.2

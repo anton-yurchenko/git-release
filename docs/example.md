@@ -182,7 +182,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CHANGELOG_FILE: "CHANGES.md"
-          ALLOW_EMPTY_CHANGELOG: "false"
+          ALLOW_EMPTY_CHANGELOG: "true"
         with:
           args: |
             darwin-amd64.zip

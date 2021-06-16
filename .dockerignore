@@ -4,6 +4,9 @@
 .idea/
 build/
 docs/
+node_modules/
+.nvmrc
+wrapper.js
 action.yml
 .gitignore
 .dockerignore

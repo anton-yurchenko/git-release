@@ -49,6 +49,7 @@ codecov: test
 GO_VER := $$(grep -oE "const Version string = \"[0-9]+.[0-9]+.[0-9]+\"" main.go | tr -d 'const Version string = "')
 DOCKER_VER := $$(grep -oE "LABEL \"version\"=\"[0-9]+.[0-9]+.[0-9]+\"" Dockerfile | tr -d 'LABEL "version"="')
 JS_VER := $$(jq -r '.version' package.json)
+
 .PHONY: release
 release: build
 	@if [ "${tag}" != "v${DOCKER_VER}" ] || [ "${tag}" != "v${DOCKER_VER}" ] || [ "${tag}" != "v${JS_VER}" ]; then\
