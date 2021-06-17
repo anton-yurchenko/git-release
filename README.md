@@ -7,16 +7,21 @@
 [![Docker Pulls](https://img.shields.io/docker/pulls/antonyurchenko/git-release)](https://hub.docker.com/r/antonyurchenko/git-release)
 [![License](https://img.shields.io/github/license/anton-yurchenko/git-release)](LICENSE.md)
 
-A **GitHub Action** for creating a **GitHub Release** with **Assets** and **Changelog** whenever a new **Tag** is pushed to the repository.  
+A **GitHub Action** for a **GitHub Release** creation with **Assets** and **Changelog** on new **Git Tag** in the repository.  
 
 ![PIC](docs/images/release.png)
 
 ## Features
 
-- Parse Tag to match Semantic Versioning
+- Parse Tag to match [Semantic Versioning](https://semver.org/)
 - Upload build artifacts (assets) to the release
-- Add a changelog to the release
-- Supports Linux AMD64/ARM64 and Windows runners
+- Publish release with changelog
+    - [Keep a Changelog](https://keepachangelog.com/) Compliant
+    - [Common Changelog](https://github.com/vweevers/common-changelog) Compliant
+- Supported runners:
+    - Linux AMD64
+    - Linux ARM64
+    - Windows
 - Filename pattern matching
 - Supports GitHub Enterprise
 - Supports standard `v` prefix out of the box
@@ -24,61 +29,60 @@ A **GitHub Action** for creating a **GitHub Release** with **Assets** and **Chan
 
 ## Manual
 
-1. Add changes to `CHANGELOG.md` according to [keepachangelog.com](https://keepachangelog.com/en/1.0.0/ "Keep a ChangeLog").
-*For example:*
+1. Add changes to `CHANGELOG.md`. *For example:*
 
-```markdown
-## [3.4.0] - 2020-07-10
-### Added
-- Glob pattern support
-- Unit Tests
-- Log version
+    ```markdown
+    ## [3.4.0] - 2020-07-10
+    ### Added
+    - Glob pattern support
+    - Unit Tests
+    - Log version
+    
+    ### Fixed
+    - Exception on margins larger than context of changelog
+    - Nil pointer exception in 'release' package
+    
+    ### Changed
+    - Refactor JavaScript wrapper
+    
+    ## [3.3.0] - 2020-06-27
+    ### Added
+    - Wrapper script: allow execution on Windows runners
+    
+    ### Changed
+    - Action execution through Git: from Docker to NodeJS
+    
+    [3.4.0]: https://github.com/anton-yurchenko/git-release/compare/v3.3.0...v3.4.0
+    [3.3.0]: https://github.com/anton-yurchenko/git-release/releases/tag/v3.3.0
+    ```
 
-### Fixed
-- Exception on margins larger than context of changelog
-- Nil pointer exception in 'release' package
+2. Tag a commit with Version (according to [semver.org](https://semver.org/ "Semantic Versioning"))
+3. Push and watch **Git-Release** publishing a Release on GitHub :wink:
 
-### Changed
-- Refactor JavaScript wrapper
-
-## [3.3.0] - 2020-06-27
-### Added
-- Wrapper script: allow execution on Windows runners
-
-### Changed
-- Action execution through Git: from Docker to NodeJS
-
-[3.4.0]: https://github.com/anton-yurchenko/git-release/compare/v3.3.0...v3.4.0
-[3.3.0]: https://github.com/anton-yurchenko/git-release/releases/tag/v3.3.0
-```
-
-2. Tag a commit with Version (according to [semver.org](https://semver.org/ "Semantic Versioning")).
-3. Push and watch **Git-Release** publishing a Release on GitHub :wink:  
-![PIC](docs/images/log.png)
+    ![PIC](docs/images/log.png)
 
 ## Configuration
 
 1. Change the workflow to be triggered on Tag Push:
     - For example `'*'` or a more specific like `'v*'`:
 
-```yaml
-on:
-  push:
-    tags:
-    - "v[0-9]+.[0-9]+.[0-9]+"
-```
+    ```yaml
+    on:
+      push:
+        tags:
+        - "v[0-9]+.[0-9]+.[0-9]+"
+    ```
 
 2. Add Release step to your workflow:
 
-```yaml
-    - name: Release
-      uses: docker://antonyurchenko/git-release:latest
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        args: |
-            build/*.zip
-```
+    ```yaml
+        - name: Release
+          uses: docker://antonyurchenko/git-release:latest
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          with:
+            args: build/*.zip
+    ```
 
 <details><summary>:information_source: All Configuration Options</summary>
 
@@ -86,10 +90,10 @@ on:
 - `DRAFT_RELEASE (true/false as string)` - Save release as draft instead of publishing it (default `false`)
 - `PRE_RELEASE (true/false as string)` - GitHub will point out that this release is identified as non-production ready (default: `false`)
 - `CHANGELOG_FILE (string)` - Changelog filename (default: `CHANGELOG.md`)
-  - Set to `none` in order to silence an warning message on missing changelog file
+  - Set to `none` in order to silence a warning message on missing changelog file
 - `ALLOW_EMPTY_CHANGELOG (true/false as string)` - Allow publishing a release without changelog (default `false`)
 - `TAG_PREFIX_REGEX (string)` - Provide a regex for a SemVer prefix, for example `[a-z-]*` in order to parse `prerelease-1.1.0`
-- `RELEASE_NAME (string)` - Complete release title (may not be combined with PREFIX or SUFFIX)
+- `RELEASE_NAME (string)` - Complete release title (may not be combined with RELEASE_NAME_PREFIX and RELEASE_NAME_SUFFIX)
 - `RELEASE_NAME_PREFIX (string)` - Release title prefix
 - `RELEASE_NAME_SUFFIX (string)` - Release title suffix
 
@@ -119,11 +123,11 @@ Example:
 
 ## Remarks
 
-- This action has multiple tags: `latest / v3 / v3.4 / v3.4.1`. You may lock to a certain version instead of using **latest**.  
-(*Recommended to lock against a major version, for example* `v3`)
+- This action has multiple tags: `latest / v1 / v1.2 / v1.2.3`. You may lock to a certain version instead of using **latest**.  
+(*Recommended to lock against a major version, for example* `v4`)
 - Instead of using a pre-built Docker image, you may execute the action through JavaScript wrapper by changing `docker://antonyurchenko/git-release:latest` to `anton-yurchenko/git-release@master`
 - `git-release` operates assets with pattern matching, this means that it is unable to validate whether an asset exists
-- Docker image is published both to [**Docker Hub**](https://hub.docker.com/r/antonyurchenko/git-release) and [**GitHub Packages**](https://github.com/anton-yurchenko/git-release/packages). If you don't want to rely on **Docker Hub** but still want to use the dockerized action, you may switch from `uses: docker://antonyurchenko/git-release:v3` to `uses: docker://ghcr.io/anton-yurchenko/git-release:v3`
+- Docker image is published both to [**Docker Hub**](https://hub.docker.com/r/antonyurchenko/git-release) and [**GitHub Packages**](https://github.com/anton-yurchenko/git-release/packages). If you don't want to rely on **Docker Hub** but still want to use the dockerized action, you may switch from `uses: docker://antonyurchenko/git-release:latest` to `uses: docker://ghcr.io/anton-yurchenko/git-release:latest`
 - Slashes (`/`) in asset filenames will be replaced with dashes (`-`)
 
 ## License
