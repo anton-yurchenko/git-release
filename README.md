@@ -1,7 +1,7 @@
 # git-release
 
 [![Release](https://img.shields.io/github/v/release/anton-yurchenko/git-release)](https://github.com/anton-yurchenko/git-release/releases/latest)
-[![Code Coverage](https://codecov.io/gh/anton-yurchenko/git-release/branch/master/graph/badge.svg)](https://codecov.io/gh/anton-yurchenko/git-release)
+[![Code Coverage](https://codecov.io/gh/anton-yurchenko/git-release/branch/main/graph/badge.svg)](https://codecov.io/gh/anton-yurchenko/git-release)
 [![Go Report Card](https://goreportcard.com/badge/github.com/anton-yurchenko/git-release)](https://goreportcard.com/report/github.com/anton-yurchenko/git-release)
 [![Release](https://github.com/anton-yurchenko/git-release/actions/workflows/release.yml/badge.svg)](https://github.com/anton-yurchenko/git-release/actions/workflows/release.yml)
 [![Docker Pulls](https://img.shields.io/docker/pulls/antonyurchenko/git-release)](https://hub.docker.com/r/antonyurchenko/git-release)
@@ -107,7 +107,7 @@ Example:
 
 ```yaml
     - name: Release
-      uses: anton-yurchenko/git-release@master
+      uses: anton-yurchenko/git-release@main
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
@@ -125,7 +125,7 @@ Example:
 
 - This action has multiple tags: `latest / v1 / v1.2 / v1.2.3`. You may lock to a certain version instead of using **latest**.  
 (*Recommended to lock against a major version, for example* `v4`)
-- Instead of using a pre-built Docker image, you may execute the action through JavaScript wrapper by changing `docker://antonyurchenko/git-release:latest` to `anton-yurchenko/git-release@master`
+- Instead of using a pre-built Docker image, you may execute the action through JavaScript wrapper by changing `docker://antonyurchenko/git-release:latest` to `anton-yurchenko/git-release@main`
 - `git-release` operates assets with pattern matching, this means that it is unable to validate whether an asset exists
 - Docker image is published both to [**Docker Hub**](https://hub.docker.com/r/antonyurchenko/git-release) and [**GitHub Packages**](https://github.com/anton-yurchenko/git-release/packages). If you don't want to rely on **Docker Hub** but still want to use the dockerized action, you may switch from `uses: docker://antonyurchenko/git-release:latest` to `uses: docker://ghcr.io/anton-yurchenko/git-release:latest`
 - Slashes (`/`) in asset filenames will be replaced with dashes (`-`)
