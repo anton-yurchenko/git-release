@@ -8,7 +8,7 @@
 
 ## [4.0.0] - 2021-06-16
 ### Changed
-- Enforce changelog file format to comply **Keep a Changelog**/**Common Changelog**
+- Enforce changelog file format to comply with **Keep a Changelog**/**Common Changelog**
 - Allow `v` prefix without `ALOW_TAG_PREFIX` (*still required for other prefixes*)
 - Update Dependencies
 - Update to Golang 1.16
