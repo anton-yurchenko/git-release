@@ -14,7 +14,7 @@ import (
 )
 
 // Version contains current application version
-const Version string = "4.0.0"
+const Version string = "4.0.1"
 
 func init() {
 	log.SetReportCaller(false)
@@ -78,7 +78,10 @@ func main() {
 
 		r := c.GetRelease(rel.Reference.Version)
 		if r == nil {
-			msg := fmt.Sprintf("changelog file does not contain version %v", rel.Reference.Version)
+			msg := fmt.Sprintf("No changes were found for version %v", rel.Reference.Version) + ` Make sure that:
+- Changelog file contains a required version
+- Version contains changes in it
+- Changelog is compliant with either 'Keep a Changelog' or 'Common Changelog'`
 
 			if !conf.AllowEmptyChangelog {
 				log.Fatal(msg)

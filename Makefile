@@ -51,16 +51,20 @@ DOCKER_VER := $$(grep -oE "LABEL \"version\"=\"[0-9]+.[0-9]+.[0-9]+\"" Dockerfil
 JS_VER := $$(jq -r '.version' package.json)
 
 .PHONY: release
-release: build
-	@if [ "${tag}" != "v${DOCKER_VER}" ] || [ "${tag}" != "v${DOCKER_VER}" ] || [ "${tag}" != "v${JS_VER}" ]; then\
-		echo "---> Inconsistent Versioning!";\
-		echo "git tag:		${tag}";\
-		echo "main.go version:	${GO_VER}";\
-		echo "Dockerfile version:	${DOCKER_VER}";\
-		echo "package.json version:	${JS_VER}";\
+release: 
+	@if [ "${tag}" != "v${DOCKER_VER}" ] ]; then\
+		echo "do not foger the release: build thing";\
 		exit 1;\
 	fi
-	@echo $$(date +"%Y-%m-%dT%H:%M:%S") > .github/release_timestamp
+	@if [ "${tag}" != "v${DOCKER_VER}" ] || [ "${tag}" != "v${DOCKER_VER}" ] || [ "${tag}" != "v${JS_VER}" ]; then\
+		echo "---> Inconsistent Versioning!";\
+		echo "git tag:		-${tag}-";\
+		echo "main.go version:	-${GO_VER}-";\
+		echo "Dockerfile version:	-${DOCKER_VER}-";\
+		echo "package.json version:	-${JS_VER}-";\
+		exit 1;\
+	fi
+	@exit 0
 	@git add -A
 	@git commit -m $(tag)
 	@git push

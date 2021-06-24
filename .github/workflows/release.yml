@@ -109,3 +109,6 @@ jobs:
         uses: docker://antonyurchenko/git-release:latest
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update tags
+        uses: vweevers/additional-tags-action@v1
