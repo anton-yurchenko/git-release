@@ -256,3 +256,83 @@ jobs:
 ```
 
 </details>
+
+## Unreleased
+
+This will recreate a single released on each execution by deleting the previous release and creating a new one.
+Changelog will be extracted from an `Unreleased` scope inside a changelog.md file.
+
+Because this is an *"Unreleased"* release, it will always be marked as a **pre-release**.
+
+`latest` tag will be used by default, this means that it will be moved with each execution and point to a different commit.
+
+![PIC](images/unreleased.png)
+
+<details><summary>Workflow</summary>
+
+```yaml
+name: release
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Release
+        uses: anton-yurchenko/git-release@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          UNRELEASED: "true"
+        with:
+          args: |
+            darwin-amd64.zip
+            linux-amd64.zip
+            windows-amd64.zip
+```
+
+</details>
+
+## Unreleased with custom Tag
+
+Identical to [Unreleased](#unreleased) but with a different git tag. (useful when `latest` tag is used for something else)
+
+![PIC](images/unreleased-tag.png)
+
+<details><summary>Workflow</summary>
+
+```yaml
+name: release
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Release
+        uses: anton-yurchenko/git-release@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          UNRELEASED: "true"
+          UNRELEASED_TAG: future
+        with:
+          args: |
+            darwin-amd64.zip
+            linux-amd64.zip
+            windows-amd64.zip
+```
+
+</details>

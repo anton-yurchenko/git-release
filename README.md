@@ -16,12 +16,12 @@ A **GitHub Action** for a **GitHub Release** creation with **Assets** and **Chan
 - Parse Tag to match [Semantic Versioning](https://semver.org/)
 - Upload build artifacts (assets) to the release
 - Publish release with changelog
-    - [Keep a Changelog](https://keepachangelog.com/) Compliant
-    - [Common Changelog](https://github.com/vweevers/common-changelog) Compliant
+  - [Keep a Changelog](https://keepachangelog.com/) Compliant
+  - [Common Changelog](https://github.com/vweevers/common-changelog) Compliant
 - Supported runners:
-    - Linux AMD64
-    - Linux ARM64
-    - Windows
+  - Linux AMD64
+  - Linux ARM64
+  - Windows
 - Filename pattern matching
 - Supports GitHub Enterprise
 - Supports standard `v` prefix out of the box
@@ -63,7 +63,8 @@ A **GitHub Action** for a **GitHub Release** creation with **Assets** and **Chan
 
 ## Configuration
 
-1. Change the workflow to be triggered on Tag Push:
+1. Change the workflow to be triggered on new Tag:
+
     - For example `'*'` or a more specific like `'v*'`:
 
     ```yaml
@@ -73,7 +74,7 @@ A **GitHub Action** for a **GitHub Release** creation with **Assets** and **Chan
         - "v[0-9]+.[0-9]+.[0-9]+"
     ```
 
-2. Add Release step to your workflow:
+2. Add *Release* step to your workflow:
 
     ```yaml
         - name: Release
@@ -84,26 +85,27 @@ A **GitHub Action** for a **GitHub Release** creation with **Assets** and **Chan
             args: build/*.zip
     ```
 
-<details><summary>:information_source: All Configuration Options</summary>
+3. Configure *Release* step:
 
-- Provide a list of assets as `args` (divided by one of: `new line`, `space`, `comma`, `pipe`)
-- `DRAFT_RELEASE (true/false as string)` - Save release as draft instead of publishing it (default `false`)
-- `PRE_RELEASE (true/false as string)` - GitHub will point out that this release is identified as non-production ready (default: `false`)
-- `CHANGELOG_FILE (string)` - Changelog filename (default: `CHANGELOG.md`)
-  - Set to `none` in order to silence a warning message on missing changelog file
-- `ALLOW_EMPTY_CHANGELOG (true/false as string)` - Allow publishing a release without changelog (default `false`)
-- `TAG_PREFIX_REGEX (string)` - Provide a regex for a SemVer prefix, for example `[a-z-]*` in order to parse `prerelease-1.1.0`
-- `RELEASE_NAME (string)` - Complete release title (may not be combined with RELEASE_NAME_PREFIX and RELEASE_NAME_SUFFIX)
-- `RELEASE_NAME_PREFIX (string)` - Release title prefix
-- `RELEASE_NAME_SUFFIX (string)` - Release title suffix
+    - Specify release assets as action `arguments` (divided by one of: `new line`, `space`, `comma`, `pipe`)
+    - Fine tune action configuration using environmental variables:
 
-</details>  
+    | Environmental Variable  | Default Value  | Description                                                                                                                |
+    |:-----------------------:|:--------------:|:--------------------------------------------------------------------------------------------------------------------------:|
+    | `DRAFT_RELEASE`         | `false`        | Publish a draft release                                                                                                    |
+    | `PRE_RELEASE`           | `false`        | Mark release non-production ready                                                                                          |
+    | `CHANGELOG_FILE`        | `CHANGELOG.md` | Changelog filename (set `none` to silence a warning message if file does not exist)                                        |
+    | `ALLOW_EMPTY_CHANGELOG` | `false`        | Allow publishing a release without changelog                                                                               |
+    | `TAG_PREFIX_REGEX`      | `[v]?`         | Version tag prefix regex, for example `[a-z-]*` in order to parse `prerelease-1.1.0`                                       |
+    | `RELEASE_NAME`          | ""             | Complete release title (should not be combined with `RELEASE_NAME_PREFIX` and `RELEASE_NAME_SUFFIX`)                       |
+    | `RELEASE_NAME_PREFIX`   | ""             | Release title prefix                                                                                                       |
+    | `RELEASE_NAME_SUFFIX`   | ""             | Release title suffix                                                                                                       |
+    | `UNRELEASED`            | `false`        | Allow deletion and recreation of the same release and its tag (intended to be used for `unreleased`/`latest` release only) |
+    | `UNRELEASED_TAG`        | `latest`       | Use a custom tag for `unreleased`/`latest` release (tag will be created/deleted automatically)                             |
 
 <details><summary>:information_source: Windows Runners</summary>
 
 Execute **git-release** through JavaScrip Wrapper on Windows Runners.
-
-Example:
 
 ```yaml
     - name: Release
