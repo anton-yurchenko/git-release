@@ -60,7 +60,9 @@ func main() {
 		conf.TagPrefix,
 		conf.ReleaseName,
 		conf.ReleaseNamePrefix,
-		conf.ReleaseNameSuffix)
+		conf.ReleaseNameSuffix,
+		conf.Unreleased,
+	)
 	if err != nil {
 		log.Fatal(errors.Wrap(err, "error fetching release configuration"))
 	}

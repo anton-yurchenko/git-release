@@ -15,14 +15,14 @@ import (
 	"github.com/spf13/afero"
 )
 
-func GetRelease(fs afero.Fs, args []string, tagPrefix, name, namePrefix, nameSuffix string) (*Release, error) {
+func GetRelease(fs afero.Fs, args []string, tagPrefix, name, namePrefix, nameSuffix string, unreleased bool) (*Release, error) {
 	release := new(Release)
 
 	if strings.ToLower(os.Getenv("DRAFT_RELEASE")) == "true" {
 		release.Draft = true
 	}
 
-	if strings.ToLower(os.Getenv("PRE_RELEASE")) == "true" {
+	if strings.ToLower(os.Getenv("PRE_RELEASE")) == "true" || unreleased {
 		release.PreRelease = true
 	}
 
@@ -32,7 +32,7 @@ func GetRelease(fs afero.Fs, args []string, tagPrefix, name, namePrefix, nameSuf
 		return nil, errors.Wrap(err, "error retrieving release assets")
 	}
 
-	release.Reference, err = GetReference(tagPrefix)
+	release.Reference, err = GetReference(tagPrefix, unreleased)
 	if err != nil {
 		return nil, errors.Wrap(err, "error retrieving source code reference (control tag prefix via env.var TAG_PREFIX_REGEX)")
 	}
@@ -44,6 +44,8 @@ func GetRelease(fs afero.Fs, args []string, tagPrefix, name, namePrefix, nameSuf
 
 	if name != "" {
 		release.Name = name
+	} else if unreleased {
+		release.Name = "Latest"
 	} else {
 		release.Name = fmt.Sprintf("%v%v%v", namePrefix, release.Reference.Tag, nameSuffix)
 	}
@@ -52,13 +54,29 @@ func GetRelease(fs afero.Fs, args []string, tagPrefix, name, namePrefix, nameSuf
 }
 
 // GetReference loads a codebase references from workspace
-func GetReference(prefix string) (*Reference, error) {
+func GetReference(prefix string, unreleased bool) (*Reference, error) {
 	if os.Getenv("GITHUB_REF") == "" {
 		return nil, errors.New("GITHUB_REF is not defined")
+	} else if os.Getenv("GITHUB_REF") == UnreleasedRef {
+		return nil, errors.New("workflow configuration error detected: trigger loop (triggering tag will be recreated and trigger the workflow again)")
 	}
 
 	if os.Getenv("GITHUB_SHA") == "" {
 		return nil, errors.New("GITHUB_SHA is not defined")
+	}
+
+	if unreleased {
+		tag := UnreleasedDefaultTag
+
+		if os.Getenv("UNRELEASED_TAG") != "" {
+			tag = os.Getenv("UNRELEASED_TAG")
+		}
+
+		return &Reference{
+			CommitHash: os.Getenv("GITHUB_SHA"),
+			Tag:        tag,
+			Version:    "Unreleased",
+		}, nil
 	}
 
 	var expression string

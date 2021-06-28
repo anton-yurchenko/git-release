@@ -14,6 +14,7 @@ import (
 type Configuration struct {
 	AllowEmptyChangelog bool
 	IgnoreChangelog     bool
+	Unreleased          bool
 	TagPrefix           string
 	ReleaseName         string
 	ReleaseNamePrefix   string
@@ -27,6 +28,10 @@ func GetConfig(fs afero.Fs) (*Configuration, error) {
 
 	if strings.ToLower(os.Getenv("ALLOW_EMPTY_CHANGELOG")) == "true" {
 		conf.AllowEmptyChangelog = true
+	}
+
+	if strings.ToLower(os.Getenv("UNRELEASED")) == "true" {
+		conf.Unreleased = true
 	}
 
 	conf.TagPrefix = os.Getenv("TAG_PREFIX_REGEX")
