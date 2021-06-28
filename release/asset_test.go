@@ -362,7 +362,7 @@ func TestUpload(t *testing.T) {
 		msgs := make(chan string, 1)
 		errs := make(chan error, 1)
 
-		m := new(mocks.Client)
+		m := new(mocks.RepositoriesClient)
 		m.On("UploadReleaseAsset",
 			context.Background(),
 			test.Release.Slug.Owner,
