@@ -1,10 +1,7 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/anton-yurchenko/git-release/release"
-	"github.com/anton-yurchenko/go-changelog"
 	"github.com/pkg/errors"
 	"github.com/spf13/afero"
 
@@ -68,33 +65,21 @@ func main() {
 	}
 
 	if conf.ChangelogFile != "" {
-		p, err := changelog.NewParserWithFilesystem(fs, conf.ChangelogFile)
+		rel.Changelog, err = conf.GetChangelog(fs, rel)
 		if err != nil {
-			log.Fatal(errors.Wrap(err, "error loading changelog file"))
-		}
-
-		c, err := p.Parse()
-		if err != nil {
-			log.Fatal(errors.Wrap(err, "error parsing changelog file"))
-		}
-
-		r := c.GetRelease(rel.Reference.Version)
-		if r == nil {
-			msg := fmt.Sprintf("changelog file does not contain version %v", rel.Reference.Version)
-
-			if !conf.AllowEmptyChangelog {
-				log.Fatal(msg)
-			} else {
-				log.Warn(msg)
-			}
-		} else {
-			rel.Changelog = r.Changes.ToString()
+			log.Fatal(errors.Wrap(err, "error reading changelog"))
 		}
 	}
 
 	cli, err := Login(os.Getenv("GITHUB_TOKEN"))
 	if err != nil {
 		log.Fatal(errors.Wrap(err, "login error"))
+	}
+
+	if conf.Unreleased {
+		if err := rel.DeleteUnreleased(cli.Repositories, cli.Git); err != nil {
+			log.Fatal(errors.Wrap(err, "error preparing for Unreleased release update"))
+		}
 	}
 
 	log.Infof("creating release %v", rel.Name)

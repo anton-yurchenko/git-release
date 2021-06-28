@@ -1,10 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"path"
 	"strings"
 
+	"github.com/anton-yurchenko/git-release/release"
+	changelog "github.com/anton-yurchenko/go-changelog"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
@@ -72,4 +75,42 @@ func GetConfig(fs afero.Fs) (*Configuration, error) {
 	}
 
 	return conf, nil
+}
+
+func (c *Configuration) GetChangelog(fs afero.Fs, rel *release.Release) (string, error) {
+	p, err := changelog.NewParserWithFilesystem(fs, c.ChangelogFile)
+	if err != nil {
+		return "", errors.Wrap(err, "error loading changelog file")
+	}
+
+	changes, err := p.Parse()
+	if err != nil {
+		return "", errors.Wrap(err, "error parsing changelog file")
+	}
+
+	var msg string
+	if rel.Reference.Version == "Unreleased" {
+		if changes.Unreleased != nil {
+			return changes.Unreleased.Changes.ToString(), nil
+		} else {
+			msg = "changelog file does not contain changes in Unreleased scope"
+		}
+	} else {
+		r := changes.GetRelease(rel.Reference.Version)
+		if r == nil {
+			msg = fmt.Sprintf("changelog file does not contain version %v", rel.Reference.Version)
+		} else {
+			return r.Changes.ToString(), nil
+		}
+	}
+
+	if msg != "" {
+		if !c.AllowEmptyChangelog {
+			return "", errors.New(msg)
+		} else {
+			log.Warn(msg)
+		}
+	}
+
+	return "", nil
 }
