@@ -275,26 +275,23 @@ name: release
 
 on:
   push:
-    tags:
-      - "*"
+    branches:
+      - master
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
 
       - name: Release
-        uses: anton-yurchenko/git-release@master
+        uses: docker://antonyurchenko/git-release:latest
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           UNRELEASED: "true"
         with:
-          args: |
-            darwin-amd64.zip
-            linux-amd64.zip
-            windows-amd64.zip
+          args: linux-amd64
 ```
 
 </details>
@@ -312,27 +309,24 @@ name: release
 
 on:
   push:
-    tags:
-      - "*"
+    branches:
+      - master
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
 
       - name: Release
-        uses: anton-yurchenko/git-release@master
+        uses: docker://antonyurchenko/git-release:latest
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           UNRELEASED: "true"
           UNRELEASED_TAG: future
         with:
-          args: |
-            darwin-amd64.zip
-            linux-amd64.zip
-            windows-amd64.zip
+          args: linux-amd64
 ```
 
 </details>
