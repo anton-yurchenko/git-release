@@ -130,7 +130,7 @@ func GetSlug() (*Slug, error) {
 }
 
 // Publish will create a GitHub release and upload assets to it
-func (r *Release) Publish(cli Client) error {
+func (r *Release) Publish(cli RepositoriesClient) error {
 	// create release
 	o, _, err := cli.CreateRelease(
 		context.Background(),
@@ -189,6 +189,67 @@ func (r *Release) Publish(cli Client) error {
 		}
 
 		log.Info("assets uploaded successfully 🎉")
+	}
+
+	return nil
+}
+
+// DeleteUnreleased prepares a repository for an update of an existing Unreleased release.
+// This includes a deletion of previous release and recreation of the tag.
+func (r *Release) DeleteUnreleased(repoCli RepositoriesClient, gitCli GitClient) error {
+	tag := fmt.Sprintf("refs/tags/%v", r.Reference.Tag)
+
+	previous, _, err := repoCli.GetReleaseByTag(
+		context.Background(),
+		r.Slug.Owner,
+		r.Slug.Name,
+		r.Reference.Tag,
+	)
+	if err != nil {
+		if !strings.Contains(err.Error(), "404 Not Found") {
+			return errors.Wrapf(err, "error retrieving a precedent release with a tag %v", r.Reference.Tag)
+		}
+
+		log.Debug("precedent release not found")
+	}
+
+	if previous != nil {
+		_, err = repoCli.DeleteRelease(
+			context.Background(),
+			r.Slug.Owner,
+			r.Slug.Name,
+			previous.GetID(),
+		)
+		if err != nil {
+			return errors.Wrap(err, "error deleting precedent release")
+		}
+
+		_, err = gitCli.DeleteRef(
+			context.Background(),
+			r.Slug.Owner,
+			r.Slug.Name,
+			tag,
+		)
+		if err != nil {
+			return errors.Wrap(err, "error deleting precedent tag")
+		}
+
+		log.Warnf("release %v deleted ❗", *previous.Name)
+	}
+
+	_, _, err = gitCli.CreateRef(
+		context.Background(),
+		r.Slug.Owner,
+		r.Slug.Name,
+		&github.Reference{
+			Ref: &tag,
+			Object: &github.GitObject{
+				SHA: &r.Reference.CommitHash,
+			},
+		},
+	)
+	if err != nil {
+		return errors.Wrapf(err, "error creating %v tag", r.Reference.Tag)
 	}
 
 	return nil
