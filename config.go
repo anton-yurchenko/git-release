@@ -68,10 +68,13 @@ func GetConfig(fs afero.Fs) (*Configuration, error) {
 
 	// NOTE: deprecation warnings
 	if os.Getenv("RELEASE_NAME_POSTFIX") != "" {
-		log.Fatalf("'RELEASE_NAME_POSTFIX' was deprecated, use 'RELEASE_NAME_SUFFIX' instead")
+		log.Fatalf(`'RELEASE_NAME_POSTFIX' was deprecated.
+- Use 'RELEASE_NAME_SUFFIX' instead`)
 	}
 	if os.Getenv("ALLOW_TAG_PREFIX") != "" {
-		log.Fatalf("'ALLOW_TAG_PREFIX' was deprecated, use 'TAG_PREFIX_REGEX' instead")
+		log.Fatalf(`'ALLOW_TAG_PREFIX' was deprecated.
+- If your tag has a 'v' prefix, you can safely remove 'ALLOW_TAG_PREFIX' env.var
+- If you have another prefix, provide a regex expression through 'TAG_PREFIX_REGEX' instead`)
 	}
 
 	return conf, nil

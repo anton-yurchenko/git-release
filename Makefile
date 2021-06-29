@@ -52,7 +52,7 @@ JS_VER := $$(jq -r '.version' package.json)
 
 .PHONY: release
 release: build
-	@if [ "${tag}" != "v${DOCKER_VER}" ] || [ "${tag}" != "v${DOCKER_VER}" ] || [ "${tag}" != "v${JS_VER}" ]; then\
+	@if [ "${tag}" != "${DOCKER_VER}" ] || [ "${tag}" != "${DOCKER_VER}" ] || [ "${tag}" != "${JS_VER}" ]; then\
 		echo "---> Inconsistent Versioning!";\
 		echo "git tag:		${tag}";\
 		echo "main.go version:	${GO_VER}";\
@@ -60,7 +60,6 @@ release: build
 		echo "package.json version:	${JS_VER}";\
 		exit 1;\
 	fi
-	@echo $$(date +"%Y-%m-%dT%H:%M:%S") > .github/release_timestamp
 	@git add -A
 	@git commit -m $(tag)
 	@git push

@@ -4,8 +4,13 @@
 ### Added
 - [Issue #47](https://github.com/anton-yurchenko/git-release/issues/47) Recreate `Unreleased` release on each execution (*Thanks to [cb80](https://github.com/cb80)*)
 
+## [4.0.1] - 2021-06-24
+### Changed
+- Provide more descriptive error messages
+
 ## [4.0.0] - 2021-06-16
 ### Changed
+- Enforce changelog file format to comply with **Keep a Changelog**/**Common Changelog**
 - Allow `v` prefix without `ALOW_TAG_PREFIX` (*still required for other prefixes*)
 - Update Dependencies
 - Update to Golang 1.16
@@ -201,7 +206,8 @@ This is a major release as most of the code was refactored and some behavior was
 - Control Release Pre Release through env.var 'PRE_RELEASE'
 
 [Unreleased]: https://github.com/anton-yurchenko/git-release/compare/v4.1.0...HEAD
-[4.1.0]: https://github.com/anton-yurchenko/git-release/compare/v4.1.0...v4.0.0
+[4.1.0]: https://github.com/anton-yurchenko/git-release/compare/v4.1.0...v4.0.1
+[4.0.1]: https://github.com/anton-yurchenko/git-release/compare/v4.0.1...v4.0.0
 [4.0.0]: https://github.com/anton-yurchenko/git-release/compare/v4.0.0...v3.5.0
 [3.5.0]: https://github.com/anton-yurchenko/git-release/compare/v3.5.0...v3.4.4
 [3.4.4]: https://github.com/anton-yurchenko/git-release/compare/v3.4.4...v3.4.3
