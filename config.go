@@ -69,12 +69,12 @@ func GetConfig(fs afero.Fs) (*Configuration, error) {
 	// NOTE: deprecation warnings
 	if os.Getenv("RELEASE_NAME_POSTFIX") != "" {
 		log.Fatalf(`'RELEASE_NAME_POSTFIX' was deprecated.
-- Use 'RELEASE_NAME_SUFFIX' instead`)
+- use 'RELEASE_NAME_SUFFIX' instead`)
 	}
 	if os.Getenv("ALLOW_TAG_PREFIX") != "" {
 		log.Fatalf(`'ALLOW_TAG_PREFIX' was deprecated.
-- If your tag has a 'v' prefix, you can safely remove 'ALLOW_TAG_PREFIX' env.var
-- If you have another prefix, provide a regex expression through 'TAG_PREFIX_REGEX' instead`)
+- in case your tag has a 'v' prefix, you can safely remove 'ALLOW_TAG_PREFIX' env.var
+- if you have another prefix, provide a regex expression through 'TAG_PREFIX_REGEX' instead`)
 	}
 
 	return conf, nil
@@ -101,7 +101,10 @@ func (c *Configuration) GetChangelog(fs afero.Fs, rel *release.Release) (string,
 	} else {
 		r := changes.GetRelease(rel.Reference.Version)
 		if r == nil {
-			msg = fmt.Sprintf("changelog file does not contain version %v", rel.Reference.Version)
+			msg = fmt.Sprintf("no changes were found for version %v.", rel.Reference.Version) + ` make sure that:
+- changelog file contains a required version
+- version has changes
+- changelog format is compliant with either 'Keep a Changelog' or 'Common Changelog'`
 		} else {
 			return r.Changes.ToString(), nil
 		}
