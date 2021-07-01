@@ -1,6 +1,8 @@
 package main
 
 import (
+	"strings"
+
 	"github.com/anton-yurchenko/git-release/release"
 	"github.com/pkg/errors"
 	"github.com/spf13/afero"
@@ -58,7 +60,7 @@ func main() {
 		conf.ReleaseName,
 		conf.ReleaseNamePrefix,
 		conf.ReleaseNameSuffix,
-		conf.Unreleased,
+		conf.UnreleasedCreate || conf.UnreleasedDelete,
 	)
 	if err != nil {
 		log.Fatal(errors.Wrap(err, "error fetching release configuration"))
@@ -76,13 +78,28 @@ func main() {
 		log.Fatal(errors.Wrap(err, "login error"))
 	}
 
-	if conf.Unreleased {
-		if err := rel.DeleteUnreleased(cli.Repositories, cli.Git); err != nil {
-			log.Fatal(errors.Wrap(err, "error preparing for Unreleased release update"))
+	if conf.UnreleasedCreate || conf.UnreleasedDelete {
+		err := rel.DeleteUnreleased(cli.Repositories, cli.Git)
+		if err != nil {
+			if !strings.Contains(err.Error(), "precedent release not found") {
+				log.Fatal(errors.Wrap(err, "error preparing for Unreleased release update"))
+			}
+
+			log.Warn(err.Error())
+		} else {
+			log.Warnf("precedent release deleted ❗")
+		}
+
+		if conf.UnreleasedDelete {
+			return
+		}
+
+		if err := rel.UpdateUnreleasedTag(cli.Git); err != nil {
+			log.Fatal(errors.Wrapf(err, "error creating %v tag", rel.Reference.Tag))
 		}
 	}
 
-	log.Infof("creating release %v", rel.Name)
+	log.Infof("creating %v release", rel.Name)
 	if err := rel.Publish(cli.Repositories); err != nil {
 		log.Fatal(err)
 	}

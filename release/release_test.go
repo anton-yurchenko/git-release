@@ -1065,7 +1065,7 @@ func TestDeleteUnreleased(t *testing.T) {
 		GetReleaseByTagMock    getReleaseByTagMock
 		DeleteReleaseMockError error
 		DeleteRefMockError     error
-		CreateRefMockError     error
+		GetRefMockErrors       []error
 		ExpectedError          string
 	}
 
@@ -1096,34 +1096,11 @@ func TestDeleteUnreleased(t *testing.T) {
 			},
 			DeleteReleaseMockError: nil,
 			DeleteRefMockError:     nil,
-			CreateRefMockError:     nil,
-			ExpectedError:          "",
-		},
-		"First execution": {
-			Release: &release.Release{
-				Name: "Latest",
-				Slug: &release.Slug{
-					Owner: "anton-yurchenko",
-					Name:  "git-release",
-				},
-				Reference: &release.Reference{
-					CommitHash: "111",
-					Tag:        "latest",
-					Version:    "Unrelease",
-				},
-				Draft:      false,
-				PreRelease: false,
-				Assets:     nil,
-				Changelog:  "changelog",
+			GetRefMockErrors: []error{
+				nil,
+				errors.New("404 Not Found"),
 			},
-			GetReleaseByTagMock: getReleaseByTagMock{
-				Output: nil,
-				Error:  errors.New("--- 404 Not Found ---"),
-			},
-			DeleteReleaseMockError: nil,
-			DeleteRefMockError:     nil,
-			CreateRefMockError:     nil,
-			ExpectedError:          "",
+			ExpectedError: "",
 		},
 		"GetReleaseByTag error": {
 			Release: &release.Release{
@@ -1148,7 +1125,7 @@ func TestDeleteUnreleased(t *testing.T) {
 			},
 			DeleteReleaseMockError: nil,
 			DeleteRefMockError:     nil,
-			CreateRefMockError:     nil,
+			GetRefMockErrors:       []error{},
 			ExpectedError:          "error retrieving a precedent release with a tag latest: reason",
 		},
 		"DeleteRelease error": {
@@ -1177,7 +1154,7 @@ func TestDeleteUnreleased(t *testing.T) {
 			},
 			DeleteReleaseMockError: errors.New("reason"),
 			DeleteRefMockError:     nil,
-			CreateRefMockError:     nil,
+			GetRefMockErrors:       []error{},
 			ExpectedError:          "error deleting precedent release: reason",
 		},
 		"DeleteRef error": {
@@ -1206,10 +1183,10 @@ func TestDeleteUnreleased(t *testing.T) {
 			},
 			DeleteReleaseMockError: nil,
 			DeleteRefMockError:     errors.New("reason"),
-			CreateRefMockError:     nil,
+			GetRefMockErrors:       []error{},
 			ExpectedError:          "error deleting precedent tag: reason",
 		},
-		"CreateRef error": {
+		"GetRef error": {
 			Release: &release.Release{
 				Name: "Latest",
 				Slug: &release.Slug{
@@ -1235,8 +1212,8 @@ func TestDeleteUnreleased(t *testing.T) {
 			},
 			DeleteReleaseMockError: nil,
 			DeleteRefMockError:     nil,
-			CreateRefMockError:     errors.New("reason"),
-			ExpectedError:          "error creating latest tag: reason",
+			GetRefMockErrors:       []error{errors.New("reason")},
+			ExpectedError:          "error fetching precedent tag: reason",
 		},
 	}
 
@@ -1268,7 +1245,83 @@ func TestDeleteUnreleased(t *testing.T) {
 				test.Release.Slug.Owner,
 				test.Release.Slug.Name,
 				tag).Return(nil, test.DeleteRefMockError).Once()
+
+			for _, e := range test.GetRefMockErrors {
+				gitMock.On("GetRef",
+					context.Background(),
+					test.Release.Slug.Owner,
+					test.Release.Slug.Name,
+					tag).Return(nil, nil, e).Once()
+			}
 		}
+
+		err := test.Release.DeleteUnreleased(repoMock, gitMock)
+		if test.ExpectedError != "" || err != nil {
+			a.EqualError(err, test.ExpectedError)
+		}
+	}
+}
+
+func TestUpdateUnreleasedTag(t *testing.T) {
+	a := assert.New(t)
+
+	type test struct {
+		Release            *release.Release
+		CreateRefMockError error
+		ExpectedError      string
+	}
+
+	suite := map[string]test{
+		"Success": {
+			Release: &release.Release{
+				Name: "Latest",
+				Slug: &release.Slug{
+					Owner: "anton-yurchenko",
+					Name:  "git-release",
+				},
+				Reference: &release.Reference{
+					CommitHash: "111",
+					Tag:        "latest",
+					Version:    "Unrelease",
+				},
+				Draft:      false,
+				PreRelease: false,
+				Assets:     nil,
+				Changelog:  "changelog",
+			},
+			CreateRefMockError: nil,
+			ExpectedError:      "",
+		},
+		"Error": {
+			Release: &release.Release{
+				Name: "Latest",
+				Slug: &release.Slug{
+					Owner: "anton-yurchenko",
+					Name:  "git-release",
+				},
+				Reference: &release.Reference{
+					CommitHash: "111",
+					Tag:        "latest",
+					Version:    "Unrelease",
+				},
+				Draft:      false,
+				PreRelease: false,
+				Assets:     nil,
+				Changelog:  "changelog",
+			},
+			CreateRefMockError: errors.New("reason"),
+			ExpectedError:      "reason",
+		},
+	}
+
+	var counter int
+	for name, test := range suite {
+		counter++
+		t.Logf("Test Case %v/%v - %s", counter, len(suite), name)
+
+		// test
+		tag := fmt.Sprintf("refs/tags/%v", test.Release.Reference.Tag)
+		gitMock := new(mocks.GitClient)
 
 		gitMock.On("CreateRef",
 			context.Background(),
@@ -1281,7 +1334,7 @@ func TestDeleteUnreleased(t *testing.T) {
 				},
 			}).Return(nil, nil, test.CreateRefMockError).Once()
 
-		err := test.Release.DeleteUnreleased(repoMock, gitMock)
+		err := test.Release.UpdateUnreleasedTag(gitMock)
 		if test.ExpectedError != "" || err != nil {
 			a.EqualError(err, test.ExpectedError)
 		}

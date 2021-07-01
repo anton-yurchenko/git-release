@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strings"
 	"sync"
+	"time"
 
 	changelog "github.com/anton-yurchenko/go-changelog"
 	"github.com/google/go-github/github"
@@ -210,34 +211,54 @@ func (r *Release) DeleteUnreleased(repoCli RepositoriesClient, gitCli GitClient)
 			return errors.Wrapf(err, "error retrieving a precedent release with a tag %v", r.Reference.Tag)
 		}
 
-		log.Debug("precedent release not found")
+		return errors.New("precedent release not found")
 	}
 
-	if previous != nil {
-		_, err = repoCli.DeleteRelease(
-			context.Background(),
-			r.Slug.Owner,
-			r.Slug.Name,
-			previous.GetID(),
-		)
-		if err != nil {
-			return errors.Wrap(err, "error deleting precedent release")
-		}
+	_, err = repoCli.DeleteRelease(
+		context.Background(),
+		r.Slug.Owner,
+		r.Slug.Name,
+		previous.GetID(),
+	)
+	if err != nil {
+		return errors.Wrap(err, "error deleting precedent release")
+	}
 
-		_, err = gitCli.DeleteRef(
+	_, err = gitCli.DeleteRef(
+		context.Background(),
+		r.Slug.Owner,
+		r.Slug.Name,
+		tag,
+	)
+	if err != nil {
+		return errors.Wrap(err, "error deleting precedent tag")
+	}
+
+	for i := 0; i < 3; i++ {
+		_, _, err := gitCli.GetRef(
 			context.Background(),
 			r.Slug.Owner,
 			r.Slug.Name,
 			tag,
 		)
 		if err != nil {
-			return errors.Wrap(err, "error deleting precedent tag")
+			if strings.Contains(err.Error(), "404 Not Found") {
+				break
+			}
+
+			return errors.Wrap(err, "error fetching precedent tag")
 		}
 
-		log.Warnf("release %v deleted ❗", *previous.Name)
+		time.Sleep(3 * time.Second)
 	}
 
-	_, _, err = gitCli.CreateRef(
+	return nil
+}
+
+func (r *Release) UpdateUnreleasedTag(gitCli GitClient) error {
+	tag := fmt.Sprintf("refs/tags/%v", r.Reference.Tag)
+
+	_, _, err := gitCli.CreateRef(
 		context.Background(),
 		r.Slug.Owner,
 		r.Slug.Name,
@@ -248,9 +269,6 @@ func (r *Release) DeleteUnreleased(repoCli RepositoriesClient, gitCli GitClient)
 			},
 		},
 	)
-	if err != nil {
-		return errors.Wrapf(err, "error creating %v tag", r.Reference.Tag)
-	}
 
-	return nil
+	return err
 }

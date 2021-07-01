@@ -53,4 +53,5 @@ type RepositoriesClient interface {
 type GitClient interface {
 	CreateRef(context.Context, string, string, *github.Reference) (*github.Reference, *github.Response, error)
 	DeleteRef(context.Context, string, string, string) (*github.Response, error)
+	GetRef(context.Context, string, string, string) (*github.Reference, *github.Response, error)
 }

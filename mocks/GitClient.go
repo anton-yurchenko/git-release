@@ -68,3 +68,35 @@ func (_m *GitClient) DeleteRef(_a0 context.Context, _a1 string, _a2 string, _a3 
 
 	return r0, r1
 }
+
+// GetRef provides a mock function with given fields: _a0, _a1, _a2, _a3
+func (_m *GitClient) GetRef(_a0 context.Context, _a1 string, _a2 string, _a3 string) (*github.Reference, *github.Response, error) {
+	ret := _m.Called(_a0, _a1, _a2, _a3)
+
+	var r0 *github.Reference
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, string) *github.Reference); ok {
+		r0 = rf(_a0, _a1, _a2, _a3)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*github.Reference)
+		}
+	}
+
+	var r1 *github.Response
+	if rf, ok := ret.Get(1).(func(context.Context, string, string, string) *github.Response); ok {
+		r1 = rf(_a0, _a1, _a2, _a3)
+	} else {
+		if ret.Get(1) != nil {
+			r1 = ret.Get(1).(*github.Response)
+		}
+	}
+
+	var r2 error
+	if rf, ok := ret.Get(2).(func(context.Context, string, string, string) error); ok {
+		r2 = rf(_a0, _a1, _a2, _a3)
+	} else {
+		r2 = ret.Error(2)
+	}
+
+	return r0, r1, r2
+}

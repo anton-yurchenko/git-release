@@ -17,7 +17,8 @@ import (
 type Configuration struct {
 	AllowEmptyChangelog bool
 	IgnoreChangelog     bool
-	Unreleased          bool
+	UnreleasedCreate    bool
+	UnreleasedDelete    bool
 	TagPrefix           string
 	ReleaseName         string
 	ReleaseNamePrefix   string
@@ -33,8 +34,13 @@ func GetConfig(fs afero.Fs) (*Configuration, error) {
 		conf.AllowEmptyChangelog = true
 	}
 
-	if strings.ToLower(os.Getenv("UNRELEASED")) == "true" {
-		conf.Unreleased = true
+	switch os.Getenv("UNRELEASED") {
+	case "update":
+		conf.UnreleasedCreate = true
+	case "delete":
+		conf.UnreleasedDelete = true
+	default:
+		return nil, errors.New("UNRELEASED not supported, possible values are [update, delete]")
 	}
 
 	conf.TagPrefix = os.Getenv("TAG_PREFIX_REGEX")

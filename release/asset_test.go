@@ -301,7 +301,7 @@ func TestUpload(t *testing.T) {
 				},
 			},
 			Expected: expected{
-				Message: "uploading asset testFile1",
+				Message: "uploading asset: testFile1",
 				Error:   "",
 			},
 			Error: nil,
@@ -318,7 +318,7 @@ func TestUpload(t *testing.T) {
 				},
 			},
 			Expected: expected{
-				Message: "uploading asset testFile2",
+				Message: "uploading asset: testFile2",
 				Error:   "reason",
 			},
 			Error: errors.New("reason"),
@@ -335,7 +335,7 @@ func TestUpload(t *testing.T) {
 				},
 			},
 			Expected: expected{
-				Message: "uploading asset testFile3",
+				Message: "uploading asset: testFile3",
 				Error:   "open testFile3: no such file or directory",
 			},
 			Error: nil,
