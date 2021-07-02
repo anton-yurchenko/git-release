@@ -26,6 +26,7 @@ A **GitHub Action** for a **GitHub Release** creation with **Assets** and **Chan
 - Supports GitHub Enterprise
 - Supports standard `v` prefix out of the box
 - Allows custom SemVer prefixes
+- Update a single pre-release with changes from Unreleased scope
 
 ## Manual
 
@@ -90,18 +91,20 @@ A **GitHub Action** for a **GitHub Release** creation with **Assets** and **Chan
     - Specify release assets as action `arguments` (divided by one of: `new line`, `space`, `comma`, `pipe`)
     - Fine tune action configuration using environmental variables:
 
-    | Environmental Variable  | Default Value  | Description                                                                                                                |
-    |:-----------------------:|:--------------:|:--------------------------------------------------------------------------------------------------------------------------:|
-    | `DRAFT_RELEASE`         | `false`        | Publish a draft release                                                                                                    |
-    | `PRE_RELEASE`           | `false`        | Mark release non-production ready                                                                                          |
-    | `CHANGELOG_FILE`        | `CHANGELOG.md` | Changelog filename (set `none` to silence a warning message if file does not exist)                                        |
-    | `ALLOW_EMPTY_CHANGELOG` | `false`        | Allow publishing a release without changelog                                                                               |
-    | `TAG_PREFIX_REGEX`      | `[v]?`         | Version tag prefix regex, for example `[a-z-]*` in order to parse `prerelease-1.1.0`                                       |
-    | `RELEASE_NAME`          | ""             | Complete release title (should not be combined with `RELEASE_NAME_PREFIX` and `RELEASE_NAME_SUFFIX`)                       |
-    | `RELEASE_NAME_PREFIX`   | ""             | Release title prefix                                                                                                       |
-    | `RELEASE_NAME_SUFFIX`   | ""             | Release title suffix                                                                                                       |
-    | `UNRELEASED`            | `false`        | Allow deletion and recreation of the same release and its tag (intended to be used for `unreleased`/`latest` release only) |
-    | `UNRELEASED_TAG`        | `latest`       | Use a custom tag for `unreleased`/`latest` release (tag will be created/deleted automatically)                             |
+    | Environmental Variable  | Default Value  | Options           | Description                                                                                                                |
+    |:-----------------------:|:--------------:|:-----------------:|:--------------------------------------------------------------------------------------------------------------------------:|
+    | `DRAFT_RELEASE`         | `false`        | `true`/`false`    | Publish a draft release                                                                                                    |
+    | `PRE_RELEASE`           | `false`        | `true`/`false`    | Mark release non-production ready                                                                                          |
+    | `CHANGELOG_FILE`        | `CHANGELOG.md` | `*`               | Changelog filename (set `none` to silence a warning message if file does not exist)                                        |
+    | `ALLOW_EMPTY_CHANGELOG` | `false`        | `true`/`false`    | Allow publishing a release without changelog                                                                               |
+    | `TAG_PREFIX_REGEX`      | `[v]?`         | `*`               | Version tag prefix regex, for example `[a-z-]*` in order to parse `prerelease-1.1.0`                                       |
+    | `RELEASE_NAME`          | ""             | `*`               | Complete release title (should not be combined with `RELEASE_NAME_PREFIX` and `RELEASE_NAME_SUFFIX`)                       |
+    | `RELEASE_NAME_PREFIX`   | ""             | `*`               | Release title prefix                                                                                                       |
+    | `RELEASE_NAME_SUFFIX`   | ""             | `*`               | Release title suffix                                                                                                       |
+    | `UNRELEASED`            | ""             | `update`/`delete` | Set to `update` in order to allow deletion and recreation of the same release and its tag (intended to be used for `unreleased`/`latest` release only). Set to `delete` in order to delete a previously published `unreleased`/`latest` release.                                                                                     |
+    | `UNRELEASED_TAG`        | `latest`       | `*`               | Use a custom tag for `unreleased`/`latest` release (tag will be created/deleted automatically)                             |
+
+    *Configuration is provided as environmental variables (strings), so do not forget to enclose boolean values with quotes*
 
 <details><summary>:information_source: Windows Runners</summary>
 

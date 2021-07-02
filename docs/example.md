@@ -260,13 +260,13 @@ jobs:
 ## Unreleased
 
 This will recreate a single released on each execution by deleting the previous release and creating a new one.
-Changelog will be extracted from an `Unreleased` scope inside a changelog.md file.
+Changelog will be extracted from an `Unreleased` scope inside a CHANGELOG.md file.
 
 Because this is an *"Unreleased"* release, it will always be marked as a **pre-release**.
 
 `latest` tag will be used by default, this means that it will be moved with each execution and point to a different commit.
 
-![PIC](images/unreleased.png)
+![PIC](images/unreleased.gif)
 
 <details><summary>Workflow</summary>
 
