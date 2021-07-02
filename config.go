@@ -39,6 +39,8 @@ func GetConfig(fs afero.Fs) (*Configuration, error) {
 		conf.UnreleasedCreate = true
 	case "delete":
 		conf.UnreleasedDelete = true
+	case "":
+		// do nothing
 	default:
 		return nil, errors.New("UNRELEASED not supported, possible values are [update, delete]")
 	}
