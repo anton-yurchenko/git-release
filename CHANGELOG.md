@@ -1,6 +1,6 @@
 # Changelog
 
-## [4.1.0] - 2021-06-28
+## [4.1.0] - 2021-07-02
 ### Added
 - [Issue #47](https://github.com/anton-yurchenko/git-release/issues/47) Recreate `Unreleased` release on each execution (*Thanks to [cb80](https://github.com/cb80)*)
 
