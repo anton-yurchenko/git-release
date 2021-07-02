@@ -1,6 +1,8 @@
 # Changelog
 
-## [Unreleased]
+## [4.1.0] - 2021-06-28
+### Added
+- [Issue #47](https://github.com/anton-yurchenko/git-release/issues/47) Recreate `Unreleased` release on each execution (*Thanks to [cb80](https://github.com/cb80)*)
 
 ## [4.0.1] - 2021-06-24
 ### Changed
@@ -203,7 +205,8 @@ This is a major release as most of the code was refactored and some behavior was
 - Control Release Draft through env.var 'DRAFT_RELEASE'
 - Control Release Pre Release through env.var 'PRE_RELEASE'
 
-[Unreleased]: https://github.com/anton-yurchenko/git-release/compare/v4.0.1...HEAD
+[Unreleased]: https://github.com/anton-yurchenko/git-release/compare/v4.1.0...HEAD
+[4.1.0]: https://github.com/anton-yurchenko/git-release/compare/v4.1.0...v4.0.1
 [4.0.1]: https://github.com/anton-yurchenko/git-release/compare/v4.0.1...v4.0.0
 [4.0.0]: https://github.com/anton-yurchenko/git-release/compare/v4.0.0...v3.5.0
 [3.5.0]: https://github.com/anton-yurchenko/git-release/compare/v3.5.0...v3.4.4

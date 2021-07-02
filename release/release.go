@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strings"
 	"sync"
+	"time"
 
 	changelog "github.com/anton-yurchenko/go-changelog"
 	"github.com/google/go-github/github"
@@ -15,14 +16,14 @@ import (
 	"github.com/spf13/afero"
 )
 
-func GetRelease(fs afero.Fs, args []string, tagPrefix, name, namePrefix, nameSuffix string) (*Release, error) {
+func GetRelease(fs afero.Fs, args []string, tagPrefix, name, namePrefix, nameSuffix string, unreleased bool) (*Release, error) {
 	release := new(Release)
 
 	if strings.ToLower(os.Getenv("DRAFT_RELEASE")) == "true" {
 		release.Draft = true
 	}
 
-	if strings.ToLower(os.Getenv("PRE_RELEASE")) == "true" {
+	if strings.ToLower(os.Getenv("PRE_RELEASE")) == "true" || unreleased {
 		release.PreRelease = true
 	}
 
@@ -32,7 +33,7 @@ func GetRelease(fs afero.Fs, args []string, tagPrefix, name, namePrefix, nameSuf
 		return nil, errors.Wrap(err, "error retrieving release assets")
 	}
 
-	release.Reference, err = GetReference(tagPrefix)
+	release.Reference, err = GetReference(tagPrefix, unreleased)
 	if err != nil {
 		return nil, errors.Wrap(err, "error retrieving source code reference (control tag prefix via env.var TAG_PREFIX_REGEX)")
 	}
@@ -44,6 +45,8 @@ func GetRelease(fs afero.Fs, args []string, tagPrefix, name, namePrefix, nameSuf
 
 	if name != "" {
 		release.Name = name
+	} else if unreleased {
+		release.Name = "Latest"
 	} else {
 		release.Name = fmt.Sprintf("%v%v%v", namePrefix, release.Reference.Tag, nameSuffix)
 	}
@@ -52,13 +55,29 @@ func GetRelease(fs afero.Fs, args []string, tagPrefix, name, namePrefix, nameSuf
 }
 
 // GetReference loads a codebase references from workspace
-func GetReference(prefix string) (*Reference, error) {
+func GetReference(prefix string, unreleased bool) (*Reference, error) {
 	if os.Getenv("GITHUB_REF") == "" {
 		return nil, errors.New("GITHUB_REF is not defined")
+	} else if os.Getenv("GITHUB_REF") == UnreleasedRef {
+		return nil, errors.New("workflow configuration error detected: trigger loop (triggering tag will be recreated and trigger the workflow again)")
 	}
 
 	if os.Getenv("GITHUB_SHA") == "" {
 		return nil, errors.New("GITHUB_SHA is not defined")
+	}
+
+	if unreleased {
+		tag := UnreleasedDefaultTag
+
+		if os.Getenv("UNRELEASED_TAG") != "" {
+			tag = os.Getenv("UNRELEASED_TAG")
+		}
+
+		return &Reference{
+			CommitHash: os.Getenv("GITHUB_SHA"),
+			Tag:        tag,
+			Version:    "Unreleased",
+		}, nil
 	}
 
 	var expression string
@@ -112,7 +131,7 @@ func GetSlug() (*Slug, error) {
 }
 
 // Publish will create a GitHub release and upload assets to it
-func (r *Release) Publish(cli Client) error {
+func (r *Release) Publish(cli RepositoriesClient) error {
 	// create release
 	o, _, err := cli.CreateRelease(
 		context.Background(),
@@ -174,4 +193,82 @@ func (r *Release) Publish(cli Client) error {
 	}
 
 	return nil
+}
+
+// DeleteUnreleased prepares a repository for an update of an existing Unreleased release.
+// This includes a deletion of previous release and recreation of the tag.
+func (r *Release) DeleteUnreleased(repoCli RepositoriesClient, gitCli GitClient) error {
+	tag := fmt.Sprintf("refs/tags/%v", r.Reference.Tag)
+
+	previous, _, err := repoCli.GetReleaseByTag(
+		context.Background(),
+		r.Slug.Owner,
+		r.Slug.Name,
+		r.Reference.Tag,
+	)
+	if err != nil {
+		if !strings.Contains(err.Error(), "404 Not Found") {
+			return errors.Wrapf(err, "error retrieving a precedent release with a tag %v", r.Reference.Tag)
+		}
+
+		return errors.New("precedent release not found")
+	}
+
+	_, err = repoCli.DeleteRelease(
+		context.Background(),
+		r.Slug.Owner,
+		r.Slug.Name,
+		previous.GetID(),
+	)
+	if err != nil {
+		return errors.Wrap(err, "error deleting precedent release")
+	}
+
+	_, err = gitCli.DeleteRef(
+		context.Background(),
+		r.Slug.Owner,
+		r.Slug.Name,
+		tag,
+	)
+	if err != nil {
+		return errors.Wrap(err, "error deleting precedent tag")
+	}
+
+	for i := 0; i < 3; i++ {
+		_, _, err := gitCli.GetRef(
+			context.Background(),
+			r.Slug.Owner,
+			r.Slug.Name,
+			tag,
+		)
+		if err != nil {
+			if strings.Contains(err.Error(), "404 Not Found") {
+				break
+			}
+
+			return errors.Wrap(err, "error fetching precedent tag")
+		}
+
+		time.Sleep(3 * time.Second)
+	}
+
+	return nil
+}
+
+func (r *Release) UpdateUnreleasedTag(gitCli GitClient) error {
+	tag := fmt.Sprintf("refs/tags/%v", r.Reference.Tag)
+
+	_, _, err := gitCli.CreateRef(
+		context.Background(),
+		r.Slug.Owner,
+		r.Slug.Name,
+		&github.Reference{
+			Ref: &tag,
+			Object: &github.GitObject{
+				SHA: &r.Reference.CommitHash,
+			},
+		},
+	)
+
+	return err
 }

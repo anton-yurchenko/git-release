@@ -21,6 +21,10 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
+func stringP(n string) *string {
+	return &n
+}
+
 func int64P(n int64) *int64 {
 	return &n
 }
@@ -102,17 +106,21 @@ func TestGetReference(t *testing.T) {
 	}
 
 	type test struct {
-		GitHubRef string
-		GitHubSha string
-		Prefix    string
-		Expected  expected
+		GitHubRef     string
+		GitHubSha     string
+		UnreleasedTag string
+		Prefix        string
+		Unreleased    bool
+		Expected      expected
 	}
 
 	suite := map[string]test{
 		"Success": {
-			GitHubRef: "refs/tags/1.0.0",
-			GitHubSha: "111",
-			Prefix:    "",
+			GitHubRef:     "refs/tags/1.0.0",
+			GitHubSha:     "111",
+			UnreleasedTag: "",
+			Prefix:        "",
+			Unreleased:    false,
 			Expected: expected{
 				Result: &release.Reference{
 					CommitHash: "111",
@@ -123,27 +131,33 @@ func TestGetReference(t *testing.T) {
 			},
 		},
 		"Empty GITHUB_REF": {
-			GitHubRef: "",
-			GitHubSha: "111",
-			Prefix:    "",
+			GitHubRef:     "",
+			GitHubSha:     "111",
+			UnreleasedTag: "",
+			Prefix:        "",
+			Unreleased:    false,
 			Expected: expected{
 				Result: nil,
 				Error:  "GITHUB_REF is not defined",
 			},
 		},
 		"Empty GITHUB_SHA": {
-			GitHubRef: "refs/tags/1.0.0",
-			GitHubSha: "",
-			Prefix:    "",
+			GitHubRef:     "refs/tags/1.0.0",
+			GitHubSha:     "",
+			UnreleasedTag: "",
+			Prefix:        "",
+			Unreleased:    false,
 			Expected: expected{
 				Result: nil,
 				Error:  "GITHUB_SHA is not defined",
 			},
 		},
 		"Tag with 'v' Prefix": {
-			GitHubRef: "refs/tags/v1.0.0",
-			GitHubSha: "111",
-			Prefix:    "",
+			GitHubRef:     "refs/tags/v1.0.0",
+			GitHubSha:     "111",
+			UnreleasedTag: "",
+			Prefix:        "",
+			Unreleased:    false,
 			Expected: expected{
 				Result: &release.Reference{
 					CommitHash: "111",
@@ -154,9 +168,11 @@ func TestGetReference(t *testing.T) {
 			},
 		},
 		"Tag with custom Prefix": {
-			GitHubRef: "refs/tags/a1.0.0",
-			GitHubSha: "111",
-			Prefix:    "a",
+			GitHubRef:     "refs/tags/a1.0.0",
+			GitHubSha:     "111",
+			UnreleasedTag: "",
+			Prefix:        "a",
+			Unreleased:    false,
 			Expected: expected{
 				Result: &release.Reference{
 					CommitHash: "111",
@@ -167,9 +183,11 @@ func TestGetReference(t *testing.T) {
 			},
 		},
 		"Tag with Regex Prefix": {
-			GitHubRef: "refs/tags/prerelease-1.0.0",
-			GitHubSha: "111",
-			Prefix:    "[a-z-]*",
+			GitHubRef:     "refs/tags/prerelease-1.0.0",
+			GitHubSha:     "111",
+			UnreleasedTag: "",
+			Prefix:        "[a-z-]*",
+			Unreleased:    false,
 			Expected: expected{
 				Result: &release.Reference{
 					CommitHash: "111",
@@ -180,36 +198,44 @@ func TestGetReference(t *testing.T) {
 			},
 		},
 		"Tag with not matching Regex Prefix": {
-			GitHubRef: "refs/tags/prerelease-1.0.0",
-			GitHubSha: "111",
-			Prefix:    "[a-b]*",
+			GitHubRef:     "refs/tags/prerelease-1.0.0",
+			GitHubSha:     "111",
+			UnreleasedTag: "",
+			Prefix:        "[a-b]*",
+			Unreleased:    false,
 			Expected: expected{
 				Result: nil,
 				Error:  fmt.Sprintf("malformed env.var GITHUB_REF: expected to match regex '^refs/tags/(?P<prefix>[a-b]*)%v$', got 'refs/tags/prerelease-1.0.0'", changelog.SemVerRegex),
 			},
 		},
 		"Tag with custom Prefix and 'v' Prefix": {
-			GitHubRef: "refs/tags/av1.0.0",
-			GitHubSha: "111",
-			Prefix:    "a",
+			GitHubRef:     "refs/tags/av1.0.0",
+			GitHubSha:     "111",
+			UnreleasedTag: "",
+			Prefix:        "a",
+			Unreleased:    false,
 			Expected: expected{
 				Result: nil,
 				Error:  fmt.Sprintf("malformed env.var GITHUB_REF: expected to match regex '^refs/tags/(?P<prefix>a)%v$', got 'refs/tags/av1.0.0'", changelog.SemVerRegex),
 			},
 		},
 		"Invalid Semver": {
-			GitHubRef: "refs/tags/1",
-			GitHubSha: "111",
-			Prefix:    "",
+			GitHubRef:     "refs/tags/1",
+			GitHubSha:     "111",
+			UnreleasedTag: "",
+			Prefix:        "",
+			Unreleased:    false,
 			Expected: expected{
 				Result: nil,
 				Error:  fmt.Sprintf("malformed env.var GITHUB_REF: expected to match regex '^refs/tags/[v]?%v$', got 'refs/tags/1'", changelog.SemVerRegex),
 			},
 		},
 		"Complex Semver": {
-			GitHubRef: "refs/tags/v1.0.0-alpha-a.b-c-somethinglong+build.1-aef.1-its-okay",
-			GitHubSha: "111",
-			Prefix:    "",
+			GitHubRef:     "refs/tags/v1.0.0-alpha-a.b-c-somethinglong+build.1-aef.1-its-okay",
+			GitHubSha:     "111",
+			UnreleasedTag: "",
+			Prefix:        "",
+			Unreleased:    false,
 			Expected: expected{
 				Result: &release.Reference{
 					CommitHash: "111",
@@ -220,14 +246,57 @@ func TestGetReference(t *testing.T) {
 			},
 		},
 		"Complex Semver with Custom Prefix": {
-			GitHubRef: "refs/tags/1.0.01.0.0-alpha-a.b-c-somethinglong+build.1-aef.1-its-okay",
-			GitHubSha: "111",
-			Prefix:    "1.0.0",
+			GitHubRef:     "refs/tags/1.0.01.0.0-alpha-a.b-c-somethinglong+build.1-aef.1-its-okay",
+			GitHubSha:     "111",
+			UnreleasedTag: "",
+			Prefix:        "1.0.0",
+			Unreleased:    false,
 			Expected: expected{
 				Result: &release.Reference{
 					CommitHash: "111",
 					Version:    "1.0.0-alpha-a.b-c-somethinglong+build.1-aef.1-its-okay",
 					Tag:        "1.0.01.0.0-alpha-a.b-c-somethinglong+build.1-aef.1-its-okay",
+				},
+				Error: "",
+			},
+		},
+		"Triggering Loop": {
+			GitHubRef:     release.UnreleasedRef,
+			GitHubSha:     "111",
+			UnreleasedTag: "",
+			Prefix:        "",
+			Unreleased:    false,
+			Expected: expected{
+				Result: nil,
+				Error:  "workflow configuration error detected: trigger loop (triggering tag will be recreated and trigger the workflow again)",
+			},
+		},
+		"Unreleased": {
+			GitHubRef:     "refs/heads/master",
+			GitHubSha:     "111",
+			UnreleasedTag: "",
+			Prefix:        "",
+			Unreleased:    true,
+			Expected: expected{
+				Result: &release.Reference{
+					CommitHash: "111",
+					Version:    "Unreleased",
+					Tag:        release.UnreleasedDefaultTag,
+				},
+				Error: "",
+			},
+		},
+		"Unreleased with custom Tag": {
+			GitHubRef:     "refs/heads/master",
+			GitHubSha:     "111",
+			UnreleasedTag: "future",
+			Prefix:        "",
+			Unreleased:    true,
+			Expected: expected{
+				Result: &release.Reference{
+					CommitHash: "111",
+					Version:    "Unreleased",
+					Tag:        "future",
 				},
 				Error: "",
 			},
@@ -248,10 +317,14 @@ func TestGetReference(t *testing.T) {
 			t.Errorf("error preparing test case: error setting environmental variable GITHUB_SHA=%v: %v", test.GitHubSha, err)
 			continue
 		}
+		if err := os.Setenv("UNRELEASED_TAG", test.UnreleasedTag); err != nil {
+			t.Errorf("error preparing test case: error setting environmental variable UNRELEASED_TAG=%v: %v", test.UnreleasedTag, err)
+			continue
+		}
 		time.Sleep(30 * time.Millisecond)
 
 		// test
-		r, err := release.GetReference(test.Prefix)
+		r, err := release.GetReference(test.Prefix, test.Unreleased)
 		a.Equal(test.Expected.Result, r)
 		if test.Expected.Error != "" || err != nil {
 			a.EqualError(err, test.Expected.Error)
@@ -264,6 +337,10 @@ func TestGetReference(t *testing.T) {
 		}
 		if err := os.Unsetenv("GITHUB_SHA"); err != nil {
 			t.Errorf("error cleanup: error unsetting environmental variable GITHUB_SHA: %v", err)
+			continue
+		}
+		if err := os.Unsetenv("UNRELEASED_TAG"); err != nil {
+			t.Errorf("error cleanup: error unsetting environmental variable UNRELEASED_TAG: %v", err)
 			continue
 		}
 		time.Sleep(30 * time.Millisecond)
@@ -290,6 +367,7 @@ func TestGetRelease(t *testing.T) {
 		Name             string
 		NamePrefix       string
 		NameSuffix       string
+		Unreleased       bool
 		Files            []string
 		Expected         expected
 	}
@@ -305,6 +383,7 @@ func TestGetRelease(t *testing.T) {
 			Name:             "",
 			NamePrefix:       "",
 			NameSuffix:       "",
+			Unreleased:       false,
 			Files:            []string{"file1", "file2"},
 			Expected: expected{
 				Result: &release.Release{
@@ -344,6 +423,7 @@ func TestGetRelease(t *testing.T) {
 			Name:             "",
 			NamePrefix:       "",
 			NameSuffix:       "",
+			Unreleased:       false,
 			Files:            []string{},
 			Expected: expected{
 				Result: &release.Release{
@@ -374,6 +454,7 @@ func TestGetRelease(t *testing.T) {
 			Name:             "",
 			NamePrefix:       "",
 			NameSuffix:       "",
+			Unreleased:       false,
 			Files:            []string{},
 			Expected: expected{
 				Result: &release.Release{
@@ -404,6 +485,7 @@ func TestGetRelease(t *testing.T) {
 			Name:             "",
 			NamePrefix:       "",
 			NameSuffix:       "",
+			Unreleased:       false,
 			Files:            []string{},
 			Expected: expected{
 				Result: &release.Release{
@@ -434,6 +516,7 @@ func TestGetRelease(t *testing.T) {
 			Name:             "",
 			NamePrefix:       "",
 			NameSuffix:       "",
+			Unreleased:       false,
 			Files:            []string{},
 			Expected: expected{
 				Result: nil,
@@ -450,6 +533,7 @@ func TestGetRelease(t *testing.T) {
 			Name:             "",
 			NamePrefix:       "",
 			NameSuffix:       "",
+			Unreleased:       false,
 			Files:            []string{},
 			Expected: expected{
 				Result: nil,
@@ -466,6 +550,7 @@ func TestGetRelease(t *testing.T) {
 			Name:             "name",
 			NamePrefix:       "",
 			NameSuffix:       "",
+			Unreleased:       false,
 			Files:            []string{},
 			Expected: expected{
 				Result: &release.Release{
@@ -497,6 +582,7 @@ func TestGetRelease(t *testing.T) {
 			NamePrefix:       "prefix: ",
 			NameSuffix:       "",
 			Files:            []string{},
+			Unreleased:       false,
 			Expected: expected{
 				Result: &release.Release{
 					Name: "prefix: 1.0.0",
@@ -526,6 +612,7 @@ func TestGetRelease(t *testing.T) {
 			Name:             "",
 			NamePrefix:       "",
 			NameSuffix:       " suffix",
+			Unreleased:       false,
 			Files:            []string{},
 			Expected: expected{
 				Result: &release.Release{
@@ -556,6 +643,7 @@ func TestGetRelease(t *testing.T) {
 			Name:             "",
 			NamePrefix:       "prefix: ",
 			NameSuffix:       " suffix",
+			Unreleased:       false,
 			Files:            []string{},
 			Expected: expected{
 				Result: &release.Release{
@@ -571,6 +659,108 @@ func TestGetRelease(t *testing.T) {
 					},
 					Draft:      false,
 					PreRelease: false,
+					Assets:     &[]release.Asset{},
+				},
+				Error: "",
+			},
+		},
+		"Unreleased": {
+			GitHubRef:        "refs/heads/master",
+			GitHubSha:        "111",
+			GitHubRepository: "anton-yurchenko/git-release",
+			TagPrefix:        "",
+			DraftRelease:     "false",
+			PreRelease:       "false",
+			Name:             "",
+			NamePrefix:       "",
+			NameSuffix:       "",
+			Unreleased:       true,
+			Files:            []string{"file1", "file2"},
+			Expected: expected{
+				Result: &release.Release{
+					Name: "Latest",
+					Slug: &release.Slug{
+						Owner: "anton-yurchenko",
+						Name:  "git-release",
+					},
+					Reference: &release.Reference{
+						CommitHash: "111",
+						Tag:        release.UnreleasedDefaultTag,
+						Version:    "Unreleased",
+					},
+					Draft:      false,
+					PreRelease: true,
+					Assets: &[]release.Asset{
+						{
+							Name: "file1",
+							Path: "file1",
+						},
+						{
+							Name: "file2",
+							Path: "file2",
+						},
+					},
+				},
+				Error: "",
+			},
+		},
+		"Unreleased with Pre Release tag": {
+			GitHubRef:        "refs/heads/master",
+			GitHubSha:        "111",
+			GitHubRepository: "anton-yurchenko/git-release",
+			TagPrefix:        "",
+			DraftRelease:     "false",
+			PreRelease:       "true",
+			Name:             "",
+			NamePrefix:       "",
+			NameSuffix:       "",
+			Unreleased:       true,
+			Files:            []string{},
+			Expected: expected{
+				Result: &release.Release{
+					Name: "Latest",
+					Slug: &release.Slug{
+						Owner: "anton-yurchenko",
+						Name:  "git-release",
+					},
+					Reference: &release.Reference{
+						CommitHash: "111",
+						Tag:        release.UnreleasedDefaultTag,
+						Version:    "Unreleased",
+					},
+					Draft:      false,
+					PreRelease: true,
+					Assets:     &[]release.Asset{},
+				},
+				Error: "",
+			},
+		},
+		"Unreleased with Custom Name": {
+			GitHubRef:        "refs/heads/master",
+			GitHubSha:        "111",
+			GitHubRepository: "anton-yurchenko/git-release",
+			TagPrefix:        "",
+			DraftRelease:     "false",
+			PreRelease:       "false",
+			Name:             "Future",
+			NamePrefix:       "",
+			NameSuffix:       "",
+			Unreleased:       true,
+			Files:            []string{},
+			Expected: expected{
+				Result: &release.Release{
+					Name: "Future",
+					Slug: &release.Slug{
+						Owner: "anton-yurchenko",
+						Name:  "git-release",
+					},
+					Reference: &release.Reference{
+						CommitHash: "111",
+						Tag:        release.UnreleasedDefaultTag,
+						Version:    "Unreleased",
+					},
+					Draft:      false,
+					PreRelease: true,
 					Assets:     &[]release.Asset{},
 				},
 				Error: "",
@@ -614,7 +804,7 @@ func TestGetRelease(t *testing.T) {
 		time.Sleep(30 * time.Millisecond)
 
 		// test
-		r, err := release.GetRelease(fs, test.Files, test.TagPrefix, test.Name, test.NamePrefix, test.NameSuffix)
+		r, err := release.GetRelease(fs, test.Files, test.TagPrefix, test.Name, test.NamePrefix, test.NameSuffix, test.Unreleased)
 		a.Equal(test.Expected.Result, r)
 		if test.Expected.Error != "" || err != nil {
 			a.EqualError(err, test.Expected.Error)
@@ -808,7 +998,7 @@ main:
 		time.Sleep(30 * time.Millisecond)
 
 		// test
-		m := new(mocks.Client)
+		m := new(mocks.RepositoriesClient)
 
 		m.On("CreateRelease",
 			context.Background(),
@@ -858,5 +1048,295 @@ main:
 			}
 		}
 		time.Sleep(30 * time.Millisecond)
+	}
+}
+
+func TestDeleteUnreleased(t *testing.T) {
+	a := assert.New(t)
+	log.SetOutput(ioutil.Discard)
+
+	type getReleaseByTagMock struct {
+		Output *github.RepositoryRelease
+		Error  error
+	}
+
+	type test struct {
+		Release                *release.Release
+		GetReleaseByTagMock    getReleaseByTagMock
+		DeleteReleaseMockError error
+		DeleteRefMockError     error
+		GetRefMockErrors       []error
+		ExpectedError          string
+	}
+
+	suite := map[string]test{
+		"Success": {
+			Release: &release.Release{
+				Name: "Latest",
+				Slug: &release.Slug{
+					Owner: "anton-yurchenko",
+					Name:  "git-release",
+				},
+				Reference: &release.Reference{
+					CommitHash: "111",
+					Tag:        "latest",
+					Version:    "Unrelease",
+				},
+				Draft:      false,
+				PreRelease: false,
+				Assets:     nil,
+				Changelog:  "changelog",
+			},
+			GetReleaseByTagMock: getReleaseByTagMock{
+				Output: &github.RepositoryRelease{
+					ID:   int64P(1),
+					Name: stringP("Latest"),
+				},
+				Error: nil,
+			},
+			DeleteReleaseMockError: nil,
+			DeleteRefMockError:     nil,
+			GetRefMockErrors: []error{
+				nil,
+				errors.New("404 Not Found"),
+			},
+			ExpectedError: "",
+		},
+		"GetReleaseByTag error": {
+			Release: &release.Release{
+				Name: "Latest",
+				Slug: &release.Slug{
+					Owner: "anton-yurchenko",
+					Name:  "git-release",
+				},
+				Reference: &release.Reference{
+					CommitHash: "111",
+					Tag:        "latest",
+					Version:    "Unrelease",
+				},
+				Draft:      false,
+				PreRelease: false,
+				Assets:     nil,
+				Changelog:  "changelog",
+			},
+			GetReleaseByTagMock: getReleaseByTagMock{
+				Output: nil,
+				Error:  errors.New("reason"),
+			},
+			DeleteReleaseMockError: nil,
+			DeleteRefMockError:     nil,
+			GetRefMockErrors:       []error{},
+			ExpectedError:          "error retrieving a precedent release with a tag latest: reason",
+		},
+		"DeleteRelease error": {
+			Release: &release.Release{
+				Name: "Latest",
+				Slug: &release.Slug{
+					Owner: "anton-yurchenko",
+					Name:  "git-release",
+				},
+				Reference: &release.Reference{
+					CommitHash: "111",
+					Tag:        "latest",
+					Version:    "Unrelease",
+				},
+				Draft:      false,
+				PreRelease: false,
+				Assets:     nil,
+				Changelog:  "changelog",
+			},
+			GetReleaseByTagMock: getReleaseByTagMock{
+				Output: &github.RepositoryRelease{
+					ID:   int64P(1),
+					Name: stringP("Latest"),
+				},
+				Error: nil,
+			},
+			DeleteReleaseMockError: errors.New("reason"),
+			DeleteRefMockError:     nil,
+			GetRefMockErrors:       []error{},
+			ExpectedError:          "error deleting precedent release: reason",
+		},
+		"DeleteRef error": {
+			Release: &release.Release{
+				Name: "Latest",
+				Slug: &release.Slug{
+					Owner: "anton-yurchenko",
+					Name:  "git-release",
+				},
+				Reference: &release.Reference{
+					CommitHash: "111",
+					Tag:        "latest",
+					Version:    "Unrelease",
+				},
+				Draft:      false,
+				PreRelease: false,
+				Assets:     nil,
+				Changelog:  "changelog",
+			},
+			GetReleaseByTagMock: getReleaseByTagMock{
+				Output: &github.RepositoryRelease{
+					ID:   int64P(1),
+					Name: stringP("Latest"),
+				},
+				Error: nil,
+			},
+			DeleteReleaseMockError: nil,
+			DeleteRefMockError:     errors.New("reason"),
+			GetRefMockErrors:       []error{},
+			ExpectedError:          "error deleting precedent tag: reason",
+		},
+		"GetRef error": {
+			Release: &release.Release{
+				Name: "Latest",
+				Slug: &release.Slug{
+					Owner: "anton-yurchenko",
+					Name:  "git-release",
+				},
+				Reference: &release.Reference{
+					CommitHash: "111",
+					Tag:        "latest",
+					Version:    "Unrelease",
+				},
+				Draft:      false,
+				PreRelease: false,
+				Assets:     nil,
+				Changelog:  "changelog",
+			},
+			GetReleaseByTagMock: getReleaseByTagMock{
+				Output: &github.RepositoryRelease{
+					ID:   int64P(1),
+					Name: stringP("Latest"),
+				},
+				Error: nil,
+			},
+			DeleteReleaseMockError: nil,
+			DeleteRefMockError:     nil,
+			GetRefMockErrors:       []error{errors.New("reason")},
+			ExpectedError:          "error fetching precedent tag: reason",
+		},
+	}
+
+	var counter int
+	for name, test := range suite {
+		counter++
+		t.Logf("Test Case %v/%v - %s", counter, len(suite), name)
+
+		// test
+		tag := fmt.Sprintf("refs/tags/%v", test.Release.Reference.Tag)
+		repoMock := new(mocks.RepositoriesClient)
+		gitMock := new(mocks.GitClient)
+
+		repoMock.On("GetReleaseByTag",
+			context.Background(),
+			test.Release.Slug.Owner,
+			test.Release.Slug.Name,
+			test.Release.Reference.Tag).Return(test.GetReleaseByTagMock.Output, nil, test.GetReleaseByTagMock.Error).Once()
+
+		if test.GetReleaseByTagMock.Output != nil {
+			repoMock.On("DeleteRelease",
+				context.Background(),
+				test.Release.Slug.Owner,
+				test.Release.Slug.Name,
+				*test.GetReleaseByTagMock.Output.ID).Return(nil, test.DeleteReleaseMockError).Once()
+
+			gitMock.On("DeleteRef",
+				context.Background(),
+				test.Release.Slug.Owner,
+				test.Release.Slug.Name,
+				tag).Return(nil, test.DeleteRefMockError).Once()
+
+			for _, e := range test.GetRefMockErrors {
+				gitMock.On("GetRef",
+					context.Background(),
+					test.Release.Slug.Owner,
+					test.Release.Slug.Name,
+					tag).Return(nil, nil, e).Once()
+			}
+		}
+
+		err := test.Release.DeleteUnreleased(repoMock, gitMock)
+		if test.ExpectedError != "" || err != nil {
+			a.EqualError(err, test.ExpectedError)
+		}
+	}
+}
+
+func TestUpdateUnreleasedTag(t *testing.T) {
+	a := assert.New(t)
+
+	type test struct {
+		Release            *release.Release
+		CreateRefMockError error
+		ExpectedError      string
+	}
+
+	suite := map[string]test{
+		"Success": {
+			Release: &release.Release{
+				Name: "Latest",
+				Slug: &release.Slug{
+					Owner: "anton-yurchenko",
+					Name:  "git-release",
+				},
+				Reference: &release.Reference{
+					CommitHash: "111",
+					Tag:        "latest",
+					Version:    "Unrelease",
+				},
+				Draft:      false,
+				PreRelease: false,
+				Assets:     nil,
+				Changelog:  "changelog",
+			},
+			CreateRefMockError: nil,
+			ExpectedError:      "",
+		},
+		"Error": {
+			Release: &release.Release{
+				Name: "Latest",
+				Slug: &release.Slug{
+					Owner: "anton-yurchenko",
+					Name:  "git-release",
+				},
+				Reference: &release.Reference{
+					CommitHash: "111",
+					Tag:        "latest",
+					Version:    "Unrelease",
+				},
+				Draft:      false,
+				PreRelease: false,
+				Assets:     nil,
+				Changelog:  "changelog",
+			},
+			CreateRefMockError: errors.New("reason"),
+			ExpectedError:      "reason",
+		},
+	}
+
+	var counter int
+	for name, test := range suite {
+		counter++
+		t.Logf("Test Case %v/%v - %s", counter, len(suite), name)
+
+		// test
+		tag := fmt.Sprintf("refs/tags/%v", test.Release.Reference.Tag)
+		gitMock := new(mocks.GitClient)
+
+		gitMock.On("CreateRef",
+			context.Background(),
+			test.Release.Slug.Owner,
+			test.Release.Slug.Name,
+			&github.Reference{
+				Ref: &tag,
+				Object: &github.GitObject{
+					SHA: &test.Release.Reference.CommitHash,
+				},
+			}).Return(nil, nil, test.CreateRefMockError).Once()
+
+		err := test.Release.UpdateUnreleasedTag(gitMock)
+		if test.ExpectedError != "" || err != nil {
+			a.EqualError(err, test.ExpectedError)
+		}
 	}
 }

@@ -4,6 +4,7 @@
 # IDE
 .vscode/
 **/__debug_bin
+**/debug.test
 .idea/
 
 # project

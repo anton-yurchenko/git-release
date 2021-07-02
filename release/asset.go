@@ -52,9 +52,9 @@ func GetAssets(fs afero.Fs, args []string) (*[]Asset, error) {
 }
 
 // Upload an asset to a GitHub release
-func (a *Asset) Upload(release *Release, cli Client, id int64, msgs chan string, errs chan error, wg *sync.WaitGroup) {
+func (a *Asset) Upload(release *Release, cli RepositoriesClient, id int64, msgs chan string, errs chan error, wg *sync.WaitGroup) {
 	defer wg.Done()
-	msgs <- fmt.Sprintf("uploading asset %v", a.Name)
+	msgs <- fmt.Sprintf("uploading asset: %v", a.Name)
 
 	file, err := os.Open(a.Path)
 	if err != nil {

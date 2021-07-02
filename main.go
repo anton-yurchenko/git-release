@@ -1,10 +1,9 @@
 package main
 
 import (
-	"fmt"
+	"strings"
 
 	"github.com/anton-yurchenko/git-release/release"
-	"github.com/anton-yurchenko/go-changelog"
 	"github.com/pkg/errors"
 	"github.com/spf13/afero"
 
@@ -14,7 +13,7 @@ import (
 )
 
 // Version contains current application version
-const Version string = "4.0.1"
+const Version string = "4.1.0"
 
 func init() {
 	log.SetReportCaller(false)
@@ -60,36 +59,17 @@ func main() {
 		conf.TagPrefix,
 		conf.ReleaseName,
 		conf.ReleaseNamePrefix,
-		conf.ReleaseNameSuffix)
+		conf.ReleaseNameSuffix,
+		conf.UnreleasedCreate || conf.UnreleasedDelete,
+	)
 	if err != nil {
 		log.Fatal(errors.Wrap(err, "error fetching release configuration"))
 	}
 
 	if conf.ChangelogFile != "" {
-		p, err := changelog.NewParserWithFilesystem(fs, conf.ChangelogFile)
+		rel.Changelog, err = conf.GetChangelog(fs, rel)
 		if err != nil {
-			log.Fatal(errors.Wrap(err, "error loading changelog file"))
-		}
-
-		c, err := p.Parse()
-		if err != nil {
-			log.Fatal(errors.Wrap(err, "error parsing changelog file"))
-		}
-
-		r := c.GetRelease(rel.Reference.Version)
-		if r == nil {
-			msg := fmt.Sprintf("No changes were found for version %v", rel.Reference.Version) + ` Make sure that:
-- Changelog file contains a required version
-- Version contains changes in it
-- Changelog is compliant with either 'Keep a Changelog' or 'Common Changelog'`
-
-			if !conf.AllowEmptyChangelog {
-				log.Fatal(msg)
-			} else {
-				log.Warn(msg)
-			}
-		} else {
-			rel.Changelog = r.Changes.ToString()
+			log.Fatal(errors.Wrap(err, "error reading changelog"))
 		}
 	}
 
@@ -98,7 +78,28 @@ func main() {
 		log.Fatal(errors.Wrap(err, "login error"))
 	}
 
-	log.Infof("creating release %v", rel.Name)
+	if conf.UnreleasedCreate || conf.UnreleasedDelete {
+		err := rel.DeleteUnreleased(cli.Repositories, cli.Git)
+		if err != nil {
+			if !strings.Contains(err.Error(), "precedent release not found") {
+				log.Fatal(errors.Wrap(err, "error preparing for Unreleased release update"))
+			}
+
+			log.Warn(err.Error())
+		} else {
+			log.Warnf("precedent release deleted ❗")
+		}
+
+		if conf.UnreleasedDelete {
+			return
+		}
+
+		if err := rel.UpdateUnreleasedTag(cli.Git); err != nil {
+			log.Fatal(errors.Wrapf(err, "error creating %v tag", rel.Reference.Tag))
+		}
+	}
+
+	log.Infof("creating %v release", rel.Name)
 	if err := rel.Publish(cli.Repositories); err != nil {
 		log.Fatal(err)
 	}
