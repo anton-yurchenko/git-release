@@ -17,7 +17,7 @@ A **GitHub Action** for a **GitHub Release** creation with **Assets** and **Chan
 - Upload build artifacts (assets) to the release
 - Publish release with changelog
   - [Keep a Changelog](https://keepachangelog.com/) Compliant
-  - [Common Changelog](https://github.com/vweevers/common-changelog) Compliant
+  - [Common Changelog](https://common-changelog.org) Compliant
 - Supported runners:
   - Linux AMD64
   - Linux ARM64
