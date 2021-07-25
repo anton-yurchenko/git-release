@@ -289,7 +289,7 @@ jobs:
         uses: docker://antonyurchenko/git-release:latest
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          UNRELEASED: "true"
+          UNRELEASED: "update"
         with:
           args: linux-amd64
 ```
@@ -323,7 +323,7 @@ jobs:
         uses: docker://antonyurchenko/git-release:latest
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          UNRELEASED: "true"
+          UNRELEASED: "update"
           UNRELEASED_TAG: future
         with:
           args: linux-amd64
