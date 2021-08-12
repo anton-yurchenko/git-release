@@ -7,8 +7,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/anton-yurchenko/git-release/mocks"
-	"github.com/anton-yurchenko/git-release/release"
+	"git-release/mocks"
+
+	"git-release/release"
+
 	"github.com/google/go-github/github"
 	"github.com/pkg/errors"
 	"github.com/spf13/afero"

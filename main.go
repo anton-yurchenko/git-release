@@ -3,7 +3,8 @@ package main
 import (
 	"strings"
 
-	"github.com/anton-yurchenko/git-release/release"
+	"git-release/release"
+
 	"github.com/pkg/errors"
 	"github.com/spf13/afero"
 

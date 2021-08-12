@@ -1,4 +1,4 @@
-module github.com/anton-yurchenko/git-release
+module git-release
 
 go 1.16
 
@@ -9,6 +9,6 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/afero v1.6.0
-	github.com/stretchr/testify v1.4.0
-	golang.org/x/oauth2 v0.0.0-20210514164344-f6687ab2804c
+	github.com/stretchr/testify v1.7.0
+	golang.org/x/oauth2 v0.0.0-20210810183815-faf39c7919d5
 )

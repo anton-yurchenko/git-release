@@ -9,8 +9,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/anton-yurchenko/git-release/mocks"
-	"github.com/anton-yurchenko/git-release/release"
+	"git-release/mocks"
+
+	"git-release/release"
+
 	changelog "github.com/anton-yurchenko/go-changelog"
 	"github.com/google/go-github/github"
 	"github.com/pkg/errors"

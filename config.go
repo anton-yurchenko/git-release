@@ -6,7 +6,8 @@ import (
 	"path"
 	"strings"
 
-	"github.com/anton-yurchenko/git-release/release"
+	"git-release/release"
+
 	changelog "github.com/anton-yurchenko/go-changelog"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
