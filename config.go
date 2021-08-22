@@ -109,23 +109,22 @@ func (c *Configuration) GetChangelog(fs afero.Fs, rel *release.Release) (string,
 		}
 	} else {
 		r := changes.GetRelease(rel.Reference.Version)
-		if r == nil {
-			msg = fmt.Sprintf("no changes were found for version %v.", rel.Reference.Version) + ` make sure that:
-- changelog file contains a required version
-- version has changes
-- changelog format is compliant with either 'Keep a Changelog' or 'Common Changelog'`
+
+		if r != nil {
+			if r.Changes != nil {
+				return r.Changes.ToString(), nil
+			} else {
+				msg = fmt.Sprintf("changelog file does not contain changes for version %v", rel.Reference.Version)
+			}
 		} else {
-			return r.Changes.ToString(), nil
+			msg = fmt.Sprintf("changelog file does not contain version %v", rel.Reference.Version)
 		}
 	}
 
-	if msg != "" {
-		if !c.AllowEmptyChangelog {
-			return "", errors.New(msg)
-		} else {
-			log.Warn(msg)
-		}
+	if !c.AllowEmptyChangelog {
+		return "", errors.New(msg)
 	}
 
+	log.Warn(msg)
 	return "", nil
 }
