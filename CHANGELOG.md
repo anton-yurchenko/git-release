@@ -1,5 +1,14 @@
 # Changelog
 
+## [4.1.1] - 2021-08-22
+### Fixed
+- Crash when changelog does not contain changes for a version
+- Changelog references
+
+### Changed
+- Update to GoLang 1.17
+- Update dependencies
+
 ## [4.1.0] - 2021-07-02
 ### Added
 - [Issue #47](https://github.com/anton-yurchenko/git-release/issues/47) Recreate `Unreleased` release on each execution (*Thanks to [cb80](https://github.com/cb80)*)
@@ -205,29 +214,29 @@ This is a major release as most of the code was refactored and some behavior was
 - Control Release Draft through env.var 'DRAFT_RELEASE'
 - Control Release Pre Release through env.var 'PRE_RELEASE'
 
-[Unreleased]: https://github.com/anton-yurchenko/git-release/compare/v4.1.0...HEAD
-[4.1.0]: https://github.com/anton-yurchenko/git-release/compare/v4.1.0...v4.0.1
-[4.0.1]: https://github.com/anton-yurchenko/git-release/compare/v4.0.1...v4.0.0
-[4.0.0]: https://github.com/anton-yurchenko/git-release/compare/v4.0.0...v3.5.0
-[3.5.0]: https://github.com/anton-yurchenko/git-release/compare/v3.5.0...v3.4.4
-[3.4.4]: https://github.com/anton-yurchenko/git-release/compare/v3.4.4...v3.4.3
-[3.4.3]: https://github.com/anton-yurchenko/git-release/compare/v3.4.3...v3.4.2
-[3.4.2]: https://github.com/anton-yurchenko/git-release/compare/v3.4.2...v3.4.1
-[3.4.1]: https://github.com/anton-yurchenko/git-release/compare/v3.4.1...v3.4.0
-[3.4.0]: https://github.com/anton-yurchenko/git-release/compare/v3.4.0...v3.3.0
-[3.3.0]: https://github.com/anton-yurchenko/git-release/compare/v3.3.0...v3.2.0
-[3.2.0]: https://github.com/anton-yurchenko/git-release/compare/v3.2.0...v3.1.2
-[3.1.2]: https://github.com/anton-yurchenko/git-release/compare/v3.1.2...v3.1.1
-[3.1.1]: https://github.com/anton-yurchenko/git-release/compare/v3.1.1...v3.1.0
-[3.1.0]: https://github.com/anton-yurchenko/git-release/compare/v3.1.0...v3.0.1
-[3.0.1]: https://github.com/anton-yurchenko/git-release/compare/v3.0.1...v3.0.0
-[3.0.0]: https://github.com/anton-yurchenko/git-release/compare/v3.0.0...v2.0.2
-[2.0.2]: https://github.com/anton-yurchenko/git-release/compare/v2.0.2...v2.0.1
-[2.0.1]: https://github.com/anton-yurchenko/git-release/compare/v2.0.1...v2.0.0
-[2.0.0]: https://github.com/anton-yurchenko/git-release/compare/v2.0.0...v1.1.0
-[2.0.0]: https://github.com/anton-yurchenko/git-release/compare/v2.0.0...v1.1.0
-[1.1.0]: https://github.com/anton-yurchenko/git-release/compare/v1.1.0...v1.0.0
-[1.0.0]: https://github.com/anton-yurchenko/git-release/compare/v1.0.0...v0.2.1
+[Unreleased]: https://github.com/anton-yurchenko/git-release/compare/v4.1.1...HEAD
+[4.1.1]: https://github.com/anton-yurchenko/git-release/compare/v4.1.0...v4.1.1
+[4.1.0]: https://github.com/anton-yurchenko/git-release/compare/v4.0.1...v4.1.0
+[4.0.1]: https://github.com/anton-yurchenko/git-release/compare/v4.0.0...v4.0.1
+[4.0.0]: https://github.com/anton-yurchenko/git-release/compare/v3.5.0...v4.0.0
+[3.5.0]: https://github.com/anton-yurchenko/git-release/compare/v3.4.4...v3.5.0
+[3.4.4]: https://github.com/anton-yurchenko/git-release/compare/v3.4.3...v3.4.4
+[3.4.3]: https://github.com/anton-yurchenko/git-release/compare/v3.4.2...v3.4.3
+[3.4.2]: https://github.com/anton-yurchenko/git-release/compare/v3.4.1...v3.4.2
+[3.4.1]: https://github.com/anton-yurchenko/git-release/compare/v3.4.0...v3.4.1
+[3.4.0]: https://github.com/anton-yurchenko/git-release/compare/v3.3.0...v3.4.0
+[3.3.0]: https://github.com/anton-yurchenko/git-release/compare/v3.2.0...v3.3.0
+[3.2.0]: https://github.com/anton-yurchenko/git-release/compare/v3.1.2...v3.2.0
+[3.1.2]: https://github.com/anton-yurchenko/git-release/compare/v3.1.1...v3.1.2
+[3.1.1]: https://github.com/anton-yurchenko/git-release/compare/v3.1.0...v3.1.1
+[3.1.0]: https://github.com/anton-yurchenko/git-release/compare/v3.0.1...v3.1.0
+[3.0.1]: https://github.com/anton-yurchenko/git-release/compare/v3.0.0...v3.0.1
+[3.0.0]: https://github.com/anton-yurchenko/git-release/compare/v2.0.2...v3.0.0
+[2.0.2]: https://github.com/anton-yurchenko/git-release/compare/v2.0.1...v2.0.2
+[2.0.1]: https://github.com/anton-yurchenko/git-release/compare/v2.0.0...v2.0.1
+[2.0.0]: https://github.com/anton-yurchenko/git-release/compare/v1.1.0...v2.0.0
+[1.1.0]: https://github.com/anton-yurchenko/git-release/compare/v1.0.0...v1.1.0
+[1.0.0]: https://github.com/anton-yurchenko/git-release/compare/v0.2.1...v1.0.0
 [0.2.1]: https://github.com/anton-yurchenko/git-release/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/anton-yurchenko/git-release/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/anton-yurchenko/git-release/compare/v0.0.1...v0.1.1

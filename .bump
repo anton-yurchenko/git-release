@@ -1,0 +1,8 @@
+[docker]
+enabled = true
+
+[go]
+enabled = true
+
+[javascript]
+enabled = true

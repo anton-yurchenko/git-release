@@ -134,6 +134,7 @@ Execute **git-release** through JavaScrip Wrapper on Windows Runners.
 - `git-release` operates assets with pattern matching, this means that it is unable to validate whether an asset exists
 - Docker image is published both to [**Docker Hub**](https://hub.docker.com/r/antonyurchenko/git-release) and [**GitHub Packages**](https://github.com/anton-yurchenko/git-release/packages). If you don't want to rely on **Docker Hub** but still want to use the dockerized action, you may switch from `uses: docker://antonyurchenko/git-release:latest` to `uses: docker://ghcr.io/anton-yurchenko/git-release:latest`
 - Slashes (`/`) in asset filenames will be replaced with dashes (`-`)
+- `git-release` may crash when executed against a not supported changelog file format. Make sure your changelog file is compliant to one of the supported formats.
 
 ## License
 
