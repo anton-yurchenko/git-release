@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.1.2] - 2021-10-18
+### Fixed
+- Empty scopes during changelog parsing
+
+### Changed
+- Update dependencies
+
 ## [4.1.1] - 2021-08-22
 ### Fixed
 - Crash when changelog does not contain changes for a version
@@ -214,7 +221,8 @@ This is a major release as most of the code was refactored and some behavior was
 - Control Release Draft through env.var 'DRAFT_RELEASE'
 - Control Release Pre Release through env.var 'PRE_RELEASE'
 
-[Unreleased]: https://github.com/anton-yurchenko/git-release/compare/v4.1.1...HEAD
+[Unreleased]: https://github.com/anton-yurchenko/git-release/compare/v4.1.2...HEAD
+[4.1.2]: https://github.com/anton-yurchenko/git-release/compare/v4.1.1...v4.1.2
 [4.1.1]: https://github.com/anton-yurchenko/git-release/compare/v4.1.0...v4.1.1
 [4.1.0]: https://github.com/anton-yurchenko/git-release/compare/v4.0.1...v4.1.0
 [4.0.1]: https://github.com/anton-yurchenko/git-release/compare/v4.0.0...v4.0.1

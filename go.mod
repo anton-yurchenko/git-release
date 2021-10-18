@@ -3,13 +3,13 @@ module git-release
 go 1.17
 
 require (
-	github.com/anton-yurchenko/go-changelog v1.0.2
+	github.com/anton-yurchenko/go-changelog v1.0.4
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/afero v1.6.0
 	github.com/stretchr/testify v1.7.0
-	golang.org/x/oauth2 v0.0.0-20210819190943-2bc19b11175f
+	golang.org/x/oauth2 v0.0.0-20211005180243-6b3c2da341f1
 )
 
 require (
@@ -18,7 +18,7 @@ require (
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/stretchr/objx v0.1.0 // indirect
-	golang.org/x/mod v0.5.0 // indirect
+	golang.org/x/mod v0.5.1 // indirect
 	golang.org/x/net v0.0.0-20200822124328-c89045814202 // indirect
 	golang.org/x/sys v0.0.0-20200803210538-64077c9b5642 // indirect
 	golang.org/x/text v0.3.3 // indirect
