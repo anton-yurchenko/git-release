@@ -2,7 +2,7 @@
 
 ## [4.1.2] - 2021-10-18
 ### Fixed
-- Empty scopes during changelog parsing
+- [Issue #54](https://github.com/anton-yurchenko/git-release/issues/54) Empty scopes during changelog parsing (*Thanks to [Wolf2323](https://github.com/Wolf2323)*)
 
 ### Changed
 - Update dependencies
