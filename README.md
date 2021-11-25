@@ -27,6 +27,7 @@ A **GitHub Action** for a **GitHub Release** creation with **Assets** and **Chan
 - Supports standard `v` prefix out of the box
 - Allows custom SemVer prefixes
 - Update a single pre-release with changes from Unreleased scope
+- Retry assets upload on network interrupts
 
 ## Manual
 
