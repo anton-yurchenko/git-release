@@ -858,6 +858,7 @@ func TestPublish(t *testing.T) {
 		CreateReleaseMock      createReleaseMock
 		UploadReleaseAssetMock []error
 		ExpectedError          string
+		FailedAttempts         int
 	}
 
 	suite := map[string]test{
@@ -884,6 +885,7 @@ func TestPublish(t *testing.T) {
 			},
 			UploadReleaseAssetMock: []error{},
 			ExpectedError:          "",
+			FailedAttempts:         0,
 		},
 		"With Assets": {
 			Release: &release.Release{
@@ -921,7 +923,8 @@ func TestPublish(t *testing.T) {
 				nil,
 				nil,
 			},
-			ExpectedError: "",
+			ExpectedError:  "",
+			FailedAttempts: 0,
 		},
 		"Error Creating Release": {
 			Release: &release.Release{
@@ -946,6 +949,7 @@ func TestPublish(t *testing.T) {
 			},
 			UploadReleaseAssetMock: []error{},
 			ExpectedError:          "reason",
+			FailedAttempts:         0,
 		},
 		"Error Uploading Assets": {
 			Release: &release.Release{
@@ -978,7 +982,8 @@ func TestPublish(t *testing.T) {
 			UploadReleaseAssetMock: []error{
 				errors.New("reason"),
 			},
-			ExpectedError: "error uploading assets",
+			ExpectedError:  "error uploading assets",
+			FailedAttempts: 3,
 		},
 	}
 
@@ -1016,6 +1021,24 @@ main:
 			}).Return(test.CreateReleaseMock.Output, nil, test.CreateReleaseMock.Error).Once()
 
 		if test.Release.Assets != nil {
+			for i := 1; i <= test.FailedAttempts; i++ {
+				m.On("UploadReleaseAsset",
+					context.Background(),
+					test.Release.Slug.Owner,
+					test.Release.Slug.Name,
+					func() int64 {
+						if test.CreateReleaseMock.Output != nil {
+							return *test.CreateReleaseMock.Output.ID
+						} else {
+							return int64(0)
+						}
+					}(),
+					&github.UploadOptions{
+						Name: strings.ReplaceAll((*test.Release.Assets)[0].Name, "/", "-"),
+					},
+					mock.AnythingOfType("*os.File")).Return(nil, nil, errors.New("reason")).Once()
+			}
+
 			for i, asset := range *test.Release.Assets {
 				m.On("UploadReleaseAsset",
 					context.Background(),
