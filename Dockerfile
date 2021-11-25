@@ -6,9 +6,10 @@ RUN groupadd -g 1000 appuser &&\
 RUN CGO_ENABLED=0 go build -ldflags="-w -s" -o /opt/app
 
 FROM scratch
-LABEL "repository"="https://github.com/anton-yurchenko/git-release"
-LABEL "maintainer"="Anton Yurchenko <anton.doar@gmail.com>"
-LABEL "version"="4.1.2"
+LABEL org.opencontainers.image.source="https://github.com/anton-yurchenko/git-release"
+LABEL org.opencontainers.image.version="v4.2.0"
+LABEL org.opencontainers.image.authors="Anton Yurchenko <anton.doar@gmail.com>"
+LABEL org.opencontainers.image.licenses="MIT"
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /etc/passwd /etc/passwd
 COPY LICENSE.md /LICENSE.md

@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.2.0] - 2021-11-25
+### Added
+- Retry assets uploads
+
+### Changed
+- Update dependencies
+
 ## [4.1.2] - 2021-10-18
 ### Fixed
 - [Issue #54](https://github.com/anton-yurchenko/git-release/issues/54) Empty scopes during changelog parsing (*Thanks to [Wolf2323](https://github.com/Wolf2323)*)
@@ -221,7 +228,8 @@ This is a major release as most of the code was refactored and some behavior was
 - Control Release Draft through env.var 'DRAFT_RELEASE'
 - Control Release Pre Release through env.var 'PRE_RELEASE'
 
-[Unreleased]: https://github.com/anton-yurchenko/git-release/compare/v4.1.2...HEAD
+[Unreleased]: https://github.com/anton-yurchenko/git-release/compare/v4.2.0...HEAD
+[4.2.0]: https://github.com/anton-yurchenko/git-release/compare/v4.1.2...v4.2.0
 [4.1.2]: https://github.com/anton-yurchenko/git-release/compare/v4.1.1...v4.1.2
 [4.1.1]: https://github.com/anton-yurchenko/git-release/compare/v4.1.0...v4.1.1
 [4.1.0]: https://github.com/anton-yurchenko/git-release/compare/v4.0.1...v4.1.0
