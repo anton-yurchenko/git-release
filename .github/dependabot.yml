@@ -4,9 +4,16 @@ updates:
     directory: "/"
     schedule:
       interval: monthly
-      time: "03:00"
-    open-pull-requests-limit: 10
-    target-branch: master
+    target-branch: main
+    assignees:
+      - anton-yurchenko
+    labels:
+      - dependencies
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: monthly
+    target-branch: main
     assignees:
       - anton-yurchenko
     labels:
@@ -15,9 +22,7 @@ updates:
     directory: "/"
     schedule:
       interval: monthly
-      time: "03:00"
-    open-pull-requests-limit: 10
-    target-branch: master
+    target-branch: main
     assignees:
       - anton-yurchenko
     labels:

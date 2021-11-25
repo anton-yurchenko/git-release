@@ -155,22 +155,13 @@ func (r *Release) Publish(cli RepositoriesClient) error {
 	// upload assets
 	if r.Assets != nil {
 		errs := make(chan error, len(*r.Assets))
-		messages := make(chan string, len(*r.Assets))
 
 		wg := new(sync.WaitGroup)
 		wg.Add(len(*r.Assets))
 
 		for _, a := range *r.Assets {
 			asset := a
-			go asset.Upload(r, cli, o.GetID(), messages, errs, wg)
-		}
-
-		for i := 0; i <= (len(*r.Assets) - 1); i++ {
-			msg := <-messages
-
-			if msg != "" {
-				log.Info(msg)
-			}
+			go asset.Upload(r, cli, o.GetID(), errs, wg)
 		}
 
 		var failure bool

@@ -11,3 +11,6 @@
 coverage.txt
 /vendor/
 **/testFile*
+
+release/*
+!release/*.go

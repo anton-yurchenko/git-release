@@ -284,10 +284,11 @@ func TestUpload(t *testing.T) {
 	}
 
 	type test struct {
-		Asset    release.Asset
-		Release  *release.Release
-		Expected expected
-		Error    error
+		Asset          release.Asset
+		Release        *release.Release
+		Expected       expected
+		Error          error
+		FailedAttempts int
 	}
 
 	suite := map[string]test{
@@ -303,12 +304,12 @@ func TestUpload(t *testing.T) {
 				},
 			},
 			Expected: expected{
-				Message: "uploading asset: testFile1",
-				Error:   "",
+				Error: "",
 			},
-			Error: nil,
+			Error:          nil,
+			FailedAttempts: 0,
 		},
-		"Error": {
+		"Multiple Retries": {
 			Asset: release.Asset{
 				Name: "testFile2",
 				Path: "testFile2",
@@ -320,10 +321,27 @@ func TestUpload(t *testing.T) {
 				},
 			},
 			Expected: expected{
-				Message: "uploading asset: testFile2",
-				Error:   "reason",
+				Error: "",
 			},
-			Error: errors.New("reason"),
+			Error:          nil,
+			FailedAttempts: 2,
+		},
+		"Maximum Retries": {
+			Asset: release.Asset{
+				Name: "testFile2",
+				Path: "testFile2",
+			},
+			Release: &release.Release{
+				Slug: &release.Slug{
+					Owner: "anton-yurchenko",
+					Name:  "git-release",
+				},
+			},
+			Expected: expected{
+				Error: "maximum attempts reached uploading asset: testFile2",
+			},
+			Error:          errors.New("reason"),
+			FailedAttempts: 3,
 		},
 		"File Does Not Exists": {
 			Asset: release.Asset{
@@ -337,10 +355,10 @@ func TestUpload(t *testing.T) {
 				},
 			},
 			Expected: expected{
-				Message: "uploading asset: testFile3",
-				Error:   "open testFile3: no such file or directory",
+				Error: "open testFile3: no such file or directory",
 			},
-			Error: nil,
+			Error:          nil,
+			FailedAttempts: 0,
 		},
 	}
 
@@ -361,10 +379,21 @@ func TestUpload(t *testing.T) {
 		// test
 		wg := new(sync.WaitGroup)
 		wg.Add(1)
-		msgs := make(chan string, 1)
 		errs := make(chan error, 1)
 
 		m := new(mocks.RepositoriesClient)
+		for i := 1; i <= test.FailedAttempts; i++ {
+			m.On("UploadReleaseAsset",
+				context.Background(),
+				test.Release.Slug.Owner,
+				test.Release.Slug.Name,
+				id,
+				&github.UploadOptions{
+					Name: strings.ReplaceAll(test.Asset.Name, "/", "-"),
+				},
+				mock.AnythingOfType("*os.File")).Return(nil, nil, errors.New("reason")).Once()
+		}
+
 		m.On("UploadReleaseAsset",
 			context.Background(),
 			test.Release.Slug.Owner,
@@ -375,10 +404,7 @@ func TestUpload(t *testing.T) {
 			},
 			mock.AnythingOfType("*os.File")).Return(nil, nil, test.Error).Once()
 
-		test.Asset.Upload(test.Release, m, id, msgs, errs, wg)
-
-		msg := <-msgs
-		a.Equal(test.Expected.Message, msg)
+		test.Asset.Upload(test.Release, m, id, errs, wg)
 
 		err := <-errs
 		if err != nil {
