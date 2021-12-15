@@ -61,15 +61,14 @@ func (a *Asset) Upload(release *Release, cli RepositoriesClient, id int64, errs 
 	defer wg.Done()
 	log.WithField("asset", a.Name).Info("uploading asset")
 
-	file, err := os.Open(a.Path)
-	if err != nil {
-		errs <- err
-		return
-	}
-	defer file.Close()
-
 	maxRetries := 4
 	for i := 1; i <= maxRetries; i++ {
+		file, err := os.Open(a.Path)
+		if err != nil {
+			errs <- err
+			return
+		}
+
 		_, _, err = cli.UploadReleaseAsset(
 			context.Background(),
 			release.Slug.Owner,
@@ -81,6 +80,7 @@ func (a *Asset) Upload(release *Release, cli RepositoriesClient, id int64, errs 
 			file,
 		)
 
+		file.Close()
 		if err == nil {
 			errs <- nil
 			break
