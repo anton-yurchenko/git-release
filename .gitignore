@@ -1,16 +1,11 @@
-# OS
 **/.DS_Store
-
-# IDE
 .vscode/
 **/__debug_bin
 **/debug.test
 .idea/
-
-# project
 coverage.txt
 /vendor/
 **/testFile*
-
 release/*
 !release/*.go
+api/

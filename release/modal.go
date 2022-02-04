@@ -48,6 +48,7 @@ type RepositoriesClient interface {
 	CreateRelease(context.Context, string, string, *github.RepositoryRelease) (*github.RepositoryRelease, *github.Response, error)
 	DeleteRelease(context.Context, string, string, int64) (*github.Response, error)
 	GetReleaseByTag(context.Context, string, string, string) (*github.RepositoryRelease, *github.Response, error)
+	DeleteReleaseAsset(context.Context, string, string, int64) (*github.Response, error)
 }
 
 type GitClient interface {

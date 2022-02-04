@@ -71,6 +71,29 @@ func (_m *RepositoriesClient) DeleteRelease(_a0 context.Context, _a1 string, _a2
 	return r0, r1
 }
 
+// DeleteReleaseAsset provides a mock function with given fields: _a0, _a1, _a2, _a3
+func (_m *RepositoriesClient) DeleteReleaseAsset(_a0 context.Context, _a1 string, _a2 string, _a3 int64) (*github.Response, error) {
+	ret := _m.Called(_a0, _a1, _a2, _a3)
+
+	var r0 *github.Response
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, int64) *github.Response); ok {
+		r0 = rf(_a0, _a1, _a2, _a3)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*github.Response)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, string, string, int64) error); ok {
+		r1 = rf(_a0, _a1, _a2, _a3)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetReleaseByTag provides a mock function with given fields: _a0, _a1, _a2, _a3
 func (_m *RepositoriesClient) GetReleaseByTag(_a0 context.Context, _a1 string, _a2 string, _a3 string) (*github.RepositoryRelease, *github.Response, error) {
 	ret := _m.Called(_a0, _a1, _a2, _a3)
