@@ -2,6 +2,8 @@ package release_test
 
 import (
 	"context"
+	"io/ioutil"
+	"net/http"
 	"strings"
 	"sync"
 	"testing"
@@ -15,9 +17,18 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/afero"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
+
+func pInt64(v int64) *int64 {
+	return &v
+}
+
+func pString(v string) *string {
+	return &v
+}
 
 func TestGetAssets(t *testing.T) {
 	a := assert.New(t)
@@ -274,6 +285,8 @@ func TestGetAssets(t *testing.T) {
 }
 
 func TestUpload(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+
 	a := assert.New(t)
 	fs := afero.NewOsFs()
 	id := int64(1)
@@ -283,12 +296,20 @@ func TestUpload(t *testing.T) {
 		Error   string
 	}
 
+	type mockResponses struct {
+		LastTry                    bool
+		UploadReleaseAssetResponse *github.Response
+		UploadReleaseAssetError    error
+		GetReleaseByTagRelease     *github.RepositoryRelease
+		GetReleaseByTagError       error
+		DeleteReleaseAssetError    error
+	}
+
 	type test struct {
-		Asset          release.Asset
-		Release        *release.Release
-		Expected       expected
-		Error          error
-		FailedAttempts int
+		Asset         release.Asset
+		Release       *release.Release
+		MockResponses []mockResponses
+		Expected      expected
 	}
 
 	suite := map[string]test{
@@ -302,46 +323,169 @@ func TestUpload(t *testing.T) {
 					Owner: "anton-yurchenko",
 					Name:  "git-release",
 				},
+				Reference: &release.Reference{
+					Tag: "v1.0.0",
+				},
+			},
+			MockResponses: []mockResponses{
+				{
+					UploadReleaseAssetResponse: &github.Response{
+						Response: &http.Response{StatusCode: http.StatusOK},
+					},
+					UploadReleaseAssetError: nil,
+				},
 			},
 			Expected: expected{
 				Error: "",
 			},
-			Error:          nil,
-			FailedAttempts: 0,
 		},
-		"Multiple Retries": {
+		"Ghost Release Asset Not Found": {
 			Asset: release.Asset{
-				Name: "testFile2",
-				Path: "testFile2",
+				Name: "testFile1",
+				Path: "testFile1",
 			},
 			Release: &release.Release{
 				Slug: &release.Slug{
 					Owner: "anton-yurchenko",
 					Name:  "git-release",
 				},
+				Reference: &release.Reference{
+					Tag: "v1.0.0",
+				},
+			},
+			MockResponses: []mockResponses{
+				{
+					UploadReleaseAssetResponse: &github.Response{
+						Response: &http.Response{StatusCode: http.StatusBadGateway},
+					},
+					UploadReleaseAssetError: errors.New("reason-c"),
+					GetReleaseByTagRelease: &github.RepositoryRelease{
+						Assets: []github.ReleaseAsset{
+							{
+								ID:   pInt64(123),
+								Name: pString("testFile2"),
+							},
+						},
+					},
+					GetReleaseByTagError: nil,
+				},
 			},
 			Expected: expected{
-				Error: "",
+				Error: "ghost release asset not found",
 			},
-			Error:          nil,
-			FailedAttempts: 2,
 		},
-		"Maximum Retries": {
+		"Asset Already Exists - Last Try [very long test]": {
 			Asset: release.Asset{
-				Name: "testFile2",
-				Path: "testFile2",
+				Name: "test/File1",
+				Path: "testFile1",
 			},
 			Release: &release.Release{
 				Slug: &release.Slug{
 					Owner: "anton-yurchenko",
 					Name:  "git-release",
 				},
+				Reference: &release.Reference{
+					Tag: "v1.0.0",
+				},
+			},
+			MockResponses: []mockResponses{
+				{
+					UploadReleaseAssetResponse: &github.Response{
+						Response: &http.Response{StatusCode: http.StatusInternalServerError},
+					},
+					UploadReleaseAssetError: errors.New("reason-a"),
+				},
+				{
+					UploadReleaseAssetResponse: &github.Response{
+						Response: &http.Response{StatusCode: http.StatusBadGateway},
+					},
+					UploadReleaseAssetError: errors.New("reason-c"),
+					GetReleaseByTagRelease: &github.RepositoryRelease{
+						Assets: []github.ReleaseAsset{
+							{
+								ID:   pInt64(123),
+								Name: pString("test-File1"),
+							},
+						},
+					},
+					GetReleaseByTagError: errors.New("reason-d"),
+				},
+				{
+					UploadReleaseAssetResponse: &github.Response{
+						Response: &http.Response{StatusCode: http.StatusUnprocessableEntity},
+					},
+					UploadReleaseAssetError: errors.New("reason-c"),
+					GetReleaseByTagRelease: &github.RepositoryRelease{
+						Assets: []github.ReleaseAsset{
+							{
+								ID:   pInt64(123),
+								Name: pString("test-File1"),
+							},
+						},
+					},
+					GetReleaseByTagError:    nil,
+					DeleteReleaseAssetError: errors.New("reason"),
+				},
+				{
+					LastTry: true,
+					UploadReleaseAssetResponse: &github.Response{
+						Response: &http.Response{StatusCode: http.StatusBadGateway},
+					},
+					UploadReleaseAssetError: errors.New("reason-e"),
+				},
 			},
 			Expected: expected{
-				Error: "maximum attempts reached uploading asset: testFile2",
+				Error: "maximum attempts reached uploading asset: test/File1",
 			},
-			Error:          errors.New("reason"),
-			FailedAttempts: 3,
+		},
+		"Recover [long test]": {
+			Asset: release.Asset{
+				Name: "test/File1",
+				Path: "testFile1",
+			},
+			Release: &release.Release{
+				Slug: &release.Slug{
+					Owner: "anton-yurchenko",
+					Name:  "git-release",
+				},
+				Reference: &release.Reference{
+					Tag: "v1.0.0",
+				},
+			},
+			MockResponses: []mockResponses{
+				{
+					UploadReleaseAssetResponse: &github.Response{
+						Response: &http.Response{StatusCode: http.StatusInternalServerError},
+					},
+					UploadReleaseAssetError: errors.New("reason-a"),
+				},
+				{
+					UploadReleaseAssetResponse: &github.Response{
+						Response: &http.Response{StatusCode: http.StatusUnprocessableEntity},
+					},
+					UploadReleaseAssetError: errors.New("reason-b"),
+					GetReleaseByTagRelease: &github.RepositoryRelease{
+						Assets: []github.ReleaseAsset{
+							{
+								ID:   pInt64(123),
+								Name: pString("test-File1"),
+							},
+						},
+					},
+					GetReleaseByTagError:    nil,
+					DeleteReleaseAssetError: nil,
+				},
+				{
+					LastTry: true,
+					UploadReleaseAssetResponse: &github.Response{
+						Response: &http.Response{StatusCode: http.StatusOK},
+					},
+					UploadReleaseAssetError: nil,
+				},
+			},
+			Expected: expected{
+				Error: "",
+			},
 		},
 		"File Does Not Exists": {
 			Asset: release.Asset{
@@ -355,10 +499,8 @@ func TestUpload(t *testing.T) {
 				},
 			},
 			Expected: expected{
-				Error: "open testFile3: no such file or directory",
+				Error: "error opening a file: open testFile3: no such file or directory",
 			},
-			Error:          nil,
-			FailedAttempts: 0,
 		},
 	}
 
@@ -382,7 +524,7 @@ func TestUpload(t *testing.T) {
 		errs := make(chan error, 1)
 
 		m := new(mocks.RepositoriesClient)
-		for i := 1; i <= test.FailedAttempts; i++ {
+		for _, res := range test.MockResponses {
 			m.On("UploadReleaseAsset",
 				context.Background(),
 				test.Release.Slug.Owner,
@@ -391,18 +533,37 @@ func TestUpload(t *testing.T) {
 				&github.UploadOptions{
 					Name: strings.ReplaceAll(test.Asset.Name, "/", "-"),
 				},
-				mock.AnythingOfType("*os.File")).Return(nil, nil, errors.New("reason")).Once()
-		}
+				mock.AnythingOfType("*os.File"),
+			).Return(nil, res.UploadReleaseAssetResponse, res.UploadReleaseAssetError).Once()
 
-		m.On("UploadReleaseAsset",
-			context.Background(),
-			test.Release.Slug.Owner,
-			test.Release.Slug.Name,
-			id,
-			&github.UploadOptions{
-				Name: strings.ReplaceAll(test.Asset.Name, "/", "-"),
-			},
-			mock.AnythingOfType("*os.File")).Return(nil, nil, test.Error).Once()
+			if !res.LastTry && (res.UploadReleaseAssetResponse.StatusCode == http.StatusBadGateway || res.UploadReleaseAssetResponse.StatusCode == http.StatusUnprocessableEntity) {
+				m.On("GetReleaseByTag",
+					context.Background(),
+					test.Release.Slug.Owner,
+					test.Release.Slug.Name,
+					test.Release.Reference.Tag,
+				).Return(res.GetReleaseByTagRelease, nil, res.GetReleaseByTagError).Once()
+
+				if res.GetReleaseByTagError == nil {
+					var assetID int64
+					for _, s := range res.GetReleaseByTagRelease.Assets {
+						if *s.Name == strings.ReplaceAll(test.Asset.Name, "/", "-") {
+							assetID = *s.ID
+							break
+						}
+					}
+
+					if res.GetReleaseByTagError == nil && assetID != 0 {
+						m.On("DeleteReleaseAsset",
+							context.Background(),
+							test.Release.Slug.Owner,
+							test.Release.Slug.Name,
+							assetID,
+						).Return(nil, res.DeleteReleaseAssetError).Once()
+					}
+				}
+			}
+		}
 
 		test.Asset.Upload(test.Release, m, id, errs, wg)
 

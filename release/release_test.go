@@ -885,7 +885,6 @@ func TestPublish(t *testing.T) {
 			},
 			UploadReleaseAssetMock: []error{},
 			ExpectedError:          "",
-			FailedAttempts:         0,
 		},
 		"With Assets": {
 			Release: &release.Release{
@@ -919,12 +918,8 @@ func TestPublish(t *testing.T) {
 				},
 				Error: nil,
 			},
-			UploadReleaseAssetMock: []error{
-				nil,
-				nil,
-			},
-			ExpectedError:  "",
-			FailedAttempts: 0,
+			UploadReleaseAssetMock: []error{nil, nil},
+			ExpectedError:          "",
 		},
 		"Error Creating Release": {
 			Release: &release.Release{
@@ -947,9 +942,7 @@ func TestPublish(t *testing.T) {
 				Output: nil,
 				Error:  errors.New("reason"),
 			},
-			UploadReleaseAssetMock: []error{},
-			ExpectedError:          "reason",
-			FailedAttempts:         0,
+			ExpectedError: "reason",
 		},
 		"Error Uploading Assets": {
 			Release: &release.Release{
@@ -979,11 +972,8 @@ func TestPublish(t *testing.T) {
 				},
 				Error: nil,
 			},
-			UploadReleaseAssetMock: []error{
-				errors.New("reason"),
-			},
-			ExpectedError:  "error uploading assets",
-			FailedAttempts: 3,
+			UploadReleaseAssetMock: []error{errors.New("reason")},
+			ExpectedError:          "error uploading assets",
 		},
 	}
 
@@ -995,10 +985,12 @@ main:
 
 		// prepare test case
 		if test.Release.Assets != nil {
-			for _, asset := range *test.Release.Assets {
-				if err := afero.WriteFile(fs, asset.Path, []byte(""), 0644); err != nil {
-					t.Errorf("error preparing test case: error creating file %v: %v", asset.Path, err)
-					continue main
+			for i, asset := range *test.Release.Assets {
+				if test.UploadReleaseAssetMock[i] == nil {
+					if err := afero.WriteFile(fs, asset.Path, []byte(""), 0644); err != nil {
+						t.Errorf("error preparing test case: error creating file %v: %v", asset.Path, err)
+						continue main
+					}
 				}
 			}
 		}
@@ -1021,24 +1013,6 @@ main:
 			}).Return(test.CreateReleaseMock.Output, nil, test.CreateReleaseMock.Error).Once()
 
 		if test.Release.Assets != nil {
-			for i := 1; i <= test.FailedAttempts; i++ {
-				m.On("UploadReleaseAsset",
-					context.Background(),
-					test.Release.Slug.Owner,
-					test.Release.Slug.Name,
-					func() int64 {
-						if test.CreateReleaseMock.Output != nil {
-							return *test.CreateReleaseMock.Output.ID
-						} else {
-							return int64(0)
-						}
-					}(),
-					&github.UploadOptions{
-						Name: strings.ReplaceAll((*test.Release.Assets)[0].Name, "/", "-"),
-					},
-					mock.AnythingOfType("*os.File")).Return(nil, nil, errors.New("reason")).Once()
-			}
-
 			for i, asset := range *test.Release.Assets {
 				m.On("UploadReleaseAsset",
 					context.Background(),
@@ -1065,10 +1039,12 @@ main:
 
 		// cleanup
 		if test.Release.Assets != nil {
-			for _, asset := range *test.Release.Assets {
-				if err := fs.Remove(asset.Path); err != nil {
-					t.Errorf("error cleanup: error removing file %v: %v", asset.Path, err)
-					continue main
+			for i, asset := range *test.Release.Assets {
+				if test.UploadReleaseAssetMock[i] == nil {
+					if err := fs.Remove(asset.Path); err != nil {
+						t.Errorf("error cleanup: error removing file %v: %v", asset.Path, err)
+						continue main
+					}
 				}
 			}
 		}
