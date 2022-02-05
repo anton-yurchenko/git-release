@@ -4,11 +4,11 @@
 
 ### Fixed
 
-- [Issue #61](https://github.com/anton-yurchenko/git-release/issues/61) Improve assets upload retry mechanism (*Thanks to [kongsgard](https://github.com/kongsgard), [rgriebl](https://github.com/rgriebl))
+- [Issue #61](https://github.com/anton-yurchenko/git-release/issues/61) Improve assets upload retry mechanism (*Thanks to [kongsgard](https://github.com/kongsgard), [rgriebl](https://github.com/rgriebl)*)
 
 ### Added
 
-- [Issue #61](https://github.com/anton-yurchenko/git-release/issues/61) Recover from 422/UnprocessableEntity and 502/BadGateway errors during assets upload (*Thanks to [kongsgard](https://github.com/kongsgard), [rgriebl](https://github.com/rgriebl))
+- [Issue #61](https://github.com/anton-yurchenko/git-release/issues/61) Recover from 422/UnprocessableEntity and 502/BadGateway errors during assets upload (*Thanks to [kongsgard](https://github.com/kongsgard), [rgriebl](https://github.com/rgriebl)*)
 
 ### Changed
 
