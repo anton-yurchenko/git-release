@@ -18,7 +18,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const ghostReleaseAssetDeletedMessage string = "ghost release asset deleted"
+const ghostReleaseAssetNotFound string = "ghost release asset not found"
 
 // GetAssets returns validated assets supplied via 'args'
 func GetAssets(fs afero.Fs, args []string) (*[]Asset, error) {
@@ -73,8 +73,9 @@ func (a *Asset) Upload(release *Release, cli RepositoriesClient, id int64, errs 
 			i == maxRetries,
 		)
 		if err == nil {
+			errs <- nil
 			break
-		} else if !strings.Contains(err.Error(), ghostReleaseAssetDeletedMessage) {
+		} else if strings.Contains(err.Error(), "error opening a file") || strings.Contains(err.Error(), ghostReleaseAssetNotFound) {
 			errs <- err
 			return
 		}
@@ -139,7 +140,7 @@ func (a *Asset) uploadHandler(release *Release, cli RepositoriesClient, id int64
 			}
 
 			if assetID == 0 {
-				return errors.New("ghost release asset not found")
+				return errors.New(ghostReleaseAssetNotFound)
 			}
 
 			_, err = cli.DeleteReleaseAsset(
@@ -152,8 +153,10 @@ func (a *Asset) uploadHandler(release *Release, cli RepositoriesClient, id int64
 				return errors.Wrap(err, "error deleting ghost release asset")
 			}
 
-			return errors.New(ghostReleaseAssetDeletedMessage)
+			return errors.New("ghost release asset deleted")
 		}
+
+		return err
 	}
 
 	return nil
