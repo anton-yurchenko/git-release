@@ -339,7 +339,7 @@ func TestUpload(t *testing.T) {
 				Error: "",
 			},
 		},
-		"Ghost Release Asset Not Found": {
+		"Ghost Release Asset Not Found [very long test]": {
 			Asset: release.Asset{
 				Name: "testFile1",
 				Path: "testFile1",
@@ -368,6 +368,13 @@ func TestUpload(t *testing.T) {
 						},
 					},
 					GetReleaseByTagError: nil,
+				},
+				{
+					LastTry: true,
+					UploadReleaseAssetResponse: &github.Response{
+						Response: &http.Response{StatusCode: http.StatusOK},
+					},
+					UploadReleaseAssetError: nil,
 				},
 			},
 			Expected: expected{

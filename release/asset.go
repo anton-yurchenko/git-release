@@ -18,8 +18,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const ghostReleaseAssetNotFound string = "ghost release asset not found"
-
 // GetAssets returns validated assets supplied via 'args'
 func GetAssets(fs afero.Fs, args []string) (*[]Asset, error) {
 	assets := make([]Asset, 0)
@@ -75,13 +73,12 @@ func (a *Asset) Upload(release *Release, cli RepositoriesClient, id int64, errs 
 		if err == nil {
 			errs <- nil
 			break
-		} else if strings.Contains(err.Error(), "error opening a file") || strings.Contains(err.Error(), ghostReleaseAssetNotFound) {
+		} else if strings.Contains(err.Error(), "error opening a file") {
 			errs <- err
 			return
 		}
 
 		if i == maxRetries {
-			log.WithField("asset", a.Name).Warnf("error uploading asset: %v", err.Error())
 			errs <- errors.New(fmt.Sprintf("maximum attempts reached uploading asset: %v", a.Name))
 			break
 		}
@@ -114,13 +111,9 @@ func (a *Asset) uploadHandler(release *Release, cli RepositoriesClient, id int64
 	_ = file.Close()
 
 	if err != nil {
-		if lastTry {
-			return err
-		}
-
 		log.WithField("asset", a.Name).Warnf("error uploading asset: %v", err.Error())
 
-		if res.StatusCode == http.StatusBadGateway || res.StatusCode == http.StatusUnprocessableEntity {
+		if !lastTry && (res.StatusCode == http.StatusBadGateway || res.StatusCode == http.StatusUnprocessableEntity) {
 			rel, _, err := cli.GetReleaseByTag(
 				context.Background(),
 				release.Slug.Owner,
@@ -131,29 +124,23 @@ func (a *Asset) uploadHandler(release *Release, cli RepositoriesClient, id int64
 				return errors.Wrap(err, "error retrieving release")
 			}
 
-			var assetID int64
 			for _, s := range rel.Assets {
 				if *s.Name == strings.ReplaceAll(a.Name, "/", "-") {
-					assetID = *s.ID
-					break
+					_, err = cli.DeleteReleaseAsset(
+						context.Background(),
+						release.Slug.Owner,
+						release.Slug.Name,
+						*s.ID,
+					)
+					if err != nil {
+						return errors.Wrap(err, "error deleting ghost release asset")
+					}
+
+					return errors.New("ghost release asset deleted")
 				}
 			}
 
-			if assetID == 0 {
-				return errors.New(ghostReleaseAssetNotFound)
-			}
-
-			_, err = cli.DeleteReleaseAsset(
-				context.Background(),
-				release.Slug.Owner,
-				release.Slug.Name,
-				assetID,
-			)
-			if err != nil {
-				return errors.Wrap(err, "error deleting ghost release asset")
-			}
-
-			return errors.New("ghost release asset deleted")
+			return errors.New("ghost release asset not found")
 		}
 
 		return err
