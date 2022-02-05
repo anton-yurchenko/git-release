@@ -1,33 +1,30 @@
+I := "⚪"
+E := "🔴"
 BINARY := $(notdir $(CURDIR))
 GO_BIN_DIR := $(GOPATH)/bin
 OSES := windows linux
 ARCHS := amd64
 
 test: lint
-	@echo "unit testing..."
+	@echo "$(I) unit testing... [this may take a couple of minutes]"
 	@go test -v $$(go list ./... | grep -v vendor | grep -v mocks) -race -coverprofile=coverage.txt -covermode=atomic
 
 .PHONY: lint
 lint: $(GO_LINTER)
-	@echo "vendoring..."
-	@go mod vendor
-	@go mod tidy
-	@echo "linting..."
-	@golangci-lint run ./...
+	@echo "$(I) vendoring..."
+	@go mod vendor || (echo "$(E) 'go mod vendor' error"; exit 1)
+	@go mod tidy || (echo "$(E) 'go mod tidy' error"; exit 1)
+	@echo "$(I) linting..."
+	@golangci-lint run ./... || (echo "$(E) linter error"; exit 1)
 
 .PHONY: init
 init:
 	@rm -rf go.mod go.sum ./vendor
 	@go mod init $$(pwd | awk -F'/' '{print $$NF}')
 
-# linter
-GO_LINTER := $(GO_BIN_DIR)/golangci-lint
-$(GO_LINTER):
-	@echo "installing linter..."
-	go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
-
 .PHONY: build
 build: test
+	@echo "$(I) building binaries for javascript executor..."
 	@rm -rf ./bin
 	@mkdir -p bin
 	@for ARCH in $(ARCHS); do \
@@ -42,24 +39,9 @@ build: test
 
 .PHONY: codecov
 codecov: test
-	@go tool cover -html=coverage.txt
+	@go tool cover -html=coverage.txt || (echo "$(E) 'go tool cover' error"; exit 1)
 
-GO_VER := $$(grep -oE "const Version string = \"[0-9]+.[0-9]+.[0-9]+\"" main.go | tr -d 'const Version string = "')
-DOCKER_VER := $$(grep -oE "LABEL \"version\"=\"[0-9]+.[0-9]+.[0-9]+\"" Dockerfile | tr -d 'LABEL "version"="')
-JS_VER := $$(jq -r '.version' package.json)
-
-.PHONY: release
-release: build
-	@if [ "${tag}" != "v${DOCKER_VER}" ] || [ "${tag}" != "v${DOCKER_VER}" ] || [ "${tag}" != "v${JS_VER}" ]; then\
-		echo "---> Inconsistent Versioning!";\
-		echo "git tag:		${tag}";\
-		echo "main.go version:	${GO_VER}";\
-		echo "Dockerfile version:	${DOCKER_VER}";\
-		echo "package.json version:	${JS_VER}";\
-		exit 1;\
-	fi
-	@git add -A
-	@git commit -m $(tag)
-	@git push
-	@git tag $(tag)
-	@git push origin $(tag)
+GO_LINTER := $(GO_BIN_DIR)/golangci-lint
+$(GO_LINTER):
+	@echo "installing linter..."
+	go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
