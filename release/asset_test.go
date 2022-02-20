@@ -494,6 +494,39 @@ func TestUpload(t *testing.T) {
 				Error: "",
 			},
 		},
+		"No API Response [long test]": {
+			Asset: release.Asset{
+				Name: "test/File1",
+				Path: "testFile1",
+			},
+			Release: &release.Release{
+				Slug: &release.Slug{
+					Owner: "anton-yurchenko",
+					Name:  "git-release",
+				},
+				Reference: &release.Reference{
+					Tag: "v1.0.0",
+				},
+			},
+			MockResponses: []mockResponses{
+				{
+					UploadReleaseAssetResponse: &github.Response{
+						Response: nil,
+					},
+					UploadReleaseAssetError: errors.New("reason-a"),
+				},
+				{
+					LastTry: true,
+					UploadReleaseAssetResponse: &github.Response{
+						Response: &http.Response{StatusCode: http.StatusOK},
+					},
+					UploadReleaseAssetError: nil,
+				},
+			},
+			Expected: expected{
+				Error: "",
+			},
+		},
 		"File Does Not Exists": {
 			Asset: release.Asset{
 				Name: "testFile3",
@@ -543,30 +576,32 @@ func TestUpload(t *testing.T) {
 				mock.AnythingOfType("*os.File"),
 			).Return(nil, res.UploadReleaseAssetResponse, res.UploadReleaseAssetError).Once()
 
-			if !res.LastTry && (res.UploadReleaseAssetResponse.StatusCode == http.StatusBadGateway || res.UploadReleaseAssetResponse.StatusCode == http.StatusUnprocessableEntity) {
-				m.On("GetReleaseByTag",
-					context.Background(),
-					test.Release.Slug.Owner,
-					test.Release.Slug.Name,
-					test.Release.Reference.Tag,
-				).Return(res.GetReleaseByTagRelease, nil, res.GetReleaseByTagError).Once()
+			if !res.LastTry && res.UploadReleaseAssetResponse.Response != nil {
+				if res.UploadReleaseAssetResponse.StatusCode == http.StatusBadGateway || res.UploadReleaseAssetResponse.StatusCode == http.StatusUnprocessableEntity {
+					m.On("GetReleaseByTag",
+						context.Background(),
+						test.Release.Slug.Owner,
+						test.Release.Slug.Name,
+						test.Release.Reference.Tag,
+					).Return(res.GetReleaseByTagRelease, nil, res.GetReleaseByTagError).Once()
 
-				if res.GetReleaseByTagError == nil {
-					var assetID int64
-					for _, s := range res.GetReleaseByTagRelease.Assets {
-						if *s.Name == strings.ReplaceAll(test.Asset.Name, "/", "-") {
-							assetID = *s.ID
-							break
+					if res.GetReleaseByTagError == nil {
+						var assetID int64
+						for _, s := range res.GetReleaseByTagRelease.Assets {
+							if *s.Name == strings.ReplaceAll(test.Asset.Name, "/", "-") {
+								assetID = *s.ID
+								break
+							}
 						}
-					}
 
-					if res.GetReleaseByTagError == nil && assetID != 0 {
-						m.On("DeleteReleaseAsset",
-							context.Background(),
-							test.Release.Slug.Owner,
-							test.Release.Slug.Name,
-							assetID,
-						).Return(nil, res.DeleteReleaseAssetError).Once()
+						if res.GetReleaseByTagError == nil && assetID != 0 {
+							m.On("DeleteReleaseAsset",
+								context.Background(),
+								test.Release.Slug.Owner,
+								test.Release.Slug.Name,
+								assetID,
+							).Return(nil, res.DeleteReleaseAssetError).Once()
+						}
 					}
 				}
 			}

@@ -1,10 +1,14 @@
 # Changelog
 
-## [Unreleased]
+## [4.2.3] - 2022-02-20
 
 ### Changed
 
-- Keep retrying assets upload even if `422/UnprocessableEntity`/`502/BadGateway` is encountered and asset was not found on the partially created release (this will make git-release more robust to unexpected API responses)
+- Keep retrying assets upload even if `422/UnprocessableEntity`/`502/BadGateway` is encountered and asset was not found on the partially created release
+
+### Fixed
+
+- [Issue #64](https://github.com/anton-yurchenko/git-release/issues/64) Panic on missing API response (*Thanks to [rgriebl](https://github.com/rgriebl)*)
 
 ## [4.2.2] - 2022-02-05
 
@@ -334,7 +338,7 @@ This is a major release as most of the code was refactored and some behavior was
 - Control Release Draft through env.var 'DRAFT_RELEASE'
 - Control Release Pre Release through env.var 'PRE_RELEASE'
 
-[Unreleased]: https://github.com/anton-yurchenko/git-release/compare/v4.2.2...HEAD
+[4.2.3]: https://github.com/anton-yurchenko/git-release/compare/v4.2.2...v4.2.3
 [4.2.2]: https://github.com/anton-yurchenko/git-release/compare/v4.2.1...v4.2.2
 [4.2.1]: https://github.com/anton-yurchenko/git-release/compare/v4.2.0...v4.2.1
 [4.2.0]: https://github.com/anton-yurchenko/git-release/compare/v4.1.2...v4.2.0
