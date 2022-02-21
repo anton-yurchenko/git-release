@@ -113,38 +113,36 @@ func (a *Asset) uploadHandler(release *Release, cli RepositoriesClient, id int64
 	if err != nil {
 		log.WithField("asset", a.Name).Warnf("error uploading asset: %v", err.Error())
 
-		if !lastTry && res.Response != nil {
-			if res.StatusCode == http.StatusBadGateway || res.StatusCode == http.StatusUnprocessableEntity {
-				rel, _, err := cli.GetReleaseByTag(
-					context.Background(),
-					release.Slug.Owner,
-					release.Slug.Name,
-					release.Reference.Tag,
-				)
-				if err != nil {
-					return errors.Wrap(err, "error retrieving release")
-				}
-
-				for _, s := range rel.Assets {
-					if *s.Name == strings.ReplaceAll(a.Name, "/", "-") {
-						_, err = cli.DeleteReleaseAsset(
-							context.Background(),
-							release.Slug.Owner,
-							release.Slug.Name,
-							*s.ID,
-						)
-						if err != nil {
-							return errors.Wrap(err, "error deleting ghost release asset")
-						}
-
-						return errors.New("ghost release asset deleted")
-					}
-				}
-
-				return errors.New("ghost release asset not found")
+		if !lastTry &&
+			res != nil && res.Response != nil &&
+			(res.StatusCode == http.StatusBadGateway || res.StatusCode == http.StatusUnprocessableEntity) {
+			rel, _, err := cli.GetReleaseByTag(
+				context.Background(),
+				release.Slug.Owner,
+				release.Slug.Name,
+				release.Reference.Tag,
+			)
+			if err != nil {
+				return errors.Wrap(err, "error retrieving release")
 			}
 
-			log.WithField("asset", a.Name).Debugf("received unexpected http response code during asset upload: %v", res.StatusCode)
+			for _, s := range rel.Assets {
+				if *s.Name == strings.ReplaceAll(a.Name, "/", "-") {
+					_, err = cli.DeleteReleaseAsset(
+						context.Background(),
+						release.Slug.Owner,
+						release.Slug.Name,
+						*s.ID,
+					)
+					if err != nil {
+						return errors.Wrap(err, "error deleting ghost release asset")
+					}
+
+					return errors.New("ghost release asset deleted")
+				}
+			}
+
+			return errors.New("ghost release asset not found")
 		}
 
 		return err
