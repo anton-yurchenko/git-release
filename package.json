@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/anton-yurchenko/git-release#readme",
   "dependencies": {
-    "@actions/core": "^1.7.0"
+    "@actions/core": "^1.8.2"
   },
   "devDependencies": {}
 }
