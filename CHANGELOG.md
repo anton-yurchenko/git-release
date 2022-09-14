@@ -1,6 +1,6 @@
 # Changelog
 
-## [4.2.5] - 2022-09-14
+## [5.0.0] - 2022-09-14
 
 ### Changed
 
@@ -352,6 +352,7 @@ This is a major release as most of the code was refactored and some behavior was
 - Control Release Draft through env.var 'DRAFT_RELEASE'
 - Control Release Pre Release through env.var 'PRE_RELEASE'
 
+[5.0.0]: https://github.com/anton-yurchenko/git-release/compare/v4.2.4...v5.0.0
 [4.2.4]: https://github.com/anton-yurchenko/git-release/compare/v4.2.3...v4.2.4
 [4.2.3]: https://github.com/anton-yurchenko/git-release/compare/v4.2.2...v4.2.3
 [4.2.2]: https://github.com/anton-yurchenko/git-release/compare/v4.2.1...v4.2.2

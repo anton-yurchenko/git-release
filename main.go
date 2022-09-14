@@ -14,7 +14,7 @@ import (
 )
 
 // Version contains current application version
-const Version string = "4.2.4"
+const Version string = "5.0.0"
 
 func init() {
 	log.SetReportCaller(false)
