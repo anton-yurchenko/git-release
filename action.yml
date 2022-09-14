@@ -8,5 +8,5 @@ inputs:
     description: "Release Assets"
     required: false
 runs:
-  using: "node12"
+  using: "node16"
   main: "wrapper.js"

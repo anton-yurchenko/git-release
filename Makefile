@@ -12,6 +12,7 @@ test: lint
 .PHONY: lint
 lint: $(GO_LINTER)
 	@echo "$(I) vendoring..."
+	@go get ./... || (echo "$(E) 'go get' error"; exit 1)
 	@go mod vendor || (echo "$(E) 'go mod vendor' error"; exit 1)
 	@go mod tidy || (echo "$(E) 'go mod tidy' error"; exit 1)
 	@echo "$(I) linting..."
