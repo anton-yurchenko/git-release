@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.2.5] - 2022-09-14
+
+### Changed
+
+- Update dependencies
+- Update Golang version
+- Update JavaScript version
+
 ## [4.2.4] - 2022-02-20
 
 ### Fixed
