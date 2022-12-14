@@ -1,5 +1,16 @@
 # Changelog
 
+## [5.0.1] - 2022-12-14
+
+### Fixed
+
+- [Issue #86](https://github.com/anton-yurchenko/git-release/issues/86) Panic on empty unreleased changelog (*Thanks to [Taylor Becker](https://github.com/tajobe)*)
+
+### Changed
+
+- Update dependencies
+- Update Golang version
+
 ## [5.0.0] - 2022-09-14
 
 ### Changed
@@ -352,6 +363,7 @@ This is a major release as most of the code was refactored and some behavior was
 - Control Release Draft through env.var 'DRAFT_RELEASE'
 - Control Release Pre Release through env.var 'PRE_RELEASE'
 
+[5.0.1]: https://github.com/anton-yurchenko/git-release/compare/v5.0.0...v5.0.1
 [5.0.0]: https://github.com/anton-yurchenko/git-release/compare/v4.2.4...v5.0.0
 [4.2.4]: https://github.com/anton-yurchenko/git-release/compare/v4.2.3...v4.2.4
 [4.2.3]: https://github.com/anton-yurchenko/git-release/compare/v4.2.2...v4.2.3
