@@ -2,7 +2,7 @@ package release_test
 
 import (
 	"context"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 	"sync"
@@ -285,7 +285,7 @@ func TestGetAssets(t *testing.T) {
 }
 
 func TestUpload(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 
 	a := assert.New(t)
 	fs := afero.NewOsFs()
