@@ -3,7 +3,7 @@ package release_test
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"strings"
 	"testing"
@@ -845,7 +845,7 @@ func TestGetRelease(t *testing.T) {
 
 func TestPublish(t *testing.T) {
 	a := assert.New(t)
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 	fs := afero.NewOsFs()
 
 	type createReleaseMock struct {
@@ -1054,7 +1054,7 @@ main:
 
 func TestDeleteUnreleased(t *testing.T) {
 	a := assert.New(t)
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 
 	type getReleaseByTagMock struct {
 		Output *github.RepositoryRelease
