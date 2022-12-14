@@ -102,7 +102,7 @@ func (c *Configuration) GetChangelog(fs afero.Fs, rel *release.Release) (string,
 
 	var msg string
 	if rel.Reference.Version == "Unreleased" {
-		if changes.Unreleased != nil {
+		if changes.Unreleased != nil && changes.Unreleased.Changes != nil {
 			return changes.Unreleased.Changes.ToString(), nil
 		} else {
 			msg = "changelog file does not contain changes in Unreleased scope"
