@@ -111,4 +111,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Update Tags
-        uses: vweevers/additional-tags-action@v1
+        uses: vweevers/additional-tags-action@v2
