@@ -3,29 +3,27 @@ updates:
   - package-ecosystem: gomod
     directory: "/"
     schedule:
-      interval: monthly
-    target-branch: main
+      interval: daily
     assignees:
       - anton-yurchenko
     labels:
       - dependencies
-
-  - package-ecosystem: npm
-    directory: "/"
-    schedule:
-      interval: monthly
-    target-branch: main
-    assignees:
-      - anton-yurchenko
-    labels:
-      - dependencies
+    ignore:
+      - dependency-name: "*"
+        update-types: [
+          "version-update:semver-patch"
+        ]
 
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: monthly
+      interval: daily
     target-branch: main
     assignees:
       - anton-yurchenko
-    labels:
-      - dependencies
+    ignore:
+      - dependency-name: "*"
+        update-types: [
+          "version-update:semver-minor",
+          "version-update:semver-patch"
+        ]
