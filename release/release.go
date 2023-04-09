@@ -197,22 +197,21 @@ func (r *Release) DeleteUnreleased(repoCli RepositoriesClient, gitCli GitClient)
 		r.Slug.Name,
 		r.Reference.Tag,
 	)
-	if err != nil {
-		if !strings.Contains(err.Error(), "404 Not Found") {
-			return errors.Wrapf(err, "error retrieving a precedent release with a tag %v", r.Reference.Tag)
+
+	if err == nil {
+		_, err = repoCli.DeleteRelease(
+			context.Background(),
+			r.Slug.Owner,
+			r.Slug.Name,
+			previous.GetID(),
+		)
+		if err != nil {
+			return errors.Wrap(err, "error deleting precedent release")
 		}
-
-		return errors.New("precedent release not found")
-	}
-
-	_, err = repoCli.DeleteRelease(
-		context.Background(),
-		r.Slug.Owner,
-		r.Slug.Name,
-		previous.GetID(),
-	)
-	if err != nil {
-		return errors.Wrap(err, "error deleting precedent release")
+	} else if !strings.Contains(err.Error(), "404 Not Found") {
+		return errors.Wrapf(err, "error retrieving a precedent release with a tag %v", r.Reference.Tag)
+	} else {
+		log.Warn("precedent release not found")
 	}
 
 	_, err = gitCli.DeleteRef(
@@ -221,26 +220,29 @@ func (r *Release) DeleteUnreleased(repoCli RepositoriesClient, gitCli GitClient)
 		r.Slug.Name,
 		tag,
 	)
-	if err != nil {
-		return errors.Wrap(err, "error deleting precedent tag")
-	}
+	if err == nil {
+		// tag deletion takes some time to be reflected
+		for i := 0; i < 3; i++ {
+			_, _, err := gitCli.GetRef(
+				context.Background(),
+				r.Slug.Owner,
+				r.Slug.Name,
+				tag,
+			)
+			if err != nil {
+				if strings.Contains(err.Error(), "404 Not Found") {
+					break
+				}
 
-	for i := 0; i < 3; i++ {
-		_, _, err := gitCli.GetRef(
-			context.Background(),
-			r.Slug.Owner,
-			r.Slug.Name,
-			tag,
-		)
-		if err != nil {
-			if strings.Contains(err.Error(), "404 Not Found") {
-				break
+				return errors.Wrap(err, "error fetching precedent tag")
 			}
 
-			return errors.Wrap(err, "error fetching precedent tag")
+			time.Sleep(3 * time.Second)
 		}
-
-		time.Sleep(3 * time.Second)
+	} else if !strings.Contains(err.Error(), "422 Reference does not exist") {
+		return errors.Wrap(err, "error deleting precedent tag")
+	} else {
+		log.Warn("precedent tag not found")
 	}
 
 	return nil

@@ -1,8 +1,6 @@
 package main
 
 import (
-	"strings"
-
 	"git-release/release"
 
 	"github.com/pkg/errors"
@@ -14,7 +12,7 @@ import (
 )
 
 // Version contains current application version
-const Version string = "5.0.1"
+const Version string = "5.0.2"
 
 func init() {
 	log.SetReportCaller(false)
@@ -80,15 +78,10 @@ func main() {
 	}
 
 	if conf.UnreleasedCreate || conf.UnreleasedDelete {
+		log.Warnf("deleting precedent release ❗")
 		err := rel.DeleteUnreleased(cli.Repositories, cli.Git)
 		if err != nil {
-			if !strings.Contains(err.Error(), "precedent release not found") {
-				log.Fatal(errors.Wrap(err, "error preparing for Unreleased release update"))
-			}
-
-			log.Warn(err.Error())
-		} else {
-			log.Warnf("precedent release deleted ❗")
+			log.Fatal(errors.Wrap(err, "error preparing for Unreleased release update"))
 		}
 
 		if conf.UnreleasedDelete {

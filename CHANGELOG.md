@@ -1,5 +1,16 @@
 # Changelog
 
+## [5.0.2] - 2023-04-09
+
+### Fixed
+
+- [Issue #90](https://github.com/anton-yurchenko/git-release/issues/90) Awkward behavior in UNRELEASED flow when tag is present without release itself (*Thanks to [Benjamin K.](https://github.com/treee111)*)
+
+### Changed
+
+- Update dependencies
+- Update Golang version
+
 ## [5.0.1] - 2022-12-14
 
 ### Fixed
@@ -303,7 +314,7 @@ This is a major release as most of the code was refactored and some behavior was
 ### Changed
 
 - **local** package renamed to **repository**
-- **remote** package splitted into 2 packages: **asset**, **release**
+- **remote** package split into 2 packages: **asset**, **release**
 - Tag version is set as a release title
 
 ## [1.1.0] - 2019-12-21
@@ -325,7 +336,7 @@ This is a major release as most of the code was refactored and some behavior was
 ### Fixed
 
 - Wrong PRE_RELEASE message when set
-- Correct 'creating release' log message
+- Correct `creating release` log message
 
 ## [0.2.0] - 2019-10-01
 
@@ -336,7 +347,7 @@ This is a major release as most of the code was refactored and some behavior was
 
 ### Changed
 
-- Remove 'v' from release name
+- Remove `v` from release name
 
 ### Fixed
 
@@ -351,8 +362,8 @@ This is a major release as most of the code was refactored and some behavior was
 
 ### Removed
 
-- 'DRAFT_RELEASE=false' warning logging
-- 'PRE_RELEASE=false' warning logging
+- `DRAFT_RELEASE=false` warning logging
+- `PRE_RELEASE=false` warning logging
 
 ## [0.1.0] - 2019-09-29
 
@@ -360,9 +371,10 @@ This is a major release as most of the code was refactored and some behavior was
 
 - Create GitHub Release
 - Upload Assets
-- Control Release Draft through env.var 'DRAFT_RELEASE'
-- Control Release Pre Release through env.var 'PRE_RELEASE'
+- Control Release Draft through env.var `DRAFT_RELEASE`
+- Control Release Pre Release through env.var `PRE_RELEASE`
 
+[5.0.2]: https://github.com/anton-yurchenko/git-release/compare/v5.0.1...v5.0.2
 [5.0.1]: https://github.com/anton-yurchenko/git-release/compare/v5.0.0...v5.0.1
 [5.0.0]: https://github.com/anton-yurchenko/git-release/compare/v4.2.4...v5.0.0
 [4.2.4]: https://github.com/anton-yurchenko/git-release/compare/v4.2.3...v4.2.4

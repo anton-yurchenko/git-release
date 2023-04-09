@@ -1,6 +1,6 @@
 {
   "name": "git-release",
-  "version": "5.0.1",
+  "version": "5.0.2",
   "description": "A GitHub Action for creating a GitHub Release with Assets and Changelog whenever a new Tag is pushed to the repository.",
   "main": "wrapper.js",
   "directories": {
