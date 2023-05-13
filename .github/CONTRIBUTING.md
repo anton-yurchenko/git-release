@@ -9,7 +9,7 @@
 
 ## Pull Request
 
-- Open [Pull Request](https://github.com/anton-yurchenko/git-release/pulls) towards **dev** branch.
+- Open [Pull Request](https://github.com/anton-yurchenko/git-release/pulls) towards **main** branch.
 - Ensure [Pull Request](https://github.com/anton-yurchenko/git-release/pulls) description clearly describes the problem and solution.
 - Make sure all Tests are passed and there is no Code Coverage degradation.
 
