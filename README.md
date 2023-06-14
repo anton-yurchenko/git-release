@@ -80,7 +80,7 @@ A **GitHub Action** for a **GitHub Release** creation with **Assets** and **Chan
 
     ```yaml
         - name: Release
-          uses: docker://antonyurchenko/git-release:latest
+          uses: docker://antonyurchenko/git-release:v5
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           with:
