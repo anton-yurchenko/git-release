@@ -12,15 +12,13 @@ jobs:
       - name: Init
         uses: actions/setup-go@v4
         with:
-          go-version: 1.17
-        id: go
+          go-version: "1.21"
 
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Install Dependencies
-        run: |
-          go get -v -t -d ./...
+        run: go get -v -t -d ./...
 
       - name: Lint
         run: |
@@ -33,7 +31,7 @@ jobs:
         run: go test -v $(go list ./... | grep -v vendor | grep -v mocks) -race -coverprofile=coverage.txt -covermode=atomic
 
       - name: Upload Code Coverage
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage.txt
@@ -44,6 +42,11 @@ jobs:
   scan:
     name: Security Scan
     runs-on: ubuntu-latest
+    timeout-minutes: 360
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -58,6 +61,11 @@ jobs:
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v2
+        with:
+          category: "/language:go"
+
+      - name: Go Vulnerability Check
+        uses: Templum/govulncheck-action@v1
 
   release:
     name: Release
@@ -106,7 +114,7 @@ jobs:
             --platform linux/arm64/v8,linux/amd64 --output type=registry .
 
       - name: Release
-        uses: docker://antonyurchenko/git-release:latest
+        uses: docker://antonyurchenko/git-release:v5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
