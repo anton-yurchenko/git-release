@@ -7,12 +7,23 @@ on:
         description: "Semantic Version (vX.X.X)"
         required: true
 
+env:
+  APP_NAME: git-release
+
 jobs:
-  version:
-    name: Version
+  build:
+    name: Build
     runs-on: ubuntu-latest
     steps:
+      - name: Init
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21.5'
+        
       - uses: actions/checkout@v4
+        
+      - name: Install dependencies
+        run: go get -v -t -d ./...
 
       - name: Update version constant
         env:
@@ -23,9 +34,14 @@ jobs:
           sed -i "s/\(^[[:space:]]*\"version\": \"\)\([0-9]\+\(\.[0-9]\+\)\{2\}\)\(\",\)/\1${VERSION##v}\4/g" package.json
           sed -i "0, /\(^[[:space:]]*\"version\": \"\)\([0-9]\+\(\.[0-9]\+\)\{2\}\)\(\",\)/s/\(^[[:space:]]*\"version\": \"\)\([0-9]\+\(\.[0-9]\+\)\{2\}\)\(\",\)/\1${VERSION##v}\4/g; 5, /\(^[[:space:]]*\"version\": \"\)\([0-9]\+\(\.[0-9]\+\)\{2\}\)\(\",\)/s/\(^[[:space:]]*\"version\": \"\)\([0-9]\+\(\.[0-9]\+\)\{2\}\)\(\",\)/\1${VERSION##v}\4/g" package-lock.json
 
-      - name: Create Version
+      - name: Build binaries
+        run: |
+          GOOS=windows GOARCH=amd64 go build -o ./bin/${{ env.APP_NAME }}-windows-amd64.exe
+          GOOS=linux GOARCH=amd64 go build -o ./bin/${{ env.APP_NAME }}-linux-amd64
+
+      - name: Create version
         uses: docker://antonyurchenko/changelog-version:v1
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
           VERSION: ${{ github.event.inputs.version }}
-          UPDATE_TAGS: "true"
+          UPDATE_TAGS: "false"
