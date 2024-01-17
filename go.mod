@@ -1,6 +1,6 @@
 module git-release
 
-go 1.21.5
+go 1.21
 
 require (
 	github.com/anton-yurchenko/go-changelog v1.1.0

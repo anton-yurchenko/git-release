@@ -4,37 +4,37 @@
 
 :warning: GitHub Actions initiate a deprecation process for [Node16](https://github.blog/changelog/2023-09-22-github-actions-transitioning-from-node-16-to-node-20/)
 
-### Fixed
-
-- [Issue #122](https://github.com/anton-yurchenko/git-release/issues/122) Latest pre-release always recreated as Draft (*Thanks to [Taylor Becker](https://github.com/tajobe)*)
-
 ### Changed
 
 - Update dependencies
 - Update Golang version to v1.21.5
 - **Breaking:** Update NodeJS version to v20.11.0
 
+### Fixed
+
+- [Issue #122](https://github.com/anton-yurchenko/git-release/issues/122) Latest pre-release always recreated as Draft (*Thanks to [Taylor Becker](https://github.com/tajobe)*)
+
 ## [5.0.2] - 2023-04-09
+
+### Changed
+
+- Update dependencies
+- Update Golang version
 
 ### Fixed
 
 - [Issue #90](https://github.com/anton-yurchenko/git-release/issues/90) Awkward behavior in UNRELEASED flow when tag is present without release itself (*Thanks to [Benjamin K.](https://github.com/treee111)*)
 
+## [5.0.1] - 2022-12-14
+
 ### Changed
 
 - Update dependencies
 - Update Golang version
-
-## [5.0.1] - 2022-12-14
 
 ### Fixed
 
 - [Issue #86](https://github.com/anton-yurchenko/git-release/issues/86) Panic on empty unreleased changelog (*Thanks to [Taylor Becker](https://github.com/tajobe)*)
-
-### Changed
-
-- Update dependencies
-- Update Golang version
 
 ## [5.0.0] - 2022-09-14
 
@@ -62,17 +62,17 @@
 
 ## [4.2.2] - 2022-02-05
 
-### Fixed
+### Changed
 
-- [Issue #61](https://github.com/anton-yurchenko/git-release/issues/61) Improve assets upload retry mechanism (*Thanks to [kongsgard](https://github.com/kongsgard), [rgriebl](https://github.com/rgriebl)*)
+- Update dependencies
 
 ### Added
 
 - [Issue #61](https://github.com/anton-yurchenko/git-release/issues/61) Recover from 422/UnprocessableEntity and 502/BadGateway errors during assets upload (*Thanks to [kongsgard](https://github.com/kongsgard), [rgriebl](https://github.com/rgriebl)*)
 
-### Changed
+### Fixed
 
-- Update dependencies
+- [Issue #61](https://github.com/anton-yurchenko/git-release/issues/61) Improve assets upload retry mechanism (*Thanks to [kongsgard](https://github.com/kongsgard), [rgriebl](https://github.com/rgriebl)*)
 
 ## [4.2.1] - 2021-12-15
 
@@ -82,35 +82,35 @@
 
 ## [4.2.0] - 2021-11-25
 
-### Added
-
-- Retry assets uploads
-
 ### Changed
 
 - Update dependencies
 
+### Added
+
+- Retry assets uploads
+
 ## [4.1.2] - 2021-10-18
+
+### Changed
+
+- Update dependencies
 
 ### Fixed
 
 - [Issue #54](https://github.com/anton-yurchenko/git-release/issues/54) Empty scopes during changelog parsing (*Thanks to [Wolf2323](https://github.com/Wolf2323)*)
 
-### Changed
-
-- Update dependencies
-
 ## [4.1.1] - 2021-08-22
-
-### Fixed
-
-- Crash when changelog does not contain changes for a version
-- Changelog references
 
 ### Changed
 
 - Update to GoLang 1.17
 - Update dependencies
+
+### Fixed
+
+- Crash when changelog does not contain changes for a version
+- Changelog references
 
 ## [4.1.0] - 2021-07-02
 
@@ -174,13 +174,13 @@
 
 ## [3.4.3] - 2021-01-02
 
-### Fixed
-
-- [PR #38](https://github.com/anton-yurchenko/git-release/pull/38) - Version prefix greedy quantifier caused incorrect parsing of major version higher then `9`. (*Thanks to [rgriebl](https://github.com/rgriebl)*)
-
 ### Changed
 
 - Update Dependencies
+
+### Fixed
+
+- [PR #38](https://github.com/anton-yurchenko/git-release/pull/38) - Version prefix greedy quantifier caused incorrect parsing of major version higher then `9`. (*Thanks to [rgriebl](https://github.com/rgriebl)*)
 
 ## [3.4.2] - 2020-10-25
 
@@ -197,6 +197,10 @@
 
 ## [3.4.0] - 2020-07-10
 
+### Changed
+
+- Refactor JavaScript wrapper
+
 ### Added
 
 - Glob pattern support
@@ -208,34 +212,30 @@
 - Exception on margins larger than context of changelog
 - Nil pointer exception in 'release' package
 
-### Changed
-
-- Refactor JavaScript wrapper
-
 ## [3.3.0] - 2020-06-27
-
-### Added
-
-- Wrapper script: allow execution on Windows runners
 
 ### Changed
 
 - Action execution through Git: from Docker to NodeJS
 
-## [3.2.0] - 2020-06-04
-
-### Fixed
-
-- Ignored `ALLOW_EMPTY_CHANGELOG=true` failed to create a release
-
 ### Added
 
-- `CHANGELOG_FILE=none` will skip changelog file validation. This allows to create a release from empty workspace
+- Wrapper script: allow execution on Windows runners
+
+## [3.2.0] - 2020-06-04
 
 ### Changed
 
 - Upgrade GoLang to 1.14.4
 - Upgrade dependencies
+
+### Added
+
+- `CHANGELOG_FILE=none` will skip changelog file validation. This allows to create a release from empty workspace
+
+### Fixed
+
+- Ignored `ALLOW_EMPTY_CHANGELOG=true` failed to create a release
 
 ## [3.1.2] - 2020-04-10
 
@@ -246,14 +246,14 @@
 
 ## [3.1.1] - 2020-03-25
 
-### Fixed
-
-- [Issue #14](https://github.com/anton-yurchenko/git-release/issues/14) - Ignored first release link in a comment. (*Thanks to [Luiz Ferraz](https://github.com/Fryuni)*)
-
 ### Changed
 
 - Upgrade GoLang to 1.14.1
 - Upgrade dependencies
+
+### Fixed
+
+- [Issue #14](https://github.com/anton-yurchenko/git-release/issues/14) - Ignored first release link in a comment. (*Thanks to [Luiz Ferraz](https://github.com/Fryuni)*)
 
 ## [3.1.0] - 2020-02-17
 
@@ -280,26 +280,26 @@ This is a major release because of a certain behavior change:
 - Improved **Changelog** package parsing capabilities
 - Tag should match Changelog Version (excluding prefix)
 
+### Added
+
+- `ALLOW_TAG_PREFIX` to control version prefix like `v` or `release`
+
 ### Fixed
 
 - Semantic Versioning compliance
 - Keep a Changelog compliance
 
-### Added
-
-- `ALLOW_TAG_PREFIX` to control version prefix like `v` or `release`
-
 ## [2.0.2] - 2019-12-29
+
+### Changed
+
+- DockerHub setup as a Continuous Delivery system
 
 ### Added
 
 - CircleCI integrated as a Continuous Integration system
 - GolangCI integrated as a Continuous Code Quality system
 - CodeCov integrated as a Continuous Code Quality system
-
-### Changed
-
-- DockerHub setup as a Continuous Delivery system
 
 ## [2.0.1] - 2019-12-28
 
@@ -311,11 +311,11 @@ This is a major release because of a certain behavior change:
 
 This is a major release as most of the code was refactored and some behavior was changed, for example "Tag version is set as a release title"
 
-### Fixed
+### Changed
 
-- Artifact files not found caused panic - all files now being validated before release creation
-- Custom changelog file now being validated before release creation
-- Arguments parsing fixed
+- **local** package renamed to **repository**
+- **remote** package split into 2 packages: **asset**, **release**
+- Tag version is set as a release title
 
 ### Added
 
@@ -325,11 +325,11 @@ This is a major release as most of the code was refactored and some behavior was
 - `ALLOW_EMPTY_CHANGELOG` env.var to allow publishing a release without changelog (default **false**)
 - Artifacts (provided as arguments) can now be separated by one of: `new line '\n', pipe '|', space ' ', comma ','`
 
-### Changed
+### Fixed
 
-- **local** package renamed to **repository**
-- **remote** package split into 2 packages: **asset**, **release**
-- Tag version is set as a release title
+- Artifact files not found caused panic - all files now being validated before release creation
+- Custom changelog file now being validated before release creation
+- Arguments parsing fixed
 
 ## [1.1.0] - 2019-12-21
 
@@ -354,14 +354,14 @@ This is a major release as most of the code was refactored and some behavior was
 
 ## [0.2.0] - 2019-10-01
 
+### Changed
+
+- Remove `v` from release name
+
 ### Added
 
 - Changelog reader
 - MIT License
-
-### Changed
-
-- Remove `v` from release name
 
 ### Fixed
 
