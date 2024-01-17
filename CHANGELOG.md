@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [6.0.0] - 2024-01-17
+
 :warning: GitHub Actions initiate a deprecation process for [Node16](https://github.blog/changelog/2023-09-22-github-actions-transitioning-from-node-16-to-node-20/)
 
 ### Changed
@@ -388,7 +390,8 @@ This is a major release as most of the code was refactored and some behavior was
 - Control Release Draft through env.var `DRAFT_RELEASE`
 - Control Release Pre Release through env.var `PRE_RELEASE`
 
-[Unreleased]: https://github.com/anton-yurchenko/git-release/compare/v5.0.2...HEAD
+[Unreleased]: https://github.com/anton-yurchenko/git-release/compare/v6.0.0...HEAD
+[6.0.0]: https://github.com/anton-yurchenko/git-release/compare/v5.0.2...v6.0.0
 [5.0.2]: https://github.com/anton-yurchenko/git-release/compare/v5.0.1...v5.0.2
 [5.0.1]: https://github.com/anton-yurchenko/git-release/compare/v5.0.0...v5.0.1
 [5.0.0]: https://github.com/anton-yurchenko/git-release/compare/v4.2.4...v5.0.0
