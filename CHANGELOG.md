@@ -1,5 +1,19 @@
 # Changelog
 
+## [Unreleased]
+
+:warning: GitHub Actions initiate a deprecation process for [Node16](https://github.blog/changelog/2023-09-22-github-actions-transitioning-from-node-16-to-node-20/)
+
+### Fixed
+
+- [Issue #122](https://github.com/anton-yurchenko/git-release/issues/122) Latest pre-release always recreated as Draft (*Thanks to [Taylor Becker](https://github.com/tajobe)*)
+
+### Changed
+
+- Update dependencies
+- Update Golang version to v1.21.5
+- **Breaking:** Update NodeJS version to v20.11.0
+
 ## [5.0.2] - 2023-04-09
 
 ### Fixed
@@ -374,6 +388,7 @@ This is a major release as most of the code was refactored and some behavior was
 - Control Release Draft through env.var `DRAFT_RELEASE`
 - Control Release Pre Release through env.var `PRE_RELEASE`
 
+[Unreleased]: https://github.com/anton-yurchenko/git-release/compare/v5.0.2...HEAD
 [5.0.2]: https://github.com/anton-yurchenko/git-release/compare/v5.0.1...v5.0.2
 [5.0.1]: https://github.com/anton-yurchenko/git-release/compare/v5.0.0...v5.0.1
 [5.0.0]: https://github.com/anton-yurchenko/git-release/compare/v4.2.4...v5.0.0

@@ -2,6 +2,7 @@ package main
 
 import (
 	"git-release/release"
+	"time"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/afero"
@@ -91,6 +92,7 @@ func main() {
 		if err := rel.UpdateUnreleasedTag(cli.Git); err != nil {
 			log.Fatal(errors.Wrapf(err, "error creating %v tag", rel.Reference.Tag))
 		}
+		time.Sleep(3 * time.Second)
 	}
 
 	log.Infof("creating %v release", rel.Name)
