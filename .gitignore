@@ -8,4 +8,3 @@ coverage.txt
 **/testFile*
 release/*
 !release/*.go
-api/
