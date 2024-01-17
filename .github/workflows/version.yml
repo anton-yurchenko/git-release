@@ -19,7 +19,11 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: '1.21.5'
-        
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
       - uses: actions/checkout@v4
         
       - name: Install dependencies
@@ -32,12 +36,17 @@ jobs:
           sed -i "s/\(^const[[:space:]]*Version[[:space:]]*string[[:space:]]*=[[:space:]]*\"\)[0-9]\+\(\.[0-9]\+\)\{2\}/\1${VERSION##v}/g" main.go
           sed -i "s/LABEL org.opencontainers.image.version=\"[0-9].[0-9].[0-9]\"/LABEL org.opencontainers.image.version=\"${VERSION##v}\"/g" Dockerfile
           sed -i "s/\(^[[:space:]]*\"version\": \"\)\([0-9]\+\(\.[0-9]\+\)\{2\}\)\(\",\)/\1${VERSION##v}\4/g" package.json
-          sed -i "0, /\(^[[:space:]]*\"version\": \"\)\([0-9]\+\(\.[0-9]\+\)\{2\}\)\(\",\)/s/\(^[[:space:]]*\"version\": \"\)\([0-9]\+\(\.[0-9]\+\)\{2\}\)\(\",\)/\1${VERSION##v}\4/g; 5, /\(^[[:space:]]*\"version\": \"\)\([0-9]\+\(\.[0-9]\+\)\{2\}\)\(\",\)/s/\(^[[:space:]]*\"version\": \"\)\([0-9]\+\(\.[0-9]\+\)\{2\}\)\(\",\)/\1${VERSION##v}\4/g" package-lock.json
 
       - name: Build binaries
         run: |
           GOOS=windows GOARCH=amd64 go build -o ./bin/${{ env.APP_NAME }}-windows-amd64.exe
           GOOS=linux GOARCH=amd64 go build -o ./bin/${{ env.APP_NAME }}-linux-amd64
+
+      - name: Build binaries
+        run: |
+          rm -f package-lock.json
+          rm -rf node_modules
+          npm install
 
       - name: Create version
         uses: docker://antonyurchenko/changelog-version:v1
