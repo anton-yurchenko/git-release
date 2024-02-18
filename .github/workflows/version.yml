@@ -1,4 +1,4 @@
-name: version
+name: Create New Version
 on:
   workflow_dispatch:
     inputs:
