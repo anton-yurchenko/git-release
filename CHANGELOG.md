@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- `BODY_PREFIX` and `BODY_SUFFIX` to allow custom content before and after Changelog in Release body
+
 ## [6.0.0] - 2024-01-17
 
 :warning: GitHub Actions initiate a deprecation process for [Node16](https://github.blog/changelog/2023-09-22-github-actions-transitioning-from-node-16-to-node-20/)

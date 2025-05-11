@@ -103,7 +103,9 @@ A **GitHub Action** for a **GitHub Release** creation with **Assets** and **Chan
     | `RELEASE_NAME_PREFIX`   | `*`               | ""                | Release title prefix                                                                                                       |
     | `RELEASE_NAME_SUFFIX`   | `*`               | ""                | Release title suffix                                                                                                       |
     | `UNRELEASED`            | `update`/`delete` | ""                | Set to `update` in order to allow deletion and recreation of the same release and its tag (intended to be used for `unreleased`/`latest` release only). Set to `delete` in order to delete a previously published `unreleased`/`latest` release.                                                                                     |
-    | `UNRELEASED_TAG`        | `latest`       | `*`               | Use a custom tag for `unreleased`/`latest` release (tag will be created/deleted automatically)                             |
+    | `UNRELEASED_TAG`        | `latest`          | `*`               | Use a custom tag for `unreleased`/`latest` release (tag will be created/deleted automatically)                             |
+    | `BODY_PREFIX`           | `*`               | ""                | Custom text to prepend before the changelog contents                                                                       |
+    | `BODY_SUFFIX`           | `*`               | ""                | Custom text to append after the changelog contents                                                                         |
 
     *Configuration is provided as environmental variables (strings), so do not forget to enclose boolean values with quotes*
 

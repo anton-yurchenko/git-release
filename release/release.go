@@ -141,7 +141,7 @@ func (r *Release) Publish(cli RepositoriesClient) error {
 			Name:            &r.Name,
 			TagName:         &r.Reference.Tag,
 			TargetCommitish: &r.Reference.CommitHash,
-			Body:            &r.Changelog,
+			Body:            &r.Body,
 			Draft:           &r.Draft,
 			Prerelease:      &r.PreRelease,
 		},

@@ -24,7 +24,7 @@ type Release struct {
 	Draft      bool
 	PreRelease bool
 	Assets     *[]Asset
-	Changelog  string
+	Body       string
 }
 
 type Slug struct {

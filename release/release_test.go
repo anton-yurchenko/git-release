@@ -877,7 +877,7 @@ func TestPublish(t *testing.T) {
 				Draft:      false,
 				PreRelease: false,
 				Assets:     nil,
-				Changelog:  "changelog",
+				Body:       "changelog",
 			},
 			CreateReleaseMock: createReleaseMock{
 				Output: nil,
@@ -910,7 +910,7 @@ func TestPublish(t *testing.T) {
 						Path: "file2",
 					},
 				},
-				Changelog: "changelog",
+				Body: "changelog",
 			},
 			CreateReleaseMock: createReleaseMock{
 				Output: &github.RepositoryRelease{
@@ -936,7 +936,7 @@ func TestPublish(t *testing.T) {
 				Draft:      false,
 				PreRelease: false,
 				Assets:     nil,
-				Changelog:  "changelog",
+				Body:       "changelog",
 			},
 			CreateReleaseMock: createReleaseMock{
 				Output: nil,
@@ -964,7 +964,7 @@ func TestPublish(t *testing.T) {
 						Path: "file1",
 					},
 				},
-				Changelog: "changelog",
+				Body: "changelog",
 			},
 			CreateReleaseMock: createReleaseMock{
 				Output: &github.RepositoryRelease{
@@ -1007,7 +1007,7 @@ main:
 				Name:            &test.Release.Name,
 				TagName:         &test.Release.Reference.Tag,
 				TargetCommitish: &test.Release.Reference.CommitHash,
-				Body:            &test.Release.Changelog,
+				Body:            &test.Release.Body,
 				Draft:           &test.Release.Draft,
 				Prerelease:      &test.Release.PreRelease,
 			}).Return(test.CreateReleaseMock.Output, nil, test.CreateReleaseMock.Error).Once()
@@ -1086,7 +1086,7 @@ func TestDeleteUnreleased(t *testing.T) {
 				Draft:      false,
 				PreRelease: false,
 				Assets:     nil,
-				Changelog:  "changelog",
+				Body:       "changelog",
 			},
 			GetReleaseByTagMock: getReleaseByTagMock{
 				Output: &github.RepositoryRelease{
@@ -1118,7 +1118,7 @@ func TestDeleteUnreleased(t *testing.T) {
 				Draft:      false,
 				PreRelease: false,
 				Assets:     nil,
-				Changelog:  "changelog",
+				Body:       "changelog",
 			},
 			GetReleaseByTagMock: getReleaseByTagMock{
 				Output: nil,
@@ -1144,7 +1144,7 @@ func TestDeleteUnreleased(t *testing.T) {
 				Draft:      false,
 				PreRelease: false,
 				Assets:     nil,
-				Changelog:  "changelog",
+				Body:       "changelog",
 			},
 			GetReleaseByTagMock: getReleaseByTagMock{
 				Output: &github.RepositoryRelease{
@@ -1173,7 +1173,7 @@ func TestDeleteUnreleased(t *testing.T) {
 				Draft:      false,
 				PreRelease: false,
 				Assets:     nil,
-				Changelog:  "changelog",
+				Body:       "changelog",
 			},
 			GetReleaseByTagMock: getReleaseByTagMock{
 				Output: &github.RepositoryRelease{
@@ -1202,7 +1202,7 @@ func TestDeleteUnreleased(t *testing.T) {
 				Draft:      false,
 				PreRelease: false,
 				Assets:     nil,
-				Changelog:  "changelog",
+				Body:       "changelog",
 			},
 			GetReleaseByTagMock: getReleaseByTagMock{
 				Output: &github.RepositoryRelease{
@@ -1288,7 +1288,7 @@ func TestUpdateUnreleasedTag(t *testing.T) {
 				Draft:      false,
 				PreRelease: false,
 				Assets:     nil,
-				Changelog:  "changelog",
+				Body:       "changelog",
 			},
 			CreateRefMockError: nil,
 			ExpectedError:      "",
@@ -1308,7 +1308,7 @@ func TestUpdateUnreleasedTag(t *testing.T) {
 				Draft:      false,
 				PreRelease: false,
 				Assets:     nil,
-				Changelog:  "changelog",
+				Body:       "changelog",
 			},
 			CreateRefMockError: errors.New("reason"),
 			ExpectedError:      "reason",

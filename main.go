@@ -66,11 +66,9 @@ func main() {
 		log.Fatal(errors.Wrap(err, "error fetching release configuration"))
 	}
 
-	if conf.ChangelogFile != "" {
-		rel.Changelog, err = conf.GetChangelog(fs, rel)
-		if err != nil {
-			log.Fatal(errors.Wrap(err, "error reading changelog"))
-		}
+	rel.Body, err = conf.GetBody(fs, rel)
+	if err != nil {
+		log.Fatal(errors.Wrap(err, "error getting release body"))
 	}
 
 	cli, err := Login(os.Getenv("GITHUB_TOKEN"))

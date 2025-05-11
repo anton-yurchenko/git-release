@@ -25,6 +25,8 @@ type Configuration struct {
 	ReleaseNamePrefix   string
 	ReleaseNameSuffix   string
 	ChangelogFile       string
+	BodyPrefix          string
+	BodySuffix          string
 }
 
 // GetConfig sets validated Release/Changelog configuration and returns github.com Token
@@ -75,6 +77,9 @@ func GetConfig(fs afero.Fs) (*Configuration, error) {
 		conf.IgnoreChangelog = true
 	}
 
+	conf.BodyPrefix = os.Getenv("BODY_PREFIX")
+	conf.BodySuffix = os.Getenv("BODY_SUFFIX")
+
 	// NOTE: deprecation warnings
 	if os.Getenv("RELEASE_NAME_POSTFIX") != "" {
 		log.Fatalf(`'RELEASE_NAME_POSTFIX' was deprecated.
@@ -87,6 +92,20 @@ func GetConfig(fs afero.Fs) (*Configuration, error) {
 	}
 
 	return conf, nil
+}
+
+func (c *Configuration) GetBody(fs afero.Fs, rel *release.Release) (string, error) {
+	body := c.BodyPrefix
+	if c.ChangelogFile != "" {
+		changelogContents, err := c.GetChangelog(fs, rel)
+		if err != nil {
+			return "", errors.Wrap(err, "error formatting release body")
+		}
+		body += changelogContents
+	}
+	body += c.BodySuffix
+
+	return body, nil
 }
 
 func (c *Configuration) GetChangelog(fs afero.Fs, rel *release.Release) (string, error) {
