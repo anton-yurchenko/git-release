@@ -102,6 +102,8 @@ A **GitHub Action** for a **GitHub Release** creation with **Assets** and **Chan
     | `RELEASE_NAME`          | `*`               | ""                | Complete release title (should not be combined with `RELEASE_NAME_PREFIX` and `RELEASE_NAME_SUFFIX`)                       |
     | `RELEASE_NAME_PREFIX`   | `*`               | ""                | Release title prefix                                                                                                       |
     | `RELEASE_NAME_SUFFIX`   | `*`               | ""                | Release title suffix                                                                                                       |
+    | `BODY_TEMPLATE`        | `*`               | ""                | Release body template. Use `{{.Changelog}}` to inject changelog
+                                   |
     | `UNRELEASED`            | `update`/`delete` | ""                | Set to `update` in order to allow deletion and recreation of the same release and its tag (intended to be used for `unreleased`/`latest` release only). Set to `delete` in order to delete a previously published `unreleased`/`latest` release.                                                                                     |
     | `UNRELEASED_TAG`        | `latest`       | `*`               | Use a custom tag for `unreleased`/`latest` release (tag will be created/deleted automatically)                             |
 

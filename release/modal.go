@@ -25,6 +25,7 @@ type Release struct {
 	PreRelease bool
 	Assets     *[]Asset
 	Changelog  string
+	Body       string
 }
 
 type Slug struct {

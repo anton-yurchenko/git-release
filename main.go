@@ -73,6 +73,11 @@ func main() {
 		}
 	}
 
+	rel.Body, err = conf.GetBody(fs, rel)
+	if err != nil {
+		log.Fatal(errors.Wrap(err, "error creating release body"))
+	}
+
 	cli, err := Login(os.Getenv("GITHUB_TOKEN"))
 	if err != nil {
 		log.Fatal(errors.Wrap(err, "login error"))

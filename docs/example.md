@@ -192,6 +192,36 @@ jobs:
 
 </details>
 
+## Release body template
+
+<details><summary>Workflow</summary>
+
+```yaml
+name: release
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Release
+        uses: docker://antonyurchenko/git-release:latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BODY_TEMPLATE: "Header\n{{.Changelog}}\nFooter"
+        with:
+          args: build/*.zip
+```
+
+</details>
+
 ## Asset Filename Pattern Matching
 
 ![PIC](images/release.png)

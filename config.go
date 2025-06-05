@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"path"
@@ -12,6 +13,7 @@ import (
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
+	"text/template"
 )
 
 // Configuration is a git-release settings struct
@@ -24,6 +26,7 @@ type Configuration struct {
 	ReleaseName         string
 	ReleaseNamePrefix   string
 	ReleaseNameSuffix   string
+	BodyTemplate        string
 	ChangelogFile       string
 }
 
@@ -50,6 +53,7 @@ func GetConfig(fs afero.Fs) (*Configuration, error) {
 	conf.ReleaseName = os.Getenv("RELEASE_NAME")
 	conf.ReleaseNamePrefix = os.Getenv("RELEASE_NAME_PREFIX")
 	conf.ReleaseNameSuffix = os.Getenv("RELEASE_NAME_SUFFIX")
+	conf.BodyTemplate = os.Getenv("BODY_TEMPLATE")
 
 	if conf.ReleaseName != "" && ((conf.ReleaseNamePrefix != "" && conf.ReleaseNameSuffix != "") || (conf.ReleaseNamePrefix != "" || conf.ReleaseNameSuffix != "")) {
 		return nil, errors.New("both RELEASE_NAME and RELEASE_NAME_PREFIX / RELEASE_NAME_SUFFIX are set (expected RELEASE_NAME or combination/one of RELEASE_NAME_PREFIX and RELEASE_NAME_SUFFIX)")
@@ -127,4 +131,31 @@ func (c *Configuration) GetChangelog(fs afero.Fs, rel *release.Release) (string,
 
 	log.Warn(msg)
 	return "", nil
+}
+
+func (c *Configuration) GetBody(fs afero.Fs, rel *release.Release) (string, error) {
+	var changelog string
+	var err error
+
+	if c.ChangelogFile != "" {
+		changelog, err = c.GetChangelog(fs, rel)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	if c.BodyTemplate == "" {
+		return changelog, nil
+	}
+
+	tmpl, err := template.New("body").Parse(c.BodyTemplate)
+	if err != nil {
+		return "", err
+	}
+	var buf bytes.Buffer
+	data := struct{ Changelog string }{Changelog: changelog}
+	if err := tmpl.Execute(&buf, data); err != nil {
+		return "", err
+	}
+	return buf.String(), nil
 }
