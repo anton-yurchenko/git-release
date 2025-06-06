@@ -140,7 +140,7 @@ func (c *Configuration) GetBody(fs afero.Fs, rel *release.Release) (string, erro
 	if c.ChangelogFile != "" {
 		changelog, err = c.GetChangelog(fs, rel)
 		if err != nil {
-			return "", err
+			return "", errors.Wrap(err, "error getting changelog")
 		}
 	}
 
@@ -150,12 +150,12 @@ func (c *Configuration) GetBody(fs afero.Fs, rel *release.Release) (string, erro
 
 	tmpl, err := template.New("body").Parse(c.BodyTemplate)
 	if err != nil {
-		return "", err
+		return "", errors.Wrap(err, "error parsing body template")
 	}
 	var buf bytes.Buffer
 	data := struct{ Changelog string }{Changelog: changelog}
 	if err := tmpl.Execute(&buf, data); err != nil {
-		return "", err
+		return "", errors.Wrap(err, "error executing body template")
 	}
 	return buf.String(), nil
 }

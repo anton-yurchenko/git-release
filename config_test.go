@@ -54,13 +54,13 @@ func TestGetBody(t *testing.T) {
 	a.Equal(expected, body)
 }
 
-func TestGetBodyMissingChangelog(t *testing.T) {
+func TestGetBodyTemplateError(t *testing.T) {
 	a := assert.New(t)
 	fs := afero.NewMemMapFs()
-	conf := &Configuration{ChangelogFile: "", BodyTemplate: "Header\n{{.Changelog}}\nFooter"}
+	a.NoError(afero.WriteFile(fs, "CHANGELOG.md", []byte(""), 0644))
+	conf := &Configuration{ChangelogFile: "CHANGELOG.md", BodyTemplate: "{{.Changelog"}
 	rel := &release.Release{Reference: &release.Reference{Version: "1.0.0"}}
 
-	body, err := conf.GetBody(fs, rel)
-	a.NoError(err)
-	a.Equal("Header\n\nFooter", body)
+	_, err := conf.GetBody(fs, rel)
+	a.Error(err)
 }
