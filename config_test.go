@@ -10,13 +10,27 @@ import (
 )
 
 func init() {
-	os.Setenv("GITHUB_REPOSITORY", "owner/repo")
-	os.Setenv("GITHUB_TOKEN", "token")
-	os.Setenv("GITHUB_WORKSPACE", ".")
-	os.Setenv("GITHUB_API_URL", "https://api.github.com")
-	os.Setenv("GITHUB_SERVER_URL", "https://github.com")
-	os.Setenv("GITHUB_REF", "refs/tags/1.0.0")
-	os.Setenv("GITHUB_SHA", "deadbeef")
+	if err := os.Setenv("GITHUB_REPOSITORY", "owner/repo"); err != nil {
+		panic(err)
+	}
+	if err := os.Setenv("GITHUB_TOKEN", "token"); err != nil {
+		panic(err)
+	}
+	if err := os.Setenv("GITHUB_WORKSPACE", "."); err != nil {
+		panic(err)
+	}
+	if err := os.Setenv("GITHUB_API_URL", "https://api.github.com"); err != nil {
+		panic(err)
+	}
+	if err := os.Setenv("GITHUB_SERVER_URL", "https://github.com"); err != nil {
+		panic(err)
+	}
+	if err := os.Setenv("GITHUB_REF", "refs/tags/1.0.0"); err != nil {
+		panic(err)
+	}
+	if err := os.Setenv("GITHUB_SHA", "deadbeef"); err != nil {
+		panic(err)
+	}
 }
 
 func TestGetBody(t *testing.T) {
@@ -29,7 +43,7 @@ func TestGetBody(t *testing.T) {
 ## [1.0.0] - 2024-01-01
 ### Added
 - Something`
-	afero.WriteFile(fs, "CHANGELOG.md", []byte(changelog), 0644)
+	a.NoError(afero.WriteFile(fs, "CHANGELOG.md", []byte(changelog), 0644))
 
 	conf := &Configuration{ChangelogFile: "CHANGELOG.md", BodyTemplate: "Header\n{{.Changelog}}\nFooter"}
 	rel := &release.Release{Reference: &release.Reference{Version: "1.0.0"}}
