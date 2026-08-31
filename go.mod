@@ -1,6 +1,6 @@
 module git-release
 
-go 1.21
+go 1.25.0
 
 require (
 	github.com/anton-yurchenko/go-changelog v1.1.0
@@ -9,7 +9,7 @@ require (
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/afero v1.11.0
 	github.com/stretchr/testify v1.9.0
-	golang.org/x/oauth2 v0.24.0
+	golang.org/x/oauth2 v0.36.0
 )
 
 require (
