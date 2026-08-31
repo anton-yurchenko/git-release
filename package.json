@@ -3,6 +3,9 @@
   "version": "6.0.0",
   "description": "A GitHub Action for creating a GitHub Release with Assets and Changelog whenever a new Tag is pushed to the repository.",
   "main": "wrapper.js",
+  "engines": {
+    "node": ">=24"
+  },
   "directories": {
     "doc": "docs"
   },

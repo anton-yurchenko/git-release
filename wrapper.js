@@ -1,8 +1,8 @@
 const core = require('@actions/core')
-const os = require('os')
-const path = require('path')
-const fs = require('fs')
-const child = require('child_process')
+const os = require('node:os')
+const path = require('node:path')
+const fs = require('node:fs')
+const child = require('node:child_process')
 
 function execute (file) {
   if (fs.existsSync(file)) {
