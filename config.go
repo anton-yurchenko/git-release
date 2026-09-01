@@ -34,7 +34,6 @@ var removed = map[string]string{
 	"RELEASE_NAME_SUFFIX":  "NAME_TEMPLATE, for example \"{{ .Tag }} (nightly)\"",
 	"RELEASE_NAME_POSTFIX": "NAME_TEMPLATE, for example \"{{ .Tag }} (nightly)\"",
 	"ALLOW_TAG_PREFIX":     "TAG_PREFIX_REGEX",
-	"ARGS":                 "ASSETS (one path or glob per line)",
 }
 
 // Configuration is a git-release settings struct
@@ -219,20 +218,35 @@ func GetConfig(fs afero.Fs) (*Configuration, error) {
 	return conf, nil
 }
 
-// getAssets returns the release assets, one path or glob per line.
+// getAssets returns the release assets, as configured by the action's `args`
+// input - divided by a newline, space, comma or pipe, as documented since v1.
 //
-// v6 accepted the list on argv and split it on any of newline, space, comma or
-// pipe, whichever matched first. That made a path containing a space
-// inexpressible, silently dropped the remainder of a comma-and-space separated
-// list, and produced a different asset set through the container than through
-// the JavaScript wrapper. Newline is the only separator now, and the list
-// travels in the environment rather than on argv, so both modes agree.
+// NOTE: read from INPUT_ARGS rather than argv. The runner splices a container
+// action's `args` onto the docker command line, where it is split on whitespace
+// before the process starts, while the JavaScript wrapper passed the whole value
+// as a single argument. The two distribution modes therefore disagreed about
+// which assets to upload - the same input produced five assets through the
+// container and two through the wrapper, with the difference silently dropped.
+// INPUT_ARGS carries the value verbatim in both modes.
+//
+// All four separators are honoured together. v6 picked whichever matched first,
+// so a newline-separated list containing a space was split on the space instead,
+// which is the other half of the same bug.
 func getAssets() []string {
 	out := make([]string, 0)
 
-	for _, line := range strings.Split(env.Get("ASSETS"), "\n") {
-		if line = strings.TrimSpace(line); line != "" {
-			out = append(out, line)
+	fields := strings.FieldsFunc(os.Getenv("INPUT_ARGS"), func(r rune) bool {
+		switch r {
+		case '\n', '\r', '\t', ' ', ',', '|':
+			return true
+		}
+
+		return false
+	})
+
+	for _, f := range fields {
+		if f != "" {
+			out = append(out, f)
 		}
 	}
 
@@ -246,20 +260,6 @@ func rejectRemoved() error {
 	for name := range removed {
 		if env.Get(name) != "" {
 			found = append(found, name)
-		}
-	}
-
-	// On the container path v6 received the asset list on argv, so leftover
-	// positional arguments mean a v6 `with: args:` block.
-	//
-	// NOTE: flag-shaped arguments are ignored - the test binary is invoked with
-	// -test.* flags, and they are never asset paths.
-	if env.Get("ARGS") == "" {
-		for _, arg := range os.Args[1:] {
-			if !strings.HasPrefix(arg, "-") {
-				found = append(found, "ARGS")
-				break
-			}
 		}
 	}
 

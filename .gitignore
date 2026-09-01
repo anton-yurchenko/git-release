@@ -8,3 +8,5 @@ coverage.txt
 **/testFile*
 release/*
 !release/*.go
+.claude/settings.local.json
+

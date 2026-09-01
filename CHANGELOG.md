@@ -2,40 +2,34 @@
 
 ## [Unreleased]
 
-:warning: This release changes the action configuration. See the [upgrade table](README.md#configuration) before updating.
-
-:warning: GitHub Actions is completing a deprecation process for [Node20](https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/)
+:warning: Release title configuration has changed. See the [upgrade table](README.md#configuration) before updating.
 
 ### Changed
 
-- **Breaking:** Release assets are supplied through `assets`, one path or glob per line, instead of `args`
-- **Breaking:** `RELEASE_NAME`, `RELEASE_NAME_PREFIX` and `RELEASE_NAME_SUFFIX` are replaced by a single `NAME_TEMPLATE`
-- **Breaking:** `PRE_RELEASE` defaults to `auto`, marking a tag with a semantic version pre-release identifier (`v1.2.3-rc.1`) as a pre-release
-- **Breaking:** Boolean settings accept only `true` or `false`; any other value is an error instead of being silently treated as `false`
+- **Breaking:** `RELEASE_NAME`, `RELEASE_NAME_PREFIX` and `RELEASE_NAME_SUFFIX` are replaced by `NAME_TEMPLATE`
+- **Breaking:** Boolean settings reject any value other than `true` and `false`
 - **Breaking:** Update NodeJS version to v24 (*Thanks to [Vincent Biret](https://github.com/baywet)*)
-- **Breaking:** Update JavaScript wrapper to ESM (`@actions/core` v3 is ESM only)
-- Every setting is now available both as an action input and as an environment variable named after it in upper case
-- Update GitHub API client (`go-github`) to v78
 - Update Golang version to v1.27.0
 - Update dependencies
 
 ### Added
 
-- [PR #145](https://github.com/anton-yurchenko/git-release/pull/145) `NAME_TEMPLATE` and `BODY_TEMPLATE`, composing the release title and body from a Go template with access to `.Tag`, `.Version`, `.Major`, `.Minor`, `.Patch`, `.Prerelease`, `.Owner`, `.Repo`, `.CommitHash`, `.IsDraft`, `.IsPreRelease` and `.IsUnreleased`, plus `.Changelog` and `.Name` in the body (*Thanks to [Taylor Becker](https://github.com/tajobe)*)
+- [PR #145](https://github.com/anton-yurchenko/git-release/pull/145) `NAME_TEMPLATE` to compose the release title from a template (*Thanks to [Taylor Becker](https://github.com/tajobe)*)
+- `BODY_TEMPLATE` to compose the release body from a template
 
 ### Fixed
 
-- A capture group in `TAG_PREFIX_REGEX` caused the prefix to be parsed as the version
-- A malformed `TAG_PREFIX_REGEX` terminated the action with a panic
-- An asset path containing a space, comma or pipe could not be expressed, and matched nothing without an error
-- `UNRELEASED: delete` required a changelog it was never going to publish
-- The trigger loop guard ignored a custom `UNRELEASED_TAG`, and rejected an ordinary release of a tag named `latest`
-- The JavaScript wrapper and the container disagreed about which assets to upload
-- GitHub Enterprise asset upload URL was not resolved correctly
+- Release assets were resolved differently by the Docker image and the JavaScript wrapper
+- Version parsing when `TAG_PREFIX_REGEX` contains a capture group
+- Crash on a malformed `TAG_PREFIX_REGEX`
+- `UNRELEASED: delete` failed when the changelog had no unreleased changes
+- Trigger loop protection ignored a custom `UNRELEASED_TAG`
+- Releasing a tag named `latest`
+- Asset upload URL on GitHub Enterprise
 
 ### Removed
 
-- `RELEASE_NAME_POSTFIX` and `ALLOW_TAG_PREFIX`, deprecated since v4
+- `RELEASE_NAME_POSTFIX` and `ALLOW_TAG_PREFIX`
 
 ## [6.0.0] - 2024-01-17
 

@@ -29,7 +29,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          assets: |
+          args: |
             darwin-amd64.zip
             linux-amd64.zip
             windows-amd64.zip
@@ -37,7 +37,7 @@ jobs:
 
 </details>
 
-## Release title with prefix
+## Release title with a prefix
 
 ![PIC](images/example-prefix.png)
 
@@ -62,9 +62,9 @@ jobs:
         uses: docker://antonyurchenko/git-release:latest
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          RELEASE_NAME_PREFIX: "Release: "
+          NAME_TEMPLATE: "Release: {{ .Tag }}"
         with:
-          assets: |
+          args: |
             darwin-amd64.zip
             linux-amd64.zip
             windows-amd64.zip
@@ -72,7 +72,7 @@ jobs:
 
 </details>
 
-## Release title with suffix
+## Release title with a suffix
 
 ![PIC](images/example-suffix.png)
 
@@ -98,9 +98,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PRE_RELEASE: "true"
-          RELEASE_NAME_SUFFIX: " (nightly build)"
+          NAME_TEMPLATE: "{{ .Tag }} (nightly build)"
         with:
-          assets: |
+          args: |
             darwin-amd64.zip
             linux-amd64.zip
             windows-amd64.zip
@@ -108,13 +108,11 @@ jobs:
 
 </details>
 
-## Release title with prefix and suffix
+## Release title composed from a template
 
 ![PIC](images/example-prefix-suffix.png)
 
 <details><summary>Workflow</summary>
-
-Can be set as global environmental variables or provided directly to the action
 
 ```yaml
 name: release
@@ -131,18 +129,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
-      - run: |
-          export PREFIX="Release: "
-          export SUFFIX=" (Codename: 'Ragnarok')"
-          echo "::set-env name=RELEASE_NAME_PREFIX::$PREFIX"
-          echo "::set-env name=RELEASE_NAME_SUFFIX::$SUFFIX"
-
       - name: Release
         uses: docker://antonyurchenko/git-release:latest
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NAME_TEMPLATE: "Release: {{ .Tag }} (Codename: 'Ragnarok')"
         with:
-          assets: |
+          args: |
             darwin-amd64.zip
             linux-amd64.zip
             windows-amd64.zip
@@ -156,8 +149,6 @@ jobs:
 
 <details><summary>Workflow</summary>
 
-Can be set as global environmental variable or provided directly to the action
-
 ```yaml
 name: release
 
@@ -173,18 +164,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
-      - run: |
-          export TEXT="Release X"
-          echo "::set-env name=RELEASE_NAME::$TEXT"
-
       - name: Release
         uses: docker://antonyurchenko/git-release:latest
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NAME_TEMPLATE: "Release X"
           CHANGELOG_FILE: "CHANGES.md"
           ALLOW_EMPTY_CHANGELOG: "true"
         with:
-          assets: |
+          args: |
             darwin-amd64.zip
             linux-amd64.zip
             windows-amd64.zip
@@ -249,7 +237,7 @@ jobs:
             ---
             Released from `{{ .CommitHash }}` in `{{ .Owner }}/{{ .Repo }}`
         with:
-          assets: build/*.zip
+          args: build/*.zip
 ```
 
 </details>
@@ -280,7 +268,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          assets: build/*.zip
+          args: build/*.zip
 ```
 
 </details>
@@ -307,11 +295,11 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Release
-        uses: anton-yurchenko/git-release@master
+        uses: anton-yurchenko/git-release@v7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          assets: |
+          args: |
             darwin-amd64.zip
             linux-amd64.zip
             windows-amd64.zip
@@ -353,7 +341,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           UNRELEASED: "update"
         with:
-          assets: linux-amd64
+          args: linux-amd64
 ```
 
 </details>
@@ -388,7 +376,7 @@ jobs:
           UNRELEASED: "update"
           UNRELEASED_TAG: future
         with:
-          assets: linux-amd64
+          args: linux-amd64
 ```
 
 </details>

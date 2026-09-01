@@ -34,6 +34,7 @@ func init() {
 func validateEnvironment() {
 	l := []string{
 		"GITHUB_REPOSITORY",
+		"GITHUB_TOKEN",
 		"GITHUB_WORKSPACE",
 		"GITHUB_API_URL",
 		"GITHUB_SERVER_URL",
@@ -46,24 +47,6 @@ func validateEnvironment() {
 			log.Fatalf("%v is not defined", v)
 		}
 	}
-
-	if getToken() == "" {
-		log.Fatal("GITHUB_TOKEN is not defined")
-	}
-}
-
-// getToken returns the GitHub token.
-//
-// The 'token' input is checked first so that a workflow using
-// 'uses: anton-yurchenko/git-release@vN' can rely on the action.yml default and
-// omit the env block entirely. A bare 'uses: docker://...' step never reads
-// action.yml, so GITHUB_TOKEN remains the way to supply it there.
-func getToken() string {
-	if v := os.Getenv("INPUT_TOKEN"); v != "" {
-		return v
-	}
-
-	return os.Getenv("GITHUB_TOKEN")
 }
 
 func main() {
@@ -101,7 +84,7 @@ func main() {
 		}
 	}
 
-	cli, err := Login(getToken())
+	cli, err := Login(os.Getenv("GITHUB_TOKEN"))
 	if err != nil {
 		log.Fatal(errors.Wrap(err, "login error"))
 	}

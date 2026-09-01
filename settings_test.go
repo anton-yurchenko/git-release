@@ -10,37 +10,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// TestSettingSpellings pins the dual-read contract: `with: draft_release:` and
-// `env: DRAFT_RELEASE:` are the same setting, and the input spelling wins.
-func TestSettingSpellings(t *testing.T) {
-	a := assert.New(t)
-
-	t.Run("env only", func(t *testing.T) {
-		t.Setenv("NAME_TEMPLATE", "from-env")
-		a.Equal("from-env", env.Get("NAME_TEMPLATE"))
-	})
-
-	t.Run("input only", func(t *testing.T) {
-		t.Setenv("INPUT_NAME_TEMPLATE", "from-input")
-		a.Equal("from-input", env.Get("NAME_TEMPLATE"))
-	})
-
-	t.Run("input wins", func(t *testing.T) {
-		t.Setenv("NAME_TEMPLATE", "from-env")
-		t.Setenv("INPUT_NAME_TEMPLATE", "from-input")
-		a.Equal("from-input", env.Get("NAME_TEMPLATE"))
-	})
-
-	// The runner injects an empty INPUT_<name> for every declared input that has
-	// no default, so on the wrapper path INPUT_<name> is always present. An
-	// empty one must not shadow the environment fallback.
-	t.Run("empty input does not shadow env", func(t *testing.T) {
-		t.Setenv("NAME_TEMPLATE", "from-env")
-		t.Setenv("INPUT_NAME_TEMPLATE", "")
-		a.Equal("from-env", env.Get("NAME_TEMPLATE"))
-	})
-}
-
 func TestBooleanSetting(t *testing.T) {
 	a := assert.New(t)
 
@@ -86,9 +55,9 @@ func TestEnumSetting(t *testing.T) {
 	a := assert.New(t)
 
 	t.Run("fallback when unset", func(t *testing.T) {
-		v, err := env.Enum("PRE_RELEASE", "auto", "auto", "true", "false")
+		v, err := env.Enum("UNRELEASED", "", "update", "delete")
 		a.NoError(err)
-		a.Equal("auto", v)
+		a.Equal("", v)
 	})
 
 	t.Run("case insensitive", func(t *testing.T) {
@@ -105,6 +74,13 @@ func TestEnumSetting(t *testing.T) {
 	})
 }
 
+// TestGetAssets pins the asset list contract.
+//
+// The list is read from INPUT_ARGS, which the runner sets from the action's
+// `args` input in BOTH distribution modes. v6 read argv instead, which the
+// runner had already whitespace-split for the container but not for the
+// JavaScript wrapper, so the same input produced a different set of assets
+// depending on how the action was referenced.
 func TestGetAssets(t *testing.T) {
 	a := assert.New(t)
 
@@ -114,21 +90,40 @@ func TestGetAssets(t *testing.T) {
 	}
 
 	suite := map[string]test{
-		"unset":           {Value: "", Expected: []string{}},
-		"single":          {Value: "build/app.zip", Expected: []string{"build/app.zip"}},
-		"newline list":    {Value: "build/a.zip\nbuild/b.zip", Expected: []string{"build/a.zip", "build/b.zip"}},
-		"blank lines":     {Value: "\nbuild/a.zip\n\n  \nbuild/b.zip\n", Expected: []string{"build/a.zip", "build/b.zip"}},
-		"trailing spaces": {Value: "  build/a.zip  \n build/b.zip", Expected: []string{"build/a.zip", "build/b.zip"}},
-		// v6 split on spaces, so a path containing one could never be expressed.
-		"path with space": {Value: "build/release notes.txt", Expected: []string{"build/release notes.txt"}},
-		// v6 split on commas and pipes too, silently mangling these names.
-		"path with comma": {Value: "build/a,b.zip", Expected: []string{"build/a,b.zip"}},
-		"path with pipe":  {Value: "build/a|b.zip", Expected: []string{"build/a|b.zip"}},
+		"unset":  {Value: "", Expected: []string{}},
+		"single": {Value: "build/app.zip", Expected: []string{"build/app.zip"}},
+		"newline separated": {
+			Value:    "build/a.zip\nbuild/b.zip",
+			Expected: []string{"build/a.zip", "build/b.zip"},
+		},
+		"space separated": {
+			Value:    "build/a.zip build/b.zip",
+			Expected: []string{"build/a.zip", "build/b.zip"},
+		},
+		"comma separated": {
+			Value:    "build/a.zip,build/b.zip",
+			Expected: []string{"build/a.zip", "build/b.zip"},
+		},
+		"pipe separated": {
+			Value:    "build/a.zip|build/b.zip",
+			Expected: []string{"build/a.zip", "build/b.zip"},
+		},
+		// v6 split on whichever separator matched first, so a comma-and-space
+		// list lost everything after the first entry, and a newline list
+		// containing a space was split on the space instead.
+		"mixed separators": {
+			Value:    "build/a.zip, build/b.zip\nbuild/c.zip|build/d.zip",
+			Expected: []string{"build/a.zip", "build/b.zip", "build/c.zip", "build/d.zip"},
+		},
+		"blank lines and padding": {
+			Value:    "\n  build/a.zip  \n\n build/b.zip \n",
+			Expected: []string{"build/a.zip", "build/b.zip"},
+		},
 	}
 
 	for name, test := range suite {
 		t.Run(name, func(t *testing.T) {
-			t.Setenv("ASSETS", test.Value)
+			t.Setenv("INPUT_ARGS", test.Value)
 			a.Equal(test.Expected, getAssets())
 		})
 	}
@@ -148,7 +143,6 @@ func TestRejectRemoved(t *testing.T) {
 		"RELEASE_NAME_SUFFIX":  "NAME_TEMPLATE",
 		"RELEASE_NAME_POSTFIX": "NAME_TEMPLATE",
 		"ALLOW_TAG_PREFIX":     "TAG_PREFIX_REGEX",
-		"ARGS":                 "ASSETS",
 	} {
 		t.Run(name, func(t *testing.T) {
 			t.Setenv(name, "anything")
@@ -160,16 +154,6 @@ func TestRejectRemoved(t *testing.T) {
 		})
 	}
 
-	// A removed setting supplied as an action input must be caught too - that is
-	// the spelling a `uses: docker://...` user would reach for, and the runner
-	// performs no input validation at all for that reference form.
-	t.Run("input spelling", func(t *testing.T) {
-		t.Setenv("INPUT_RELEASE_NAME_PREFIX", "Release: ")
-
-		err := rejectRemoved()
-		a.ErrorContains(err, "RELEASE_NAME_PREFIX")
-	})
-
 	t.Run("reports every offender at once", func(t *testing.T) {
 		t.Setenv("RELEASE_NAME_PREFIX", "Release: ")
 		t.Setenv("RELEASE_NAME_SUFFIX", " (nightly)")
@@ -177,5 +161,12 @@ func TestRejectRemoved(t *testing.T) {
 		err := rejectRemoved()
 		a.ErrorContains(err, "RELEASE_NAME_PREFIX")
 		a.ErrorContains(err, "RELEASE_NAME_SUFFIX")
+	})
+
+	// `args` is NOT removed - it is still the action's input, only its delivery
+	// changed from argv to INPUT_ARGS.
+	t.Run("args is still accepted", func(t *testing.T) {
+		t.Setenv("INPUT_ARGS", "build/*.zip")
+		a.NoError(rejectRemoved())
 	})
 }

@@ -41,20 +41,13 @@ func GetRelease(fs afero.Fs, assets []string, tagPrefix string, unreleased bool)
 		return nil, errors.Wrap(err, "error retrieving repository slug")
 	}
 
-	// PRE_RELEASE defaults to 'auto': a tag carrying a semantic-version
-	// pre-release identifier (v1.2.3-rc.1) is published as a pre-release
-	// without any configuration. A rolling release is always a pre-release.
-	preRelease, err := env.Enum("PRE_RELEASE", "auto", "auto", "true", "false")
+	// A rolling release is always a pre-release.
+	preRelease, err := env.Bool("PRE_RELEASE")
 	if err != nil {
 		return nil, err
 	}
 
-	switch {
-	case unreleased, preRelease == "true":
-		release.PreRelease = true
-	case preRelease == "auto":
-		release.PreRelease = release.Reference.Prerelease != ""
-	}
+	release.PreRelease = preRelease || unreleased
 
 	// The default title. NAME_TEMPLATE, when set, replaces it.
 	release.Name = release.Reference.Tag

@@ -11,8 +11,12 @@ GOTOOLCHAIN_PIN := $(shell awk '/^go /{print "go"$$2; exit}' go.mod)
 # NOTE: keep in sync with the golangci-lint-action version in .github/workflows/test.yml
 GOLANGCI_LINT_VERSION := v2.13.2
 MOCKERY_VERSION := v3.7.4
-GOLANGCI_LINT := $(shell command -v golangci-lint 2>/dev/null || echo $(GO_BIN_DIR)/golangci-lint)
-MOCKERY := $(shell command -v mockery 2>/dev/null || echo $(GO_BIN_DIR)/mockery)
+# NOTE: the pinned copy in GOPATH/bin wins over whatever is on PATH. The other
+# way round, a stale binary earlier in PATH (a version manager's shim, say)
+# silently beats the version `make tools` installs - and mockery v2 against a v3
+# .mockery.yml fails complaining about the CONFIG, not about itself.
+GOLANGCI_LINT := $(shell test -x $(GO_BIN_DIR)/golangci-lint && echo $(GO_BIN_DIR)/golangci-lint || command -v golangci-lint 2>/dev/null)
+MOCKERY := $(shell test -x $(GO_BIN_DIR)/mockery && echo $(GO_BIN_DIR)/mockery || command -v mockery 2>/dev/null)
 
 .PHONY: all
 all: test
