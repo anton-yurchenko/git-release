@@ -49,6 +49,15 @@ func GetAssets(fs afero.Fs, patterns []string) (*[]Asset, error) {
 	return &assets, nil
 }
 
+// retryDelay is the backoff before retry attempt i (1-based).
+//
+// NOTE: a package-level variable so tests can collapse it. The suite otherwise
+// sleeps 9 + 27 + 81 real seconds for every retry-exhausting case, which made
+// the upload tests too slow to assert on properly.
+var retryDelay = func(i int) time.Duration {
+	return time.Duration(math.Pow(3, float64(i+1))) * time.Second
+}
+
 // Upload an asset to a GitHub release
 func (a *Asset) Upload(release *Release, cli RepositoriesClient, id int64, errs chan error, wg *sync.WaitGroup) {
 	defer wg.Done()
@@ -77,9 +86,9 @@ func (a *Asset) Upload(release *Release, cli RepositoriesClient, id int64, errs 
 
 		log.WithField("asset", a.Name).Warn(err.Error())
 
-		delay := math.Pow(3, float64(i+1))
-		log.WithField("asset", a.Name).Infof("retrying (%v/%v) uploading asset in %v seconds", i+1, maxRetries, delay)
-		time.Sleep(time.Duration(delay) * time.Second)
+		delay := retryDelay(i)
+		log.WithField("asset", a.Name).Infof("retrying (%v/%v) uploading asset in %v seconds", i+1, maxRetries, delay.Seconds())
+		time.Sleep(delay)
 	}
 }
 

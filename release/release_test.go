@@ -117,6 +117,68 @@ func TestGetReference(t *testing.T) {
 	}
 
 	suite := map[string]test{
+		// v6 extracted the version with a positional ${2}, so a capture group in
+		// the user's own prefix shifted the numbering and yielded the prefix as
+		// the version.
+		"Tag Prefix Containing A Capture Group": {
+			GitHubRef:  "refs/tags/rel-1.2.3",
+			GitHubSha:  "111",
+			Prefix:     "(rel|pre)-",
+			Unreleased: false,
+			Expected: expected{
+				Result: &release.Reference{
+					CommitHash: "111",
+					Tag:        "rel-1.2.3",
+					Version:    "1.2.3",
+					Major:      "1",
+					Minor:      "2",
+					Patch:      "3",
+				},
+				Error: "",
+			},
+		},
+		// The tag is rebuilt from every path segment after refs/tags/, so a
+		// prefix containing a slash must not truncate it.
+		"Tag Prefix Containing A Slash": {
+			GitHubRef:  "refs/tags/pkg/v1.2.3",
+			GitHubSha:  "111",
+			Prefix:     "pkg/v",
+			Unreleased: false,
+			Expected: expected{
+				Result: &release.Reference{
+					CommitHash: "111",
+					Tag:        "pkg/v1.2.3",
+					Version:    "1.2.3",
+					Major:      "1",
+					Minor:      "2",
+					Patch:      "3",
+				},
+				Error: "",
+			},
+		},
+		// v6 compared against a hardcoded refs/tags/latest, so a workflow using a
+		// custom rolling tag could trigger itself forever.
+		"Triggering Loop On A Custom Unreleased Tag": {
+			GitHubRef:     "refs/tags/nightly",
+			GitHubSha:     "111",
+			UnreleasedTag: "nightly",
+			Unreleased:    true,
+			Expected: expected{
+				Result: nil,
+				Error:  "workflow configuration error detected: trigger loop (triggering tag will be recreated and trigger the workflow again)",
+			},
+		},
+		// ...while an ordinary release of a tag named 'latest' is legitimate:
+		// v6 refused it, because the guard was not scoped to unreleased mode.
+		"A Tag Named Latest Is Releasable": {
+			GitHubRef:  "refs/tags/latest",
+			GitHubSha:  "111",
+			Unreleased: false,
+			Expected: expected{
+				Result: nil,
+				Error:  "malformed env.var GITHUB_REF: expected to match regex '^refs/tags/(?:v?)(?P<version>" + changelog.SemVerRegex + ")$', got 'refs/tags/latest'",
+			},
+		},
 		"Success": {
 			GitHubRef:     "refs/tags/1.0.0",
 			GitHubSha:     "111",
@@ -694,6 +756,10 @@ func TestGetRelease(t *testing.T) {
 }
 
 func TestPublish(t *testing.T) {
+	// Publish uploads assets, and a mocked upload failure otherwise pays the real
+	// 9 + 27 + 81 second backoff.
+	defer release.SetRetryDelay(time.Millisecond)()
+
 	a := assert.New(t)
 	log.SetOutput(io.Discard)
 	fs := afero.NewOsFs()
@@ -712,6 +778,58 @@ func TestPublish(t *testing.T) {
 	}
 
 	suite := map[string]test{
+		// Every other fixture has Name == Tag and Draft == PreRelease == false, so
+		// the mock argument matcher cannot tell those payload fields apart -
+		// swapping Draft with Prerelease, or Name with TagName, passed. These two
+		// cases make every field distinguishable.
+		"Draft Release With A Distinct Title": {
+			Release: &release.Release{
+				Name: "Ship It",
+				Slug: &release.Slug{
+					Owner: "anton-yurchenko",
+					Name:  "git-release",
+				},
+				Reference: &release.Reference{
+					CommitHash: "111",
+					Tag:        "v1.0.0",
+					Version:    "1.0.0",
+				},
+				Draft:      true,
+				PreRelease: false,
+				Assets:     nil,
+				Body:       "changelog",
+			},
+			CreateReleaseMock: createReleaseMock{
+				Output: nil,
+				Error:  nil,
+			},
+			UploadReleaseAssetMock: []error{},
+			ExpectedError:          "",
+		},
+		"Pre Release With A Distinct Title": {
+			Release: &release.Release{
+				Name: "Nightly",
+				Slug: &release.Slug{
+					Owner: "anton-yurchenko",
+					Name:  "git-release",
+				},
+				Reference: &release.Reference{
+					CommitHash: "111",
+					Tag:        "v1.0.0-rc.1",
+					Version:    "1.0.0-rc.1",
+				},
+				Draft:      false,
+				PreRelease: true,
+				Assets:     nil,
+				Body:       "changelog",
+			},
+			CreateReleaseMock: createReleaseMock{
+				Output: nil,
+				Error:  nil,
+			},
+			UploadReleaseAssetMock: []error{},
+			ExpectedError:          "",
+		},
 		"Without Assets": {
 			Release: &release.Release{
 				Name: "1.0.0",
@@ -846,20 +964,23 @@ main:
 		t.Logf("Test Case %v/%v - %s", counter, len(suite), name)
 
 		// prepare test case
+		//
+		// NOTE: the file is created for EVERY asset, including those whose upload
+		// is mocked to fail. Skipping it made Upload short-circuit in os.Open, so
+		// the mocked API error was never reached and the case passed only because
+		// Publish collapses every asset failure into the same message.
 		if test.Release.Assets != nil {
-			for i, asset := range *test.Release.Assets {
-				if test.UploadReleaseAssetMock[i] == nil {
-					if err := afero.WriteFile(fs, asset.Path, []byte(""), 0644); err != nil {
-						t.Errorf("error preparing test case: error creating file %v: %v", asset.Path, err)
-						continue main
-					}
+			for _, asset := range *test.Release.Assets {
+				if err := afero.WriteFile(fs, asset.Path, []byte(""), 0644); err != nil {
+					t.Errorf("error preparing test case: error creating file %v: %v", asset.Path, err)
+					continue main
 				}
 			}
 		}
 		time.Sleep(30 * time.Millisecond)
 
 		// test
-		m := new(mocks.RepositoriesClient)
+		m := mocks.NewRepositoriesClient(t)
 
 		m.On("CreateRelease",
 			context.Background(),
@@ -876,6 +997,13 @@ main:
 
 		if test.Release.Assets != nil {
 			for i, asset := range *test.Release.Assets {
+				// A failing upload is retried until the attempts are exhausted;
+				// a successful one is called exactly once.
+				attempts := 1
+				if test.UploadReleaseAssetMock[i] != nil {
+					attempts = 4
+				}
+
 				m.On("UploadReleaseAsset",
 					context.Background(),
 					test.Release.Slug.Owner,
@@ -890,7 +1018,7 @@ main:
 					&github.UploadOptions{
 						Name: strings.ReplaceAll(asset.Name, "/", "-"),
 					},
-					mock.AnythingOfType("*os.File")).Return(nil, nil, test.UploadReleaseAssetMock[i]).Once()
+					mock.AnythingOfType("*os.File")).Return(nil, nil, test.UploadReleaseAssetMock[i]).Times(attempts)
 			}
 		}
 
@@ -928,6 +1056,7 @@ func TestDeleteUnreleased(t *testing.T) {
 		GetReleaseByTagMock    getReleaseByTagMock
 		DeleteReleaseMockError error
 		DeleteRefMockError     error
+		SkipDeleteRefMock      bool
 		GetRefMockErrors       []error
 		ExpectedError          string
 	}
@@ -1016,9 +1145,11 @@ func TestDeleteUnreleased(t *testing.T) {
 				Error: nil,
 			},
 			DeleteReleaseMockError: errors.New("reason"),
-			DeleteRefMockError:     nil,
-			GetRefMockErrors:       []error{},
-			ExpectedError:          "error deleting precedent release: reason",
+			// NOTE: no DeleteRef expectation - the run aborts on the release
+			// deletion, so registering one would go unmet.
+			SkipDeleteRefMock: true,
+			GetRefMockErrors:  []error{},
+			ExpectedError:     "error deleting precedent release: reason",
 		},
 		"DeleteRef error": {
 			Release: &release.Release{
@@ -1087,8 +1218,8 @@ func TestDeleteUnreleased(t *testing.T) {
 
 		// test
 		tag := fmt.Sprintf("refs/tags/%v", test.Release.Reference.Tag)
-		repoMock := new(mocks.RepositoriesClient)
-		gitMock := new(mocks.GitClient)
+		repoMock := mocks.NewRepositoriesClient(t)
+		gitMock := mocks.NewGitClient(t)
 
 		repoMock.On("GetReleaseByTag",
 			context.Background(),
@@ -1103,11 +1234,13 @@ func TestDeleteUnreleased(t *testing.T) {
 				test.Release.Slug.Name,
 				*test.GetReleaseByTagMock.Output.ID).Return(nil, test.DeleteReleaseMockError).Once()
 
-			gitMock.On("DeleteRef",
-				context.Background(),
-				test.Release.Slug.Owner,
-				test.Release.Slug.Name,
-				tag).Return(nil, test.DeleteRefMockError).Once()
+			if !test.SkipDeleteRefMock {
+				gitMock.On("DeleteRef",
+					context.Background(),
+					test.Release.Slug.Owner,
+					test.Release.Slug.Name,
+					tag).Return(nil, test.DeleteRefMockError).Once()
+			}
 
 			for _, e := range test.GetRefMockErrors {
 				gitMock.On("GetRef",
@@ -1184,7 +1317,7 @@ func TestUpdateUnreleasedTag(t *testing.T) {
 
 		// test
 		tag := fmt.Sprintf("refs/tags/%v", test.Release.Reference.Tag)
-		gitMock := new(mocks.GitClient)
+		gitMock := mocks.NewGitClient(t)
 
 		gitMock.On("CreateRef",
 			context.Background(),
@@ -1200,4 +1333,116 @@ func TestUpdateUnreleasedTag(t *testing.T) {
 			a.EqualError(err, test.ExpectedError)
 		}
 	}
+}
+
+// TestGetReleaseConfigurationErrors covers the failure paths that reject a
+// malformed configuration before anything is created.
+func TestGetReleaseConfigurationErrors(t *testing.T) {
+	a := assert.New(t)
+	log.SetOutput(io.Discard)
+
+	type test struct {
+		Env           map[string]string
+		TagPrefix     string
+		Unreleased    bool
+		ExpectedError string
+	}
+
+	suite := map[string]test{
+		// v6 accepted any value and silently treated it as false, so a user
+		// asking for a draft got a public release.
+		"Invalid DRAFT_RELEASE": {
+			Env:           map[string]string{"DRAFT_RELEASE": "yes"},
+			ExpectedError: "DRAFT_RELEASE expects 'true' or 'false', received 'yes'",
+		},
+		"Invalid PRE_RELEASE": {
+			Env:           map[string]string{"PRE_RELEASE": "1"},
+			ExpectedError: "PRE_RELEASE expects 'true' or 'false', received '1'",
+		},
+		// v6 used regexp.MustCompile on this value, so a configuration mistake
+		// terminated the action with a panic (exit 2) instead of an error.
+		"Malformed TAG_PREFIX_REGEX": {
+			TagPrefix:     "[a-",
+			ExpectedError: "malformed env.var TAG_PREFIX_REGEX",
+		},
+	}
+
+	var counter int
+	for name, test := range suite {
+		counter++
+		t.Logf("Test Case %v/%v - %s", counter, len(suite), name)
+
+		t.Setenv("GITHUB_REF", "refs/tags/v1.0.0")
+		t.Setenv("GITHUB_SHA", "111")
+		t.Setenv("GITHUB_REPOSITORY", "anton-yurchenko/git-release")
+		t.Setenv("DRAFT_RELEASE", "")
+		t.Setenv("PRE_RELEASE", "")
+
+		for k, v := range test.Env {
+			t.Setenv(k, v)
+		}
+
+		r, err := release.GetRelease(afero.NewMemMapFs(), nil, test.TagPrefix, test.Unreleased)
+		a.Nil(r)
+		a.ErrorContains(err, test.ExpectedError)
+	}
+}
+
+// TestDeleteUnreleasedTolerance pins the branches that treat a missing release
+// or tag as success rather than as an error.
+//
+// NOTE: these paths classify GitHub errors by SUBSTRING on err.Error(). That is
+// fragile - a change to go-github's error format would silently turn "nothing to
+// clean up" into a hard failure - so the exact strings are asserted here.
+func TestDeleteUnreleasedTolerance(t *testing.T) {
+	a := assert.New(t)
+	log.SetOutput(io.Discard)
+
+	rel := &release.Release{
+		Name:      "Latest",
+		Slug:      &release.Slug{Owner: "anton-yurchenko", Name: "git-release"},
+		Reference: &release.Reference{CommitHash: "111", Tag: "latest", Version: release.UnreleasedVersion},
+	}
+
+	t.Run("no precedent release and no precedent tag", func(t *testing.T) {
+		repoMock := mocks.NewRepositoriesClient(t)
+		gitMock := mocks.NewGitClient(t)
+
+		repoMock.On("GetReleaseByTag", context.Background(), "anton-yurchenko", "git-release", "latest").
+			Return(nil, nil, errors.New("GET https://api.github.com/...: 404 Not Found []")).Once()
+		gitMock.On("DeleteRef", context.Background(), "anton-yurchenko", "git-release", "refs/tags/latest").
+			Return(nil, errors.New("DELETE https://api.github.com/...: 422 Reference does not exist []")).Once()
+
+		a.NoError(rel.DeleteUnreleased(repoMock, gitMock))
+		repoMock.AssertExpectations(t)
+		gitMock.AssertExpectations(t)
+	})
+
+	// Any error that is NOT the tolerated one must abort.
+	t.Run("an unexpected release error aborts", func(t *testing.T) {
+		repoMock := mocks.NewRepositoriesClient(t)
+		gitMock := mocks.NewGitClient(t)
+
+		repoMock.On("GetReleaseByTag", context.Background(), "anton-yurchenko", "git-release", "latest").
+			Return(nil, nil, errors.New("GET https://api.github.com/...: 500 Internal Server Error []")).Once()
+
+		err := rel.DeleteUnreleased(repoMock, gitMock)
+		a.ErrorContains(err, "error retrieving a precedent release with a tag latest")
+		repoMock.AssertExpectations(t)
+	})
+
+	t.Run("an unexpected tag error aborts", func(t *testing.T) {
+		repoMock := mocks.NewRepositoriesClient(t)
+		gitMock := mocks.NewGitClient(t)
+
+		repoMock.On("GetReleaseByTag", context.Background(), "anton-yurchenko", "git-release", "latest").
+			Return(nil, nil, errors.New("404 Not Found")).Once()
+		gitMock.On("DeleteRef", context.Background(), "anton-yurchenko", "git-release", "refs/tags/latest").
+			Return(nil, errors.New("403 Forbidden")).Once()
+
+		err := rel.DeleteUnreleased(repoMock, gitMock)
+		a.ErrorContains(err, "error deleting precedent tag")
+		repoMock.AssertExpectations(t)
+		gitMock.AssertExpectations(t)
+	})
 }

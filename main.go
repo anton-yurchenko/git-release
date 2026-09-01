@@ -27,11 +27,12 @@ func init() {
 	log.SetLevel(log.DebugLevel)
 }
 
-// validateEnvironment terminates the execution in case a required environmental variable is not defined.
+// validateEnvironment reports a required environmental variable that is not defined.
 //
 // NOTE: intentionally not a part of init(), otherwise it would terminate the test
-// binary of this package before any test had a chance to run.
-func validateEnvironment() {
+// binary of this package before any test had a chance to run; and it returns an
+// error rather than calling log.Fatal so that it can be tested at all.
+func validateEnvironment() error {
 	l := []string{
 		"GITHUB_REPOSITORY",
 		"GITHUB_TOKEN",
@@ -44,14 +45,19 @@ func validateEnvironment() {
 
 	for _, v := range l {
 		if os.Getenv(v) == "" {
-			log.Fatalf("%v is not defined", v)
+			return errors.Errorf("%v is not defined", v)
 		}
 	}
+
+	return nil
 }
 
 func main() {
 	log.Debugf("git-release v%v ", Version)
-	validateEnvironment()
+
+	if err := validateEnvironment(); err != nil {
+		log.Fatal(err)
+	}
 
 	fs := afero.NewOsFs()
 

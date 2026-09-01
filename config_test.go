@@ -348,6 +348,24 @@ func TestGetConfig(t *testing.T) {
 			Files:    map[string]string{changelogFile: changelogFixture},
 			Expected: Configuration{ChangelogFile: changelogFile},
 		},
+		// The changelog is resolved UNDER the workspace. Every other case pins
+		// GITHUB_WORKSPACE to "" - which makes path.Join an identity function and
+		// hides this entirely. In the container the working directory is the
+		// workspace, so a broken join would still find the file locally and
+		// publish an empty body in production.
+		"Resolved under GITHUB_WORKSPACE": {
+			Env:      map[string]string{"GITHUB_WORKSPACE": "/github/workspace"},
+			Files:    map[string]string{"/github/workspace/CHANGELOG.md": changelogFixture},
+			Expected: Configuration{ChangelogFile: "/github/workspace/CHANGELOG.md"},
+		},
+		"Custom path resolved under GITHUB_WORKSPACE": {
+			Env: map[string]string{
+				"GITHUB_WORKSPACE": "/github/workspace",
+				"CHANGELOG_FILE":   "docs/RELEASES.md",
+			},
+			Files:    map[string]string{"/github/workspace/docs/RELEASES.md": changelogFixture},
+			Expected: Configuration{ChangelogFile: "/github/workspace/docs/RELEASES.md"},
+		},
 		"Missing changelog file is tolerated": {
 			Expected: Configuration{ChangelogFile: ""},
 		},
@@ -554,4 +572,96 @@ func TestGetChangelog(t *testing.T) {
 		a.NoError(err)
 		a.Equal(test.Expected, got)
 	}
+}
+
+// TestGetChangelogErrors covers the failure paths of changelog loading.
+func TestGetChangelogErrors(t *testing.T) {
+	a := assert.New(t)
+	log.SetOutput(io.Discard)
+
+	t.Run("file disappeared after configuration", func(t *testing.T) {
+		conf := &Configuration{ChangelogFile: "GONE.md"}
+
+		_, err := conf.GetChangelog(afero.NewMemMapFs(), testRelease())
+		a.ErrorContains(err, "error loading changelog file")
+	})
+
+	t.Run("unparsable changelog", func(t *testing.T) {
+		// A version heading that does not match `## [X.Y.Z] - YYYY-MM-DD`.
+		const malformed = `# Changelog
+
+## [1.0.0]
+
+### Added
+
+- Something
+`
+		conf := &Configuration{ChangelogFile: changelogFile}
+
+		_, err := conf.GetChangelog(testFilesystem(t, malformed), testRelease())
+		a.Error(err)
+	})
+
+	t.Run("version present but carrying no changes", func(t *testing.T) {
+		// The heading parses, so the version exists, but it has no scopes under
+		// it - a different branch from the version being absent entirely.
+		const empty = `# Changelog
+
+## [1.0.0] - 2024-01-01
+
+## [0.9.0] - 2023-01-01
+
+### Added
+
+- Something
+`
+		conf := &Configuration{ChangelogFile: changelogFile}
+
+		_, err := conf.GetChangelog(testFilesystem(t, empty), testRelease())
+		a.EqualError(err, "changelog file does not contain changes for version 1.0.0")
+	})
+}
+
+// TestTemplateDataFieldsAreDistinct renders every field from a release whose
+// values are all different from one another.
+//
+// The other fixtures use version 1.0.0 with Name == Tag, which makes several
+// fields indistinguishable: Minor and Patch can be transposed, .Prerelease can
+// be dropped, and .Name can silently render the tag instead of the title that
+// NAME_TEMPLATE produced - all without failing a test.
+func TestTemplateDataFieldsAreDistinct(t *testing.T) {
+	a := assert.New(t)
+	log.SetOutput(io.Discard)
+
+	rel := &release.Release{
+		Name: "Ship It",
+		Slug: &release.Slug{Owner: "anton-yurchenko", Name: "git-release"},
+		Reference: &release.Reference{
+			CommitHash: "deadbeef",
+			Tag:        "v1.2.4-rc.1",
+			Version:    "1.2.4-rc.1",
+			Major:      "1",
+			Minor:      "2",
+			Patch:      "4",
+			Prerelease: "rc.1",
+		},
+		Draft:      true,
+		PreRelease: false,
+	}
+
+	conf := &Configuration{
+		BodyTemplate: mustTemplate(t, "BODY_TEMPLATE",
+			"{{.Name}}|{{.Tag}}|{{.Version}}|{{.Major}}|{{.Minor}}|{{.Patch}}|"+
+				"{{.Prerelease}}|{{.Owner}}|{{.Repo}}|{{.CommitHash}}|{{.IsDraft}}|{{.IsPreRelease}}|{{.IsUnreleased}}"),
+	}
+
+	body, err := conf.GetBody(afero.NewMemMapFs(), rel)
+	a.NoError(err)
+	a.Equal("Ship It|v1.2.4-rc.1|1.2.4-rc.1|1|2|4|rc.1|anton-yurchenko|git-release|deadbeef|true|false|false", body)
+
+	// The name model must agree with the body model on every shared field.
+	conf.NameTemplate = mustTemplate(t, "NAME_TEMPLATE", "{{.Major}}.{{.Minor}}.{{.Patch}}-{{.Prerelease}}")
+	name, err := conf.GetName(rel)
+	a.NoError(err)
+	a.Equal("1.2.4-rc.1", name)
 }
