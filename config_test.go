@@ -425,6 +425,11 @@ func TestGetConfig(t *testing.T) {
 	// so a flat loop would leak each case's settings into every later case.
 	for name, test := range suite {
 		t.Run(name, func(t *testing.T) {
+			// GetConfig resolves the changelog under GITHUB_WORKSPACE, which the
+			// Actions runner sets. Pin it so the fixture paths resolve the same
+			// way locally and in CI.
+			t.Setenv("GITHUB_WORKSPACE", "")
+
 			for k, v := range test.Env {
 				t.Setenv(k, v)
 			}
