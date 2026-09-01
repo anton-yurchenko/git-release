@@ -100,8 +100,8 @@ A **GitHub Action** for a **GitHub Release** creation with **Assets** and **Chan
     | `CHANGELOG_FILE`        | `*`               | `CHANGELOG.md` | Changelog filename (set `none` to silence a warning message if file does not exist)                                        |
     | `ALLOW_EMPTY_CHANGELOG` | `true`/`false`    | `false`        | Allow publishing a release without changelog                                                                               |
     | `TAG_PREFIX_REGEX`      | `*`               | `v?`           | Version tag prefix regex, for example `[a-z-]*` in order to parse `prerelease-1.1.0`                                       |
-    | `NAME_TEMPLATE`         | `*`               | ""             | Release title as a [template](docs/example.md#release-name-and-body-templates). Default: the tag                            |
-    | `BODY_TEMPLATE`         | `*`               | ""             | Release body as a [template](docs/example.md#release-name-and-body-templates). Default: the changelog                       |
+    | `NAME_TEMPLATE`         | `*`               | ""             | Release title as a [template](#templates). Default: the tag                            |
+    | `BODY_TEMPLATE`         | `*`               | ""             | Release body as a [template](#templates). Default: the changelog                       |
     | `UNRELEASED`            | `update`/`delete` | ""             | Set to `update` in order to allow deletion and recreation of the same release and its tag (intended to be used for `unreleased`/`latest` release only). Set to `delete` in order to delete a previously published `unreleased`/`latest` release.                                                                                     |
     | `UNRELEASED_TAG`        | `*`               | `latest`       | Use a custom tag for `unreleased`/`latest` release (tag will be created/deleted automatically)                             |
 
@@ -121,6 +121,67 @@ A **GitHub Action** for a **GitHub Release** creation with **Assets** and **Chan
     than being ignored. Everything else is unchanged.
 
     </details>
+
+<a id="templates"></a>
+<details><summary>:information_source: Release Name and Body Templates</summary>
+
+By default the release title is the tag and the body is the changelog section of the released version.
+`NAME_TEMPLATE` and `BODY_TEMPLATE` replace them with [Go templates](https://pkg.go.dev/text/template) rendered with
+the following fields:
+
+|           Field            |                             Description                             |
+| :------------------------: | :-----------------------------------------------------------------: |
+|           `.Tag`           |                    Git tag, for example `v1.2.3`                    |
+|         `.Version`         |       Semantic version, for example `1.2.3` (or `Unreleased`)       |
+| `.Major` `.Minor` `.Patch` |                     Semantic version components                     |
+|       `.Prerelease`        |     Semantic version pre-release identifier, for example `rc.1`     |
+|          `.Owner`          |                          Repository owner                           |
+|          `.Repo`           |                           Repository name                           |
+|       `.CommitHash`        |                    Commit the release points to                     |
+|         `.IsDraft`         |                 `true` when the release is a draft                  |
+|      `.IsPreRelease`       |              `true` when the release is a pre-release               |
+|      `.IsUnreleased`       |              `true` for a rolling `unreleased` release              |
+|        `.Changelog`        | Changelog entries of the released version. **`BODY_TEMPLATE` only** |
+|          `.Name`           |        The rendered release title. **`BODY_TEMPLATE` only**         |
+
+The name is rendered before the changelog is read, so `.Changelog` and `.Name` are available to the body template only.
+
+A reference to a field that does not exist terminates the action instead of silently rendering an empty value.
+
+:information_source: `{{ ... }}` here is a **Go** template, not a GitHub Actions `${{ ... }}` expression - GitHub does not interpolate it.
+
+```yaml
+name: release
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Release
+        uses: docker://antonyurchenko/git-release:v7
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NAME_TEMPLATE: "Release {{ .Tag }}{{ if .IsPreRelease }} (pre-release){{ end }}"
+          BODY_TEMPLATE: |
+            ## {{ .Name }}
+
+            {{ .Changelog }}
+
+            ---
+            Released from `{{ .CommitHash }}` in `{{ .Owner }}/{{ .Repo }}`
+        with:
+          args: build/*.zip
+```
+
+</details>
 
 <details><summary>:information_source: Windows Runners</summary>
 

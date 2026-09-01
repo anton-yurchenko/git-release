@@ -25,7 +25,7 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Release
-        uses: docker://antonyurchenko/git-release:latest
+        uses: docker://antonyurchenko/git-release:v7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -38,6 +38,8 @@ jobs:
 </details>
 
 ## Release title with a prefix
+
+See [Release Name and Body Templates](../README.md#templates) for the available fields.
 
 ![PIC](images/example-prefix.png)
 
@@ -59,7 +61,7 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Release
-        uses: docker://antonyurchenko/git-release:latest
+        uses: docker://antonyurchenko/git-release:v7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NAME_TEMPLATE: "Release: {{ .Tag }}"
@@ -94,7 +96,7 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Release
-        uses: docker://antonyurchenko/git-release:latest
+        uses: docker://antonyurchenko/git-release:v7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PRE_RELEASE: "true"
@@ -108,7 +110,7 @@ jobs:
 
 </details>
 
-## Release title composed from a template
+## Release title with a prefix and a suffix
 
 ![PIC](images/example-prefix-suffix.png)
 
@@ -130,7 +132,7 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Release
-        uses: docker://antonyurchenko/git-release:latest
+        uses: docker://antonyurchenko/git-release:v7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NAME_TEMPLATE: "Release: {{ .Tag }} (Codename: 'Ragnarok')"
@@ -165,7 +167,7 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Release
-        uses: docker://antonyurchenko/git-release:latest
+        uses: docker://antonyurchenko/git-release:v7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NAME_TEMPLATE: "Release X"
@@ -176,68 +178,6 @@ jobs:
             darwin-amd64.zip
             linux-amd64.zip
             windows-amd64.zip
-```
-
-</details>
-
-## Release name and body templates
-
-By default the release title is the tag and the body is the changelog section of the released version.
-`NAME_TEMPLATE` and `BODY_TEMPLATE` replace them with [Go templates](https://pkg.go.dev/text/template) rendered with
-the following fields:
-
-| Field | Description |
-|:-----:|:-----------:|
-| `.Tag` | Git tag, for example `v1.2.3` |
-| `.Version` | Semantic version, for example `1.2.3` (or `Unreleased`) |
-| `.Major` `.Minor` `.Patch` | Semantic version components |
-| `.Prerelease` | Semantic version pre-release identifier, for example `rc.1` |
-| `.Owner` | Repository owner |
-| `.Repo` | Repository name |
-| `.CommitHash` | Commit the release points to |
-| `.IsDraft` | `true` when the release is a draft |
-| `.IsPreRelease` | `true` when the release is a pre-release |
-| `.IsUnreleased` | `true` for a rolling `unreleased` release |
-| `.Changelog` | Changelog entries of the released version. **`BODY_TEMPLATE` only** |
-| `.Name` | The rendered release title. **`BODY_TEMPLATE` only** |
-
-The name is rendered before the changelog is read, so `.Changelog` and `.Name` are available to the body template only.
-
-A reference to a field that does not exist terminates the action instead of silently rendering an empty value.
-
-:information_source: `{{ ... }}` here is a **Go** template, not a GitHub Actions `${{ ... }}` expression - GitHub does not interpolate it.
-
-<details><summary>Workflow</summary>
-
-```yaml
-name: release
-
-on:
-  push:
-    tags:
-      - "*"
-
-jobs:
-  release:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-
-      - name: Release
-        uses: docker://antonyurchenko/git-release:latest
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NAME_TEMPLATE: "Release {{ .Tag }}{{ if .IsPreRelease }} (pre-release){{ end }}"
-          BODY_TEMPLATE: |
-            ## {{ .Name }}
-
-            {{ .Changelog }}
-
-            ---
-            Released from `{{ .CommitHash }}` in `{{ .Owner }}/{{ .Repo }}`
-        with:
-          args: build/*.zip
 ```
 
 </details>
@@ -264,7 +204,7 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Release
-        uses: docker://antonyurchenko/git-release:latest
+        uses: docker://antonyurchenko/git-release:v7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -312,7 +252,7 @@ jobs:
 This will recreate a single released on each execution by deleting the previous release and creating a new one.
 Changelog will be extracted from an `Unreleased` scope inside a CHANGELOG.md file.
 
-Because this is an *"Unreleased"* release, it will always be marked as a **pre-release**.
+Because this is an _"Unreleased"_ release, it will always be marked as a **pre-release**.
 
 `latest` tag will be used by default, this means that it will be moved with each execution and point to a different commit.
 
@@ -336,7 +276,7 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Release
-        uses: docker://antonyurchenko/git-release:latest
+        uses: docker://antonyurchenko/git-release:v7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           UNRELEASED: "update"
@@ -370,7 +310,7 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Release
-        uses: docker://antonyurchenko/git-release:latest
+        uses: docker://antonyurchenko/git-release:v7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           UNRELEASED: "update"
