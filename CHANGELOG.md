@@ -2,19 +2,17 @@
 
 ## [Unreleased]
 
-:warning: Release title configuration has changed. See the [upgrade table](README.md#configuration) before updating.
-
 ### Changed
 
-- **Breaking:** `RELEASE_NAME`, `RELEASE_NAME_PREFIX` and `RELEASE_NAME_SUFFIX` are replaced by `NAME_TEMPLATE`
-- **Breaking:** Boolean settings reject any value other than `true` and `false`
-- **Breaking:** Update NodeJS version to v24 (*Thanks to [Vincent Biret](https://github.com/baywet)*)
+- **Breaking:** :warning: `RELEASE_NAME`, `RELEASE_NAME_PREFIX` and `RELEASE_NAME_SUFFIX` are replaced by `NAME_TEMPLATE`
+- **Breaking:** :warning: Boolean settings reject any value other than `true` and `false`
+- **Breaking:** :warning: Update NodeJS version to v24 (_Thanks to [Vincent Biret](https://github.com/baywet)_)
 - Update Golang version to v1.27.0
 - Update dependencies
 
 ### Added
 
-- [PR #145](https://github.com/anton-yurchenko/git-release/pull/145) `NAME_TEMPLATE` to compose the release title from a template (*Thanks to [Taylor Becker](https://github.com/tajobe)*)
+- [PR #145](https://github.com/anton-yurchenko/git-release/pull/145) `NAME_TEMPLATE` to compose the release title from a template (_Thanks to [Taylor Becker](https://github.com/tajobe)_)
 - `BODY_TEMPLATE` to compose the release body from a template
 
 ### Fixed
@@ -43,7 +41,7 @@
 
 ### Fixed
 
-- [Issue #122](https://github.com/anton-yurchenko/git-release/issues/122) Latest pre-release always recreated as Draft (*Thanks to [Taylor Becker](https://github.com/tajobe)*)
+- [Issue #122](https://github.com/anton-yurchenko/git-release/issues/122) Latest pre-release always recreated as Draft (_Thanks to [Taylor Becker](https://github.com/tajobe)_)
 
 ## [5.0.2] - 2023-04-09
 
@@ -54,7 +52,7 @@
 
 ### Fixed
 
-- [Issue #90](https://github.com/anton-yurchenko/git-release/issues/90) Awkward behavior in UNRELEASED flow when tag is present without release itself (*Thanks to [Benjamin K.](https://github.com/treee111)*)
+- [Issue #90](https://github.com/anton-yurchenko/git-release/issues/90) Awkward behavior in UNRELEASED flow when tag is present without release itself (_Thanks to [Benjamin K.](https://github.com/treee111)_)
 
 ## [5.0.1] - 2022-12-14
 
@@ -65,7 +63,7 @@
 
 ### Fixed
 
-- [Issue #86](https://github.com/anton-yurchenko/git-release/issues/86) Panic on empty unreleased changelog (*Thanks to [Taylor Becker](https://github.com/tajobe)*)
+- [Issue #86](https://github.com/anton-yurchenko/git-release/issues/86) Panic on empty unreleased changelog (_Thanks to [Taylor Becker](https://github.com/tajobe)_)
 
 ## [5.0.0] - 2022-09-14
 
@@ -79,7 +77,7 @@
 
 ### Fixed
 
-- [Issue #64](https://github.com/anton-yurchenko/git-release/issues/64) Panic on missing API response (*Thanks to [rgriebl](https://github.com/rgriebl)*)
+- [Issue #64](https://github.com/anton-yurchenko/git-release/issues/64) Panic on missing API response (_Thanks to [rgriebl](https://github.com/rgriebl)_)
 
 ## [4.2.3] - 2022-02-20
 
@@ -89,7 +87,7 @@
 
 ### Fixed
 
-- [Issue #64](https://github.com/anton-yurchenko/git-release/issues/64) Panic on missing API response (*Thanks to [rgriebl](https://github.com/rgriebl)*)
+- [Issue #64](https://github.com/anton-yurchenko/git-release/issues/64) Panic on missing API response (_Thanks to [rgriebl](https://github.com/rgriebl)_)
 
 ## [4.2.2] - 2022-02-05
 
@@ -99,11 +97,11 @@
 
 ### Added
 
-- [Issue #61](https://github.com/anton-yurchenko/git-release/issues/61) Recover from 422/UnprocessableEntity and 502/BadGateway errors during assets upload (*Thanks to [kongsgard](https://github.com/kongsgard), [rgriebl](https://github.com/rgriebl)*)
+- [Issue #61](https://github.com/anton-yurchenko/git-release/issues/61) Recover from 422/UnprocessableEntity and 502/BadGateway errors during assets upload (_Thanks to [kongsgard](https://github.com/kongsgard), [rgriebl](https://github.com/rgriebl)_)
 
 ### Fixed
 
-- [Issue #61](https://github.com/anton-yurchenko/git-release/issues/61) Improve assets upload retry mechanism (*Thanks to [kongsgard](https://github.com/kongsgard), [rgriebl](https://github.com/rgriebl)*)
+- [Issue #61](https://github.com/anton-yurchenko/git-release/issues/61) Improve assets upload retry mechanism (_Thanks to [kongsgard](https://github.com/kongsgard), [rgriebl](https://github.com/rgriebl)_)
 
 ## [4.2.1] - 2021-12-15
 
@@ -129,7 +127,7 @@
 
 ### Fixed
 
-- [Issue #54](https://github.com/anton-yurchenko/git-release/issues/54) Empty scopes during changelog parsing (*Thanks to [Wolf2323](https://github.com/Wolf2323)*)
+- [Issue #54](https://github.com/anton-yurchenko/git-release/issues/54) Empty scopes during changelog parsing (_Thanks to [Wolf2323](https://github.com/Wolf2323)_)
 
 ## [4.1.1] - 2021-08-22
 
@@ -147,7 +145,7 @@
 
 ### Added
 
-- [Issue #47](https://github.com/anton-yurchenko/git-release/issues/47) Recreate `Unreleased` release on each execution (*Thanks to [cb80](https://github.com/cb80)*)
+- [Issue #47](https://github.com/anton-yurchenko/git-release/issues/47) Recreate `Unreleased` release on each execution (_Thanks to [cb80](https://github.com/cb80)_)
 
 ## [4.0.1] - 2021-06-24
 
@@ -160,14 +158,14 @@
 ### Changed
 
 - Enforce changelog file format to comply with **Keep a Changelog**/**Common Changelog**
-- Allow `v` prefix without `ALOW_TAG_PREFIX` (*still required for other prefixes*)
+- Allow `v` prefix without `ALOW_TAG_PREFIX` (_still required for other prefixes_)
 - Update Dependencies
 - Update to Golang 1.16
 - Not existing changelog file won't fail the execution, but will log this as error. Set `CHANGELOG_FILE=none` to silence an error message
 
 ### Added
 
-- [Issue #46](https://github.com/anton-yurchenko/git-release/issues/46) Support GitHub Enterprise (*Thanks to [cb80](https://github.com/cb80)*)
+- [Issue #46](https://github.com/anton-yurchenko/git-release/issues/46) Support GitHub Enterprise (_Thanks to [cb80](https://github.com/cb80)_)
 
 ### Removed
 
@@ -191,7 +189,7 @@
 
 ### Added
 
-- [Issue #44](https://github.com/anton-yurchenko/git-release/issues/44) - Support ARM64 by building a multi-arch docker image (*Thanks to [rsliotta](https://github.com/rsliotta)*)
+- [Issue #44](https://github.com/anton-yurchenko/git-release/issues/44) - Support ARM64 by building a multi-arch docker image (_Thanks to [rsliotta](https://github.com/rsliotta)_)
 
 ## [3.4.4] - 2021-03-13
 
@@ -211,7 +209,7 @@
 
 ### Fixed
 
-- [PR #38](https://github.com/anton-yurchenko/git-release/pull/38) - Version prefix greedy quantifier caused incorrect parsing of major version higher then `9`. (*Thanks to [rgriebl](https://github.com/rgriebl)*)
+- [PR #38](https://github.com/anton-yurchenko/git-release/pull/38) - Version prefix greedy quantifier caused incorrect parsing of major version higher then `9`. (_Thanks to [rgriebl](https://github.com/rgriebl)_)
 
 ## [3.4.2] - 2020-10-25
 
@@ -272,7 +270,7 @@
 
 ### Fixed
 
-- [Issue #16](https://github.com/anton-yurchenko/git-release/issues/16) - Error parsing tags with slashes. (*Thanks to [Jonathan Hilgart](https://github.com/jonhilgart22)*)
+- [Issue #16](https://github.com/anton-yurchenko/git-release/issues/16) - Error parsing tags with slashes. (_Thanks to [Jonathan Hilgart](https://github.com/jonhilgart22)_)
 - Support `.` in organization and repository names
 
 ## [3.1.1] - 2020-03-25
@@ -284,13 +282,13 @@
 
 ### Fixed
 
-- [Issue #14](https://github.com/anton-yurchenko/git-release/issues/14) - Ignored first release link in a comment. (*Thanks to [Luiz Ferraz](https://github.com/Fryuni)*)
+- [Issue #14](https://github.com/anton-yurchenko/git-release/issues/14) - Ignored first release link in a comment. (_Thanks to [Luiz Ferraz](https://github.com/Fryuni)_)
 
 ## [3.1.0] - 2020-02-17
 
 ### Added
 
-- [Issue #10](https://github.com/anton-yurchenko/git-release/issues/10) - Release Title manipulation through `RELEASE_NAME`, `RELEASE_NAME_PREFIX`, `RELEASE_NAME_POSTFIX`. (*Thanks to [Victor](https://github.com/victoraugustolls) for suggesting a change*)
+- [Issue #10](https://github.com/anton-yurchenko/git-release/issues/10) - Release Title manipulation through `RELEASE_NAME`, `RELEASE_NAME_PREFIX`, `RELEASE_NAME_POSTFIX`. (_Thanks to [Victor](https://github.com/victoraugustolls) for suggesting a change_)
 
 ## [3.0.1] - 2020-01-08
 
@@ -300,10 +298,10 @@
 
 ## [3.0.0] - 2020-01-05
 
-This is a major release because of a certain behavior change:  
+This is a major release because of a certain behavior change:
 
-- *Tag (without prefix) should be identical to Changelog Version in order for changes to be mapped (for example tag `v3.0.0-rc.1` is expected to be listed as `3.0.0-rc.1` in changelog).*
-- *By default valid semver version is expected. Prefix should be explicitly allowed by enabling `ALLOW_TAG_PREFIX`*
+- _Tag (without prefix) should be identical to Changelog Version in order for changes to be mapped (for example tag `v3.0.0-rc.1` is expected to be listed as `3.0.0-rc.1` in changelog)._
+- _By default valid semver version is expected. Prefix should be explicitly allowed by enabling `ALLOW_TAG_PREFIX`_
 
 ### Changed
 
@@ -366,11 +364,11 @@ This is a major release as most of the code was refactored and some behavior was
 
 ### Added
 
-- [PR #3](https://github.com/anton-yurchenko/git-release/pull/3) - Allow any prefix to semver tag. (*Thanks to [Taylor Becker](https://github.com/tajobe) for the PR*)
+- [PR #3](https://github.com/anton-yurchenko/git-release/pull/3) - Allow any prefix to semver tag. (_Thanks to [Taylor Becker](https://github.com/tajobe) for the PR_)
 
 ### Fixed
 
-- [PR #3](https://github.com/anton-yurchenko/git-release/pull/3) - PreRelease overwriting Draft configuration. (*Thanks to [Taylor Becker](https://github.com/tajobe) for reporting an issue*)
+- [PR #3](https://github.com/anton-yurchenko/git-release/pull/3) - PreRelease overwriting Draft configuration. (_Thanks to [Taylor Becker](https://github.com/tajobe) for reporting an issue_)
 
 ## [1.0.0] - 2019-10-01
 
