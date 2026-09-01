@@ -22,14 +22,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
 
       - name: Release
         uses: docker://antonyurchenko/git-release:latest
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          args: |
+          assets: |
             darwin-amd64.zip
             linux-amd64.zip
             windows-amd64.zip
@@ -56,7 +56,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
 
       - name: Release
         uses: docker://antonyurchenko/git-release:latest
@@ -64,7 +64,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RELEASE_NAME_PREFIX: "Release: "
         with:
-          args: |
+          assets: |
             darwin-amd64.zip
             linux-amd64.zip
             windows-amd64.zip
@@ -91,7 +91,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
 
       - name: Release
         uses: docker://antonyurchenko/git-release:latest
@@ -100,7 +100,7 @@ jobs:
           PRE_RELEASE: "true"
           RELEASE_NAME_SUFFIX: " (nightly build)"
         with:
-          args: |
+          assets: |
             darwin-amd64.zip
             linux-amd64.zip
             windows-amd64.zip
@@ -129,7 +129,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
 
       - run: |
           export PREFIX="Release: "
@@ -142,7 +142,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          args: |
+          assets: |
             darwin-amd64.zip
             linux-amd64.zip
             windows-amd64.zip
@@ -171,7 +171,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
 
       - run: |
           export TEXT="Release X"
@@ -184,10 +184,72 @@ jobs:
           CHANGELOG_FILE: "CHANGES.md"
           ALLOW_EMPTY_CHANGELOG: "true"
         with:
-          args: |
+          assets: |
             darwin-amd64.zip
             linux-amd64.zip
             windows-amd64.zip
+```
+
+</details>
+
+## Release name and body templates
+
+By default the release title is the tag and the body is the changelog section of the released version.
+`NAME_TEMPLATE` and `BODY_TEMPLATE` replace them with [Go templates](https://pkg.go.dev/text/template) rendered with
+the following fields:
+
+| Field | Description |
+|:-----:|:-----------:|
+| `.Tag` | Git tag, for example `v1.2.3` |
+| `.Version` | Semantic version, for example `1.2.3` (or `Unreleased`) |
+| `.Major` `.Minor` `.Patch` | Semantic version components |
+| `.Prerelease` | Semantic version pre-release identifier, for example `rc.1` |
+| `.Owner` | Repository owner |
+| `.Repo` | Repository name |
+| `.CommitHash` | Commit the release points to |
+| `.IsDraft` | `true` when the release is a draft |
+| `.IsPreRelease` | `true` when the release is a pre-release |
+| `.IsUnreleased` | `true` for a rolling `unreleased` release |
+| `.Changelog` | Changelog entries of the released version. **`BODY_TEMPLATE` only** |
+| `.Name` | The rendered release title. **`BODY_TEMPLATE` only** |
+
+The name is rendered before the changelog is read, so `.Changelog` and `.Name` are available to the body template only.
+
+A reference to a field that does not exist terminates the action instead of silently rendering an empty value.
+
+:information_source: `{{ ... }}` here is a **Go** template, not a GitHub Actions `${{ ... }}` expression - GitHub does not interpolate it.
+
+<details><summary>Workflow</summary>
+
+```yaml
+name: release
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Release
+        uses: docker://antonyurchenko/git-release:latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NAME_TEMPLATE: "Release {{ .Tag }}{{ if .IsPreRelease }} (pre-release){{ end }}"
+          BODY_TEMPLATE: |
+            ## {{ .Name }}
+
+            {{ .Changelog }}
+
+            ---
+            Released from `{{ .CommitHash }}` in `{{ .Owner }}/{{ .Repo }}`
+        with:
+          assets: build/*.zip
 ```
 
 </details>
@@ -211,14 +273,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
 
       - name: Release
         uses: docker://antonyurchenko/git-release:latest
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          args: build/*.zip
+          assets: build/*.zip
 ```
 
 </details>
@@ -242,14 +304,14 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
 
       - name: Release
         uses: anton-yurchenko/git-release@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          args: |
+          assets: |
             darwin-amd64.zip
             linux-amd64.zip
             windows-amd64.zip
@@ -283,7 +345,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
 
       - name: Release
         uses: docker://antonyurchenko/git-release:latest
@@ -291,7 +353,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           UNRELEASED: "update"
         with:
-          args: linux-amd64
+          assets: linux-amd64
 ```
 
 </details>
@@ -317,7 +379,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
 
       - name: Release
         uses: docker://antonyurchenko/git-release:latest
@@ -326,7 +388,7 @@ jobs:
           UNRELEASED: "update"
           UNRELEASED_TAG: future
         with:
-          args: linux-amd64
+          assets: linux-amd64
 ```
 
 </details>

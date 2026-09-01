@@ -3,10 +3,63 @@ description: "Create a GitHub Release with Assets and Changelog"
 branding:
   icon: "tag"
   color: "black"
+
+# Every input below has an equivalent environment variable: the ASCII-uppercase
+# of the input name (`assets` -> `ASSETS`). Both are read, and `with:` wins.
+#
+# NOTE: no `default:` other than `token`, deliberately. Defaults declared here
+# apply only to `uses: anton-yurchenko/git-release@vN`; a bare
+# `uses: docker://antonyurchenko/git-release:vN` never reads this file, so a
+# default written here would silently fork the two documented usages. Every
+# other default lives in the binary, where both modes see it.
 inputs:
-  args:
-    description: "Release Assets"
+  assets:
+    description: "Release assets - one path or glob per line"
     required: false
+  name_template:
+    description: "Release title, as a Go template. Default: the tag ('Latest' for an unreleased release)"
+    required: false
+  body_template:
+    description: "Release body, as a Go template. Default: '{{ .Changelog }}'"
+    required: false
+  draft_release:
+    description: "Publish a draft release - 'true' or 'false'"
+    required: false
+  pre_release:
+    description: "Mark the release as a pre-release - 'auto', 'true' or 'false'. Default: 'auto'"
+    required: false
+  changelog_file:
+    description: "Changelog filename, or 'none'. Default: 'CHANGELOG.md'"
+    required: false
+  allow_empty_changelog:
+    description: "Publish even when the changelog has no entry for the version - 'true' or 'false'"
+    required: false
+  tag_prefix_regex:
+    description: "Regex matching the prefix in front of the version in the tag. Default: 'v?'"
+    required: false
+  unreleased:
+    description: "'update' to recreate a rolling release, 'delete' to remove it"
+    required: false
+  unreleased_tag:
+    description: "Tag used for the rolling release. Default: 'latest'"
+    required: false
+  token:
+    description: "GitHub token"
+    required: false
+    default: ${{ github.token }}
+
+outputs:
+  id:
+    description: "Release ID"
+  url:
+    description: "Release HTML URL"
+  tag:
+    description: "Tag the release points at"
+  version:
+    description: "Semantic version parsed out of the tag"
+  name:
+    description: "Release title"
+
 runs:
   using: "node24"
   main: "wrapper.js"

@@ -18,6 +18,7 @@ A **GitHub Action** for a **GitHub Release** creation with **Assets** and **Chan
 - Publish release with changelog
   - [Keep a Changelog](https://keepachangelog.com/) Compliant
   - [Common Changelog](https://common-changelog.org) Compliant
+- Customizable release name and body through Go templates
 - Supported runners:
   - Linux AMD64
   - Linux ARM64
@@ -80,32 +81,51 @@ A **GitHub Action** for a **GitHub Release** creation with **Assets** and **Chan
 
     ```yaml
         - name: Release
-          uses: docker://antonyurchenko/git-release:v5
+          uses: docker://antonyurchenko/git-release:v7
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           with:
-            args: build/*.zip
+            assets: build/*.zip
     ```
 
 3. Configure *Release* step:
 
-    - Specify release assets as action `arguments` (divided by one of: `new line`, `space`, `comma`, `pipe`)
-    - Fine tune action configuration using environmental variables:
+    - Specify release assets through `assets`, one path or glob per line
+    - Fine tune the action with the settings below:
 
-    | Environmental Variable  | Allowed Values | Default Value  | Description                                                                                                                |
-    |:-----------------------:|:--------------:|:-----------------:|:--------------------------------------------------------------------------------------------------------------------------:|
-    | `DRAFT_RELEASE`         | `true`/`false`    | `false`           | Publish a draft release                                                                                                    |
-    | `PRE_RELEASE`           | `true`/`false`    | `false`           | Mark release non-production ready                                                                                          |
-    | `CHANGELOG_FILE`        | `*`               | `CHANGELOG.md`    | Changelog filename (set `none` to silence a warning message if file does not exist)                                        |
-    | `ALLOW_EMPTY_CHANGELOG` | `true`/`false`    | `false`           | Allow publishing a release without changelog                                                                               |
-    | `TAG_PREFIX_REGEX`      | `*`               | `[v]?`            | Version tag prefix regex, for example `[a-z-]*` in order to parse `prerelease-1.1.0`                                       |
-    | `RELEASE_NAME`          | `*`               | ""                | Complete release title (should not be combined with `RELEASE_NAME_PREFIX` and `RELEASE_NAME_SUFFIX`)                       |
-    | `RELEASE_NAME_PREFIX`   | `*`               | ""                | Release title prefix                                                                                                       |
-    | `RELEASE_NAME_SUFFIX`   | `*`               | ""                | Release title suffix                                                                                                       |
-    | `UNRELEASED`            | `update`/`delete` | ""                | Set to `update` in order to allow deletion and recreation of the same release and its tag (intended to be used for `unreleased`/`latest` release only). Set to `delete` in order to delete a previously published `unreleased`/`latest` release.                                                                                     |
-    | `UNRELEASED_TAG`        | `latest`       | `*`               | Use a custom tag for `unreleased`/`latest` release (tag will be created/deleted automatically)                             |
+    | Setting                 | Allowed Values          | Default Value  | Description                                                                                                                |
+    |:-----------------------:|:-----------------------:|:--------------:|:--------------------------------------------------------------------------------------------------------------------------:|
+    | `assets`                | `*`                     | ""             | Release assets - one path or glob per line                                                                                 |
+    | `draft_release`         | `true`/`false`          | `false`        | Publish a draft release                                                                                                    |
+    | `pre_release`           | `auto`/`true`/`false`   | `auto`         | Mark release non-production ready. `auto` detects a semantic version pre-release, for example `v1.2.3-rc.1`                 |
+    | `changelog_file`        | `*`                     | `CHANGELOG.md` | Changelog filename (set `none` to silence a warning message if file does not exist)                                        |
+    | `allow_empty_changelog` | `true`/`false`          | `false`        | Allow publishing a release without changelog                                                                               |
+    | `tag_prefix_regex`      | `*`                     | `v?`           | Version tag prefix regex, for example `[a-z-]*` in order to parse `prerelease-1.1.0`                                       |
+    | `name_template`         | `*`                     | ""             | Release title as a [template](docs/example.md#release-name-and-body-templates). Default: the tag                            |
+    | `body_template`         | `*`                     | ""             | Release body as a [template](docs/example.md#release-name-and-body-templates). Default: the changelog                       |
+    | `unreleased`            | `update`/`delete`       | ""             | Set to `update` in order to allow deletion and recreation of the same release and its tag (intended to be used for `unreleased`/`latest` release only). Set to `delete` in order to delete a previously published `unreleased`/`latest` release.                                                                                     |
+    | `unreleased_tag`        | `*`                     | `latest`       | Use a custom tag for `unreleased`/`latest` release (tag will be created/deleted automatically)                             |
 
-    *Configuration is provided as environmental variables (strings), so do not forget to enclose boolean values with quotes*
+    Every setting has two spellings that mean the same thing: an action input and an environment variable named after it in
+    upper case. `with: draft_release: "true"` and `env: DRAFT_RELEASE: "true"` are equivalent, and `with:` wins if both are set.
+
+    *Values are strings, so do not forget to enclose boolean values with quotes*
+
+    <details><summary>:warning: Upgrading from v6</summary>
+
+    | v6 | v7 |
+    |---|---|
+    | `with: {args: ...}` | `with: {assets: ...}` - newline separated only |
+    | `RELEASE_NAME: "Ship It"` | `NAME_TEMPLATE: "Ship It"` |
+    | `RELEASE_NAME_PREFIX: "Release: "` | `NAME_TEMPLATE: "Release: {{ .Tag }}"` |
+    | `RELEASE_NAME_SUFFIX: " (nightly)"` | `NAME_TEMPLATE: "{{ .Tag }} (nightly)"` |
+    | both prefix and suffix | `NAME_TEMPLATE: "Release: {{ .Tag }} (nightly)"` |
+    | a `-rc` tag was a normal release | it is now a pre-release; set `PRE_RELEASE: "false"` to keep the old behaviour |
+    | `DRAFT_RELEASE: "yes"` was silently `false` | any value other than `true`/`false` is now an error |
+
+    Removed settings fail the run with a message naming their replacement, rather than being ignored.
+
+    </details>
 
 <details><summary>:information_source: Windows Runners</summary>
 
@@ -113,11 +133,9 @@ Execute **git-release** through JavaScrip Wrapper on Windows Runners.
 
 ```yaml
     - name: Release
-      uses: anton-yurchenko/git-release@main
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: anton-yurchenko/git-release@v7
       with:
-        args: |
+        assets: |
             build\\darwin-amd64.zip
             build\\linux-amd64.zip
             build\\windows-amd64.zip
@@ -131,7 +149,7 @@ Execute **git-release** through JavaScrip Wrapper on Windows Runners.
 
 - This action has multiple tags: `latest / v1 / v1.2 / v1.2.3`. You may lock to a certain version instead of using **latest**.  
 (*Recommended to lock against a major version, for example* `v4`)
-- Instead of using a pre-built Docker image, you may execute the action through JavaScript wrapper by changing `docker://antonyurchenko/git-release:latest` to `anton-yurchenko/git-release@main`
+- Instead of using a pre-built Docker image, you may execute the action through JavaScript wrapper by changing `docker://antonyurchenko/git-release:v7` to `anton-yurchenko/git-release@v7`
 - `git-release` operates assets with pattern matching, this means that it is unable to validate whether an asset exists
 - Docker image is published both to [**Docker Hub**](https://hub.docker.com/r/antonyurchenko/git-release) and [**GitHub Packages**](https://github.com/anton-yurchenko/git-release/packages). If you don't want to rely on **Docker Hub** but still want to use the dockerized action, you may switch from `uses: docker://antonyurchenko/git-release:latest` to `uses: docker://ghcr.io/anton-yurchenko/git-release:latest`
 - Slashes (`/`) in asset filenames will be replaced with dashes (`-`)

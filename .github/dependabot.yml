@@ -1,29 +1,68 @@
 version: 2
+
 updates:
-  - package-ecosystem: gomod
+  - package-ecosystem: "gomod"
     directory: "/"
     schedule:
-      interval: daily
+      interval: "monthly"
+    groups:
+      all:
+        patterns:
+          - "*"
     assignees:
-      - anton-yurchenko
+      - "anton-yurchenko"
     labels:
-      - dependencies
+      - "dependencies"
     ignore:
       - dependency-name: "*"
-        update-types: [
-          "version-update:semver-patch"
-        ]
+        update-types:
+          - "version-update:semver-patch"
 
+  # NOTE: every `uses:` reference is pinned to a major-only tag, so minor/patch
+  # updates are meaningless here. `docker://` steps are skipped by Dependabot
+  # entirely and must be bumped by hand.
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: daily
-    target-branch: main
+      interval: "monthly"
+    groups:
+      all:
+        patterns:
+          - "*"
     assignees:
-      - anton-yurchenko
+      - "anton-yurchenko"
+    labels:
+      - "dependencies"
+      - "github_actions"
     ignore:
       - dependency-name: "*"
-        update-types: [
-          "version-update:semver-minor",
-          "version-update:semver-patch"
-        ]
+        update-types:
+          - "version-update:semver-minor"
+          - "version-update:semver-patch"
+
+  # MAINTAINER NOTE: node_modules/ is committed and Dependabot does NOT
+  # regenerate it - it only rewrites package.json and package-lock.json.
+  # Before merging an npm pull request, check the branch out and run:
+  #
+  #     npm ci && git add -A node_modules package-lock.json package.json
+  #
+  # otherwise the committed node_modules/ - which is what wrapper.js loads at
+  # runtime - stays on the old version.
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    groups:
+      all:
+        patterns:
+          - "*"
+    assignees:
+      - "anton-yurchenko"
+    labels:
+      - "dependencies"
+      - "javascript"
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-minor"
+          - "version-update:semver-patch"

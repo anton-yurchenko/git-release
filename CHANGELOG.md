@@ -2,6 +2,41 @@
 
 ## [Unreleased]
 
+:warning: This release changes the action configuration. See the [upgrade table](README.md#configuration) before updating.
+
+:warning: GitHub Actions is completing a deprecation process for [Node20](https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/)
+
+### Changed
+
+- **Breaking:** Release assets are supplied through `assets`, one path or glob per line, instead of `args`
+- **Breaking:** `RELEASE_NAME`, `RELEASE_NAME_PREFIX` and `RELEASE_NAME_SUFFIX` are replaced by a single `NAME_TEMPLATE`
+- **Breaking:** `PRE_RELEASE` defaults to `auto`, marking a tag with a semantic version pre-release identifier (`v1.2.3-rc.1`) as a pre-release
+- **Breaking:** Boolean settings accept only `true` or `false`; any other value is an error instead of being silently treated as `false`
+- **Breaking:** Update NodeJS version to v24 (*Thanks to [Vincent Biret](https://github.com/baywet)*)
+- **Breaking:** Update JavaScript wrapper to ESM (`@actions/core` v3 is ESM only)
+- Every setting is now available both as an action input and as an environment variable named after it in upper case
+- Update GitHub API client (`go-github`) to v78
+- Update Golang version to v1.27.0
+- Update dependencies
+
+### Added
+
+- [PR #145](https://github.com/anton-yurchenko/git-release/pull/145) `NAME_TEMPLATE` and `BODY_TEMPLATE`, composing the release title and body from a Go template with access to `.Tag`, `.Version`, `.Major`, `.Minor`, `.Patch`, `.Prerelease`, `.Owner`, `.Repo`, `.CommitHash`, `.IsDraft`, `.IsPreRelease` and `.IsUnreleased`, plus `.Changelog` and `.Name` in the body (*Thanks to [Taylor Becker](https://github.com/tajobe)*)
+
+### Fixed
+
+- A capture group in `TAG_PREFIX_REGEX` caused the prefix to be parsed as the version
+- A malformed `TAG_PREFIX_REGEX` terminated the action with a panic
+- An asset path containing a space, comma or pipe could not be expressed, and matched nothing without an error
+- `UNRELEASED: delete` required a changelog it was never going to publish
+- The trigger loop guard ignored a custom `UNRELEASED_TAG`, and rejected an ordinary release of a tag named `latest`
+- The JavaScript wrapper and the container disagreed about which assets to upload
+- GitHub Enterprise asset upload URL was not resolved correctly
+
+### Removed
+
+- `RELEASE_NAME_POSTFIX` and `ALLOW_TAG_PREFIX`, deprecated since v4
+
 ## [6.0.0] - 2024-01-17
 
 :warning: GitHub Actions initiate a deprecation process for [Node16](https://github.blog/changelog/2023-09-22-github-actions-transitioning-from-node-16-to-node-20/)

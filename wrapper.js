@@ -1,14 +1,19 @@
-const core = require('@actions/core')
-const os = require('node:os')
-const path = require('node:path')
-const fs = require('node:fs')
-const child = require('node:child_process')
+import * as core from '@actions/core'
+import os from 'node:os'
+import path from 'node:path'
+import fs from 'node:fs'
+import child from 'node:child_process'
 
+// The binary reads every setting from the environment, including the asset
+// list, which the runner has already exported as INPUT_ASSETS. Nothing is
+// passed on argv: v6 forwarded the asset list as a single argument here while
+// the container received it pre-split by the runner, so the two distribution
+// modes disagreed about which assets to upload.
 function execute (file) {
   if (fs.existsSync(file)) {
     child.execFileSync(
       file,
-      [core.getInput('args')],
+      [],
       { stdio: 'inherit' }
     )
   } else {
@@ -35,7 +40,7 @@ function main () {
     process.exit(1)
   }
 
-  execute(path.join(__dirname, 'bin', filename))
+  execute(path.join(import.meta.dirname, 'bin', filename))
 }
 
 main()

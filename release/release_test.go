@@ -14,7 +14,7 @@ import (
 	"git-release/release"
 
 	changelog "github.com/anton-yurchenko/go-changelog"
-	"github.com/google/go-github/github"
+	"github.com/google/go-github/v78/github"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
@@ -128,6 +128,9 @@ func TestGetReference(t *testing.T) {
 					CommitHash: "111",
 					Version:    "1.0.0",
 					Tag:        "1.0.0",
+					Major:      "1",
+					Minor:      "0",
+					Patch:      "0",
 				},
 				Error: "",
 			},
@@ -165,6 +168,9 @@ func TestGetReference(t *testing.T) {
 					CommitHash: "111",
 					Version:    "1.0.0",
 					Tag:        "v1.0.0",
+					Major:      "1",
+					Minor:      "0",
+					Patch:      "0",
 				},
 				Error: "",
 			},
@@ -180,6 +186,9 @@ func TestGetReference(t *testing.T) {
 					CommitHash: "111",
 					Version:    "1.0.0",
 					Tag:        "a1.0.0",
+					Major:      "1",
+					Minor:      "0",
+					Patch:      "0",
 				},
 				Error: "",
 			},
@@ -195,6 +204,9 @@ func TestGetReference(t *testing.T) {
 					CommitHash: "111",
 					Version:    "1.0.0",
 					Tag:        "prerelease-1.0.0",
+					Major:      "1",
+					Minor:      "0",
+					Patch:      "0",
 				},
 				Error: "",
 			},
@@ -207,7 +219,7 @@ func TestGetReference(t *testing.T) {
 			Unreleased:    false,
 			Expected: expected{
 				Result: nil,
-				Error:  fmt.Sprintf("malformed env.var GITHUB_REF: expected to match regex '^refs/tags/(?P<prefix>[a-b]*)%v$', got 'refs/tags/prerelease-1.0.0'", changelog.SemVerRegex),
+				Error:  fmt.Sprintf("malformed env.var GITHUB_REF: expected to match regex '^refs/tags/(?:[a-b]*)(?P<version>%v)$', got 'refs/tags/prerelease-1.0.0'", changelog.SemVerRegex),
 			},
 		},
 		"Tag with custom Prefix and 'v' Prefix": {
@@ -218,7 +230,7 @@ func TestGetReference(t *testing.T) {
 			Unreleased:    false,
 			Expected: expected{
 				Result: nil,
-				Error:  fmt.Sprintf("malformed env.var GITHUB_REF: expected to match regex '^refs/tags/(?P<prefix>a)%v$', got 'refs/tags/av1.0.0'", changelog.SemVerRegex),
+				Error:  fmt.Sprintf("malformed env.var GITHUB_REF: expected to match regex '^refs/tags/(?:a)(?P<version>%v)$', got 'refs/tags/av1.0.0'", changelog.SemVerRegex),
 			},
 		},
 		"Invalid Semver": {
@@ -229,7 +241,7 @@ func TestGetReference(t *testing.T) {
 			Unreleased:    false,
 			Expected: expected{
 				Result: nil,
-				Error:  fmt.Sprintf("malformed env.var GITHUB_REF: expected to match regex '^refs/tags/[v]?%v$', got 'refs/tags/1'", changelog.SemVerRegex),
+				Error:  fmt.Sprintf("malformed env.var GITHUB_REF: expected to match regex '^refs/tags/(?:v?)(?P<version>%v)$', got 'refs/tags/1'", changelog.SemVerRegex),
 			},
 		},
 		"Complex Semver": {
@@ -243,6 +255,10 @@ func TestGetReference(t *testing.T) {
 					CommitHash: "111",
 					Version:    "1.0.0-alpha-a.b-c-somethinglong+build.1-aef.1-its-okay",
 					Tag:        "v1.0.0-alpha-a.b-c-somethinglong+build.1-aef.1-its-okay",
+					Major:      "1",
+					Minor:      "0",
+					Patch:      "0",
+					Prerelease: "alpha-a.b-c-somethinglong",
 				},
 				Error: "",
 			},
@@ -258,16 +274,20 @@ func TestGetReference(t *testing.T) {
 					CommitHash: "111",
 					Version:    "1.0.0-alpha-a.b-c-somethinglong+build.1-aef.1-its-okay",
 					Tag:        "1.0.01.0.0-alpha-a.b-c-somethinglong+build.1-aef.1-its-okay",
+					Major:      "1",
+					Minor:      "0",
+					Patch:      "0",
+					Prerelease: "alpha-a.b-c-somethinglong",
 				},
 				Error: "",
 			},
 		},
 		"Triggering Loop": {
-			GitHubRef:     release.UnreleasedRef,
+			GitHubRef:     "refs/tags/" + release.UnreleasedDefaultTag,
 			GitHubSha:     "111",
 			UnreleasedTag: "",
 			Prefix:        "",
-			Unreleased:    false,
+			Unreleased:    true,
 			Expected: expected{
 				Result: nil,
 				Error:  "workflow configuration error detected: trigger loop (triggering tag will be recreated and trigger the workflow again)",
@@ -366,9 +386,6 @@ func TestGetRelease(t *testing.T) {
 		TagPrefix        string
 		DraftRelease     string
 		PreRelease       string
-		Name             string
-		NamePrefix       string
-		NameSuffix       string
 		Unreleased       bool
 		Files            []string
 		Expected         expected
@@ -382,9 +399,6 @@ func TestGetRelease(t *testing.T) {
 			TagPrefix:        "",
 			DraftRelease:     "false",
 			PreRelease:       "false",
-			Name:             "",
-			NamePrefix:       "",
-			NameSuffix:       "",
 			Unreleased:       false,
 			Files:            []string{"file1", "file2"},
 			Expected: expected{
@@ -398,6 +412,9 @@ func TestGetRelease(t *testing.T) {
 						CommitHash: "111",
 						Tag:        "1.0.0",
 						Version:    "1.0.0",
+						Major:      "1",
+						Minor:      "0",
+						Patch:      "0",
 					},
 					Draft:      false,
 					PreRelease: false,
@@ -422,9 +439,6 @@ func TestGetRelease(t *testing.T) {
 			TagPrefix:        "abc",
 			DraftRelease:     "false",
 			PreRelease:       "false",
-			Name:             "",
-			NamePrefix:       "",
-			NameSuffix:       "",
 			Unreleased:       false,
 			Files:            []string{},
 			Expected: expected{
@@ -438,6 +452,9 @@ func TestGetRelease(t *testing.T) {
 						CommitHash: "111",
 						Tag:        "abc1.0.0",
 						Version:    "1.0.0",
+						Major:      "1",
+						Minor:      "0",
+						Patch:      "0",
 					},
 					Draft:      false,
 					PreRelease: false,
@@ -453,9 +470,6 @@ func TestGetRelease(t *testing.T) {
 			TagPrefix:        "",
 			DraftRelease:     "true",
 			PreRelease:       "false",
-			Name:             "",
-			NamePrefix:       "",
-			NameSuffix:       "",
 			Unreleased:       false,
 			Files:            []string{},
 			Expected: expected{
@@ -469,6 +483,9 @@ func TestGetRelease(t *testing.T) {
 						CommitHash: "111",
 						Tag:        "1.0.0",
 						Version:    "1.0.0",
+						Major:      "1",
+						Minor:      "0",
+						Patch:      "0",
 					},
 					Draft:      true,
 					PreRelease: false,
@@ -484,9 +501,6 @@ func TestGetRelease(t *testing.T) {
 			TagPrefix:        "",
 			DraftRelease:     "false",
 			PreRelease:       "true",
-			Name:             "",
-			NamePrefix:       "",
-			NameSuffix:       "",
 			Unreleased:       false,
 			Files:            []string{},
 			Expected: expected{
@@ -500,6 +514,9 @@ func TestGetRelease(t *testing.T) {
 						CommitHash: "111",
 						Tag:        "1.0.0",
 						Version:    "1.0.0",
+						Major:      "1",
+						Minor:      "0",
+						Patch:      "0",
 					},
 					Draft:      false,
 					PreRelease: true,
@@ -515,14 +532,11 @@ func TestGetRelease(t *testing.T) {
 			TagPrefix:        "",
 			DraftRelease:     "false",
 			PreRelease:       "false",
-			Name:             "",
-			NamePrefix:       "",
-			NameSuffix:       "",
 			Unreleased:       false,
 			Files:            []string{},
 			Expected: expected{
 				Result: nil,
-				Error:  fmt.Sprintf("error retrieving source code reference (control tag prefix via env.var TAG_PREFIX_REGEX): malformed env.var GITHUB_REF: expected to match regex '^refs/tags/[v]?%v$', got 'refs/tags/1'", changelog.SemVerRegex),
+				Error:  fmt.Sprintf("error retrieving source code reference (control tag prefix via env.var TAG_PREFIX_REGEX): malformed env.var GITHUB_REF: expected to match regex '^refs/tags/(?:v?)(?P<version>%v)$', got 'refs/tags/1'", changelog.SemVerRegex),
 			},
 		},
 		"Invalid Slug": {
@@ -532,138 +546,11 @@ func TestGetRelease(t *testing.T) {
 			TagPrefix:        "",
 			DraftRelease:     "false",
 			PreRelease:       "false",
-			Name:             "",
-			NamePrefix:       "",
-			NameSuffix:       "",
 			Unreleased:       false,
 			Files:            []string{},
 			Expected: expected{
 				Result: nil,
 				Error:  fmt.Sprintf("error retrieving repository slug: malformed GITHUB_REPOSITORY (expected '%v', received 'anton-yurchenkogit-release')", release.SlugRegex),
-			},
-		},
-		"Custom Name": {
-			GitHubRef:        "refs/tags/1.0.0",
-			GitHubSha:        "111",
-			GitHubRepository: "anton-yurchenko/git-release",
-			TagPrefix:        "",
-			DraftRelease:     "false",
-			PreRelease:       "false",
-			Name:             "name",
-			NamePrefix:       "",
-			NameSuffix:       "",
-			Unreleased:       false,
-			Files:            []string{},
-			Expected: expected{
-				Result: &release.Release{
-					Name: "name",
-					Slug: &release.Slug{
-						Owner: "anton-yurchenko",
-						Name:  "git-release",
-					},
-					Reference: &release.Reference{
-						CommitHash: "111",
-						Tag:        "1.0.0",
-						Version:    "1.0.0",
-					},
-					Draft:      false,
-					PreRelease: false,
-					Assets:     &[]release.Asset{},
-				},
-				Error: "",
-			},
-		},
-		"Custom Name Prefix": {
-			GitHubRef:        "refs/tags/1.0.0",
-			GitHubSha:        "111",
-			GitHubRepository: "anton-yurchenko/git-release",
-			TagPrefix:        "",
-			DraftRelease:     "false",
-			PreRelease:       "false",
-			Name:             "",
-			NamePrefix:       "prefix: ",
-			NameSuffix:       "",
-			Files:            []string{},
-			Unreleased:       false,
-			Expected: expected{
-				Result: &release.Release{
-					Name: "prefix: 1.0.0",
-					Slug: &release.Slug{
-						Owner: "anton-yurchenko",
-						Name:  "git-release",
-					},
-					Reference: &release.Reference{
-						CommitHash: "111",
-						Tag:        "1.0.0",
-						Version:    "1.0.0",
-					},
-					Draft:      false,
-					PreRelease: false,
-					Assets:     &[]release.Asset{},
-				},
-				Error: "",
-			},
-		},
-		"Custom Name Suffix": {
-			GitHubRef:        "refs/tags/1.0.0",
-			GitHubSha:        "111",
-			GitHubRepository: "anton-yurchenko/git-release",
-			TagPrefix:        "",
-			DraftRelease:     "false",
-			PreRelease:       "false",
-			Name:             "",
-			NamePrefix:       "",
-			NameSuffix:       " suffix",
-			Unreleased:       false,
-			Files:            []string{},
-			Expected: expected{
-				Result: &release.Release{
-					Name: "1.0.0 suffix",
-					Slug: &release.Slug{
-						Owner: "anton-yurchenko",
-						Name:  "git-release",
-					},
-					Reference: &release.Reference{
-						CommitHash: "111",
-						Tag:        "1.0.0",
-						Version:    "1.0.0",
-					},
-					Draft:      false,
-					PreRelease: false,
-					Assets:     &[]release.Asset{},
-				},
-				Error: "",
-			},
-		},
-		"Custom Name Prefix and Suffix": {
-			GitHubRef:        "refs/tags/v1.0.0",
-			GitHubSha:        "111",
-			GitHubRepository: "anton-yurchenko/git-release",
-			TagPrefix:        "",
-			DraftRelease:     "false",
-			PreRelease:       "false",
-			Name:             "",
-			NamePrefix:       "prefix: ",
-			NameSuffix:       " suffix",
-			Unreleased:       false,
-			Files:            []string{},
-			Expected: expected{
-				Result: &release.Release{
-					Name: "prefix: v1.0.0 suffix",
-					Slug: &release.Slug{
-						Owner: "anton-yurchenko",
-						Name:  "git-release",
-					},
-					Reference: &release.Reference{
-						CommitHash: "111",
-						Tag:        "v1.0.0",
-						Version:    "1.0.0",
-					},
-					Draft:      false,
-					PreRelease: false,
-					Assets:     &[]release.Asset{},
-				},
-				Error: "",
 			},
 		},
 		"Unreleased": {
@@ -673,9 +560,6 @@ func TestGetRelease(t *testing.T) {
 			TagPrefix:        "",
 			DraftRelease:     "false",
 			PreRelease:       "false",
-			Name:             "",
-			NamePrefix:       "",
-			NameSuffix:       "",
 			Unreleased:       true,
 			Files:            []string{"file1", "file2"},
 			Expected: expected{
@@ -713,45 +597,11 @@ func TestGetRelease(t *testing.T) {
 			TagPrefix:        "",
 			DraftRelease:     "false",
 			PreRelease:       "true",
-			Name:             "",
-			NamePrefix:       "",
-			NameSuffix:       "",
 			Unreleased:       true,
 			Files:            []string{},
 			Expected: expected{
 				Result: &release.Release{
 					Name: "Latest",
-					Slug: &release.Slug{
-						Owner: "anton-yurchenko",
-						Name:  "git-release",
-					},
-					Reference: &release.Reference{
-						CommitHash: "111",
-						Tag:        release.UnreleasedDefaultTag,
-						Version:    "Unreleased",
-					},
-					Draft:      false,
-					PreRelease: true,
-					Assets:     &[]release.Asset{},
-				},
-				Error: "",
-			},
-		},
-		"Unreleased with Custom Name": {
-			GitHubRef:        "refs/heads/master",
-			GitHubSha:        "111",
-			GitHubRepository: "anton-yurchenko/git-release",
-			TagPrefix:        "",
-			DraftRelease:     "false",
-			PreRelease:       "false",
-			Name:             "Future",
-			NamePrefix:       "",
-			NameSuffix:       "",
-			Unreleased:       true,
-			Files:            []string{},
-			Expected: expected{
-				Result: &release.Release{
-					Name: "Future",
 					Slug: &release.Slug{
 						Owner: "anton-yurchenko",
 						Name:  "git-release",
@@ -806,7 +656,7 @@ func TestGetRelease(t *testing.T) {
 		time.Sleep(30 * time.Millisecond)
 
 		// test
-		r, err := release.GetRelease(fs, test.Files, test.TagPrefix, test.Name, test.NamePrefix, test.NameSuffix, test.Unreleased)
+		r, err := release.GetRelease(fs, test.Files, test.TagPrefix, test.Unreleased)
 		a.Equal(test.Expected.Result, r)
 		if test.Expected.Error != "" || err != nil {
 			a.EqualError(err, test.Expected.Error)
@@ -873,11 +723,14 @@ func TestPublish(t *testing.T) {
 					CommitHash: "111",
 					Tag:        "1.0.0",
 					Version:    "1.0.0",
+					Major:      "1",
+					Minor:      "0",
+					Patch:      "0",
 				},
 				Draft:      false,
 				PreRelease: false,
 				Assets:     nil,
-				Changelog:  "changelog",
+				Body:       "changelog",
 			},
 			CreateReleaseMock: createReleaseMock{
 				Output: nil,
@@ -897,6 +750,9 @@ func TestPublish(t *testing.T) {
 					CommitHash: "111",
 					Tag:        "1.0.0",
 					Version:    "1.0.0",
+					Major:      "1",
+					Minor:      "0",
+					Patch:      "0",
 				},
 				Draft:      false,
 				PreRelease: false,
@@ -910,7 +766,7 @@ func TestPublish(t *testing.T) {
 						Path: "file2",
 					},
 				},
-				Changelog: "changelog",
+				Body: "changelog",
 			},
 			CreateReleaseMock: createReleaseMock{
 				Output: &github.RepositoryRelease{
@@ -932,11 +788,14 @@ func TestPublish(t *testing.T) {
 					CommitHash: "111",
 					Tag:        "1.0.0",
 					Version:    "1.0.0",
+					Major:      "1",
+					Minor:      "0",
+					Patch:      "0",
 				},
 				Draft:      false,
 				PreRelease: false,
 				Assets:     nil,
-				Changelog:  "changelog",
+				Body:       "changelog",
 			},
 			CreateReleaseMock: createReleaseMock{
 				Output: nil,
@@ -955,6 +814,9 @@ func TestPublish(t *testing.T) {
 					CommitHash: "111",
 					Tag:        "1.0.0",
 					Version:    "1.0.0",
+					Major:      "1",
+					Minor:      "0",
+					Patch:      "0",
 				},
 				Draft:      false,
 				PreRelease: false,
@@ -964,7 +826,7 @@ func TestPublish(t *testing.T) {
 						Path: "file1",
 					},
 				},
-				Changelog: "changelog",
+				Body: "changelog",
 			},
 			CreateReleaseMock: createReleaseMock{
 				Output: &github.RepositoryRelease{
@@ -1007,7 +869,7 @@ main:
 				Name:            &test.Release.Name,
 				TagName:         &test.Release.Reference.Tag,
 				TargetCommitish: &test.Release.Reference.CommitHash,
-				Body:            &test.Release.Changelog,
+				Body:            &test.Release.Body,
 				Draft:           &test.Release.Draft,
 				Prerelease:      &test.Release.PreRelease,
 			}).Return(test.CreateReleaseMock.Output, nil, test.CreateReleaseMock.Error).Once()
@@ -1086,7 +948,7 @@ func TestDeleteUnreleased(t *testing.T) {
 				Draft:      false,
 				PreRelease: false,
 				Assets:     nil,
-				Changelog:  "changelog",
+				Body:       "changelog",
 			},
 			GetReleaseByTagMock: getReleaseByTagMock{
 				Output: &github.RepositoryRelease{
@@ -1118,7 +980,7 @@ func TestDeleteUnreleased(t *testing.T) {
 				Draft:      false,
 				PreRelease: false,
 				Assets:     nil,
-				Changelog:  "changelog",
+				Body:       "changelog",
 			},
 			GetReleaseByTagMock: getReleaseByTagMock{
 				Output: nil,
@@ -1144,7 +1006,7 @@ func TestDeleteUnreleased(t *testing.T) {
 				Draft:      false,
 				PreRelease: false,
 				Assets:     nil,
-				Changelog:  "changelog",
+				Body:       "changelog",
 			},
 			GetReleaseByTagMock: getReleaseByTagMock{
 				Output: &github.RepositoryRelease{
@@ -1173,7 +1035,7 @@ func TestDeleteUnreleased(t *testing.T) {
 				Draft:      false,
 				PreRelease: false,
 				Assets:     nil,
-				Changelog:  "changelog",
+				Body:       "changelog",
 			},
 			GetReleaseByTagMock: getReleaseByTagMock{
 				Output: &github.RepositoryRelease{
@@ -1202,7 +1064,7 @@ func TestDeleteUnreleased(t *testing.T) {
 				Draft:      false,
 				PreRelease: false,
 				Assets:     nil,
-				Changelog:  "changelog",
+				Body:       "changelog",
 			},
 			GetReleaseByTagMock: getReleaseByTagMock{
 				Output: &github.RepositoryRelease{
@@ -1288,7 +1150,7 @@ func TestUpdateUnreleasedTag(t *testing.T) {
 				Draft:      false,
 				PreRelease: false,
 				Assets:     nil,
-				Changelog:  "changelog",
+				Body:       "changelog",
 			},
 			CreateRefMockError: nil,
 			ExpectedError:      "",
@@ -1308,7 +1170,7 @@ func TestUpdateUnreleasedTag(t *testing.T) {
 				Draft:      false,
 				PreRelease: false,
 				Assets:     nil,
-				Changelog:  "changelog",
+				Body:       "changelog",
 			},
 			CreateRefMockError: errors.New("reason"),
 			ExpectedError:      "reason",
@@ -1328,11 +1190,9 @@ func TestUpdateUnreleasedTag(t *testing.T) {
 			context.Background(),
 			test.Release.Slug.Owner,
 			test.Release.Slug.Name,
-			&github.Reference{
-				Ref: &tag,
-				Object: &github.GitObject{
-					SHA: &test.Release.Reference.CommitHash,
-				},
+			github.CreateRef{
+				Ref: tag,
+				SHA: test.Release.Reference.CommitHash,
 			}).Return(nil, nil, test.CreateRefMockError).Once()
 
 		err := test.Release.UpdateUnreleasedTag(gitMock)

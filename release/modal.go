@@ -2,19 +2,20 @@ package release
 
 import (
 	"context"
-	"fmt"
 	"os"
 
-	"github.com/google/go-github/github"
+	"github.com/google/go-github/v78/github"
 )
 
 const (
 	SlugRegex            string = `^(?P<owner>[\w,\-,\_\.]+)\/(?P<repo>[\w\,\-\_\.]+)$`
 	UnreleasedDefaultTag string = "latest"
-)
 
-var (
-	UnreleasedRef string = fmt.Sprintf("refs/tags/%v", UnreleasedDefaultTag)
+	// UnreleasedVersion is the sentinel Reference.Version of a rolling release.
+	UnreleasedVersion string = "Unreleased"
+
+	// DefaultTagPrefixRegex matches an optional 'v' in front of the version.
+	DefaultTagPrefixRegex string = `v?`
 )
 
 type Release struct {
@@ -24,7 +25,7 @@ type Release struct {
 	Draft      bool
 	PreRelease bool
 	Assets     *[]Asset
-	Changelog  string
+	Body       string
 }
 
 type Slug struct {
@@ -36,6 +37,14 @@ type Reference struct {
 	CommitHash string
 	Tag        string
 	Version    string
+
+	// Semantic version components, parsed out of Version. Empty for a rolling
+	// release. Prerelease is the identifier after '-', e.g. "rc.1" - it is what
+	// PRE_RELEASE=auto keys off.
+	Major      string
+	Minor      string
+	Patch      string
+	Prerelease string
 }
 
 type Asset struct {
@@ -52,7 +61,7 @@ type RepositoriesClient interface {
 }
 
 type GitClient interface {
-	CreateRef(context.Context, string, string, *github.Reference) (*github.Reference, *github.Response, error)
+	CreateRef(context.Context, string, string, github.CreateRef) (*github.Reference, *github.Response, error)
 	DeleteRef(context.Context, string, string, string) (*github.Response, error)
 	GetRef(context.Context, string, string, string) (*github.Reference, *github.Response, error)
 }

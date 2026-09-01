@@ -13,7 +13,7 @@ import (
 
 	"git-release/release"
 
-	"github.com/google/go-github/github"
+	"github.com/google/go-github/v78/github"
 	"github.com/pkg/errors"
 	"github.com/spf13/afero"
 
@@ -41,216 +41,74 @@ func TestGetAssets(t *testing.T) {
 	}
 
 	type test struct {
-		Args     []string
+		Patterns []string
 		Files    []string
 		Expected expected
 	}
 
+	// NOTE: patterns arrive already split, one per line - the separator guessing
+	// that used to live here moved out of the asset list entirely, and is
+	// covered by TestGetAssets in the main package.
 	suite := map[string]test{
-		"Empty Args": {
-			Args:  []string{},
-			Files: []string{},
+		"No Patterns": {
+			Patterns: []string{},
+			Files:    []string{},
 			Expected: expected{
 				Result: &[]release.Asset{},
-				Error:  "",
 			},
 		},
-		"Space Separator": {
-			Args:  []string{"file1 file2"},
-			Files: []string{"file1", "file2"},
+		"Single File": {
+			Patterns: []string{"file1"},
+			Files:    []string{"file1"},
 			Expected: expected{
 				Result: &[]release.Asset{
-					{
-						Name: "file1",
-						Path: "file1",
-					},
-					{
-						Name: "file2",
-						Path: "file2",
-					},
+					{Name: "file1", Path: "file1"},
 				},
-				Error: "",
 			},
 		},
-		"New Line Separator": {
-			Args:  []string{"file1\nfile2"},
-			Files: []string{"file1", "file2"},
+		"Multiple Files": {
+			Patterns: []string{"file1", "file2"},
+			Files:    []string{"file1", "file2"},
 			Expected: expected{
 				Result: &[]release.Asset{
-					{
-						Name: "file1",
-						Path: "file1",
-					},
-					{
-						Name: "file2",
-						Path: "file2",
-					},
+					{Name: "file1", Path: "file1"},
+					{Name: "file2", Path: "file2"},
 				},
-				Error: "",
 			},
 		},
-		"Comma Separator": {
-			Args:  []string{"file1,file2"},
-			Files: []string{"file1", "file2"},
+		"Glob": {
+			Patterns: []string{"*.zip"},
+			Files:    []string{"a.zip", "b.zip", "c.txt"},
 			Expected: expected{
 				Result: &[]release.Asset{
-					{
-						Name: "file1",
-						Path: "file1",
-					},
-					{
-						Name: "file2",
-						Path: "file2",
-					},
+					{Name: "a.zip", Path: "a.zip"},
+					{Name: "b.zip", Path: "b.zip"},
 				},
-				Error: "",
 			},
 		},
-		"Pipe Separator": {
-			Args:  []string{"file1|file2"},
-			Files: []string{"file1", "file2"},
+		"Path Containing A Space": {
+			Patterns: []string{"release notes.txt"},
+			Files:    []string{"release notes.txt"},
 			Expected: expected{
 				Result: &[]release.Asset{
-					{
-						Name: "file1",
-						Path: "file1",
-					},
-					{
-						Name: "file2",
-						Path: "file2",
-					},
+					{Name: "release notes.txt", Path: "release notes.txt"},
 				},
-				Error: "",
 			},
 		},
-		"Multiple Separators": {
-			Args:  []string{"file1 file2\nfile3,file4|file5"},
-			Files: []string{"file1", "file2", "file3", "file4", "file5"},
+		"Path Containing A Comma": {
+			Patterns: []string{"a,b.zip"},
+			Files:    []string{"a,b.zip"},
 			Expected: expected{
 				Result: &[]release.Asset{
-					{
-						Name: "file1",
-						Path: "file1",
-					},
+					{Name: "a,b.zip", Path: "a,b.zip"},
 				},
-				Error: "",
 			},
 		},
-		"Multiple Arguments": {
-			Args:  []string{"file1", "file2"},
-			Files: []string{"file1", "file2"},
+		"Unmatched Pattern": {
+			Patterns: []string{"nothing-*.zip"},
+			Files:    []string{},
 			Expected: expected{
-				Result: &[]release.Asset{
-					{
-						Name: "file1",
-						Path: "file1",
-					},
-					{
-						Name: "file2",
-						Path: "file2",
-					},
-				},
-				Error: "",
-			},
-		},
-		"Multiple Arguments with Space Separator": {
-			Args:  []string{"file1 file2", "file3 file4"},
-			Files: []string{"file1", "file2", "file3", "file4"},
-			Expected: expected{
-				Result: &[]release.Asset{
-					{
-						Name: "file1",
-						Path: "file1",
-					},
-					{
-						Name: "file2",
-						Path: "file2",
-					},
-					{
-						Name: "file3",
-						Path: "file3",
-					},
-					{
-						Name: "file4",
-						Path: "file4",
-					},
-				},
-				Error: "",
-			},
-		},
-		"Multiple Arguments with New Line Separator": {
-			Args:  []string{"file1\nfile2", "file3\nfile4"},
-			Files: []string{"file1", "file2", "file3", "file4"},
-			Expected: expected{
-				Result: &[]release.Asset{
-					{
-						Name: "file1",
-						Path: "file1",
-					},
-					{
-						Name: "file2",
-						Path: "file2",
-					},
-					{
-						Name: "file3",
-						Path: "file3",
-					},
-					{
-						Name: "file4",
-						Path: "file4",
-					},
-				},
-				Error: "",
-			},
-		},
-		"Multiple Arguments with Comma Separator": {
-			Args:  []string{"file1,file2", "file3,file4"},
-			Files: []string{"file1", "file2", "file3", "file4"},
-			Expected: expected{
-				Result: &[]release.Asset{
-					{
-						Name: "file1",
-						Path: "file1",
-					},
-					{
-						Name: "file2",
-						Path: "file2",
-					},
-					{
-						Name: "file3",
-						Path: "file3",
-					},
-					{
-						Name: "file4",
-						Path: "file4",
-					},
-				},
-				Error: "",
-			},
-		},
-		"Multiple Arguments with Pipe Separator": {
-			Args:  []string{"file1|file2", "file3|file4"},
-			Files: []string{"file1", "file2", "file3", "file4"},
-			Expected: expected{
-				Result: &[]release.Asset{
-					{
-						Name: "file1",
-						Path: "file1",
-					},
-					{
-						Name: "file2",
-						Path: "file2",
-					},
-					{
-						Name: "file3",
-						Path: "file3",
-					},
-					{
-						Name: "file4",
-						Path: "file4",
-					},
-				},
-				Error: "",
+				Result: &[]release.Asset{},
 			},
 		},
 	}
@@ -269,7 +127,7 @@ func TestGetAssets(t *testing.T) {
 		}
 
 		// test
-		r, err := release.GetAssets(fs, test.Args)
+		r, err := release.GetAssets(fs, test.Patterns)
 		a.Equal(test.Expected.Result, r)
 		if test.Expected.Error != "" || err != nil {
 			a.EqualError(err, test.Expected.Error)
@@ -360,7 +218,7 @@ func TestUpload(t *testing.T) {
 					},
 					UploadReleaseAssetError: errors.New("reason-c"),
 					GetReleaseByTagRelease: &github.RepositoryRelease{
-						Assets: []github.ReleaseAsset{
+						Assets: []*github.ReleaseAsset{
 							{
 								ID:   pInt64(123),
 								Name: pString("testFile2"),
@@ -408,7 +266,7 @@ func TestUpload(t *testing.T) {
 					},
 					UploadReleaseAssetError: errors.New("reason-c"),
 					GetReleaseByTagRelease: &github.RepositoryRelease{
-						Assets: []github.ReleaseAsset{
+						Assets: []*github.ReleaseAsset{
 							{
 								ID:   pInt64(123),
 								Name: pString("test-File1"),
@@ -423,7 +281,7 @@ func TestUpload(t *testing.T) {
 					},
 					UploadReleaseAssetError: errors.New("reason-c"),
 					GetReleaseByTagRelease: &github.RepositoryRelease{
-						Assets: []github.ReleaseAsset{
+						Assets: []*github.ReleaseAsset{
 							{
 								ID:   pInt64(123),
 								Name: pString("test-File1"),
@@ -472,7 +330,7 @@ func TestUpload(t *testing.T) {
 					},
 					UploadReleaseAssetError: errors.New("reason-b"),
 					GetReleaseByTagRelease: &github.RepositoryRelease{
-						Assets: []github.ReleaseAsset{
+						Assets: []*github.ReleaseAsset{
 							{
 								ID:   pInt64(123),
 								Name: pString("test-File1"),

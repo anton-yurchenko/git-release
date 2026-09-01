@@ -1,0 +1,49 @@
+name: Test
+
+on:
+  workflow_call:
+    secrets:
+      CODECOV_TOKEN:
+        required: false
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Init
+        uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+
+      # NOTE: keep the version in sync with GOLANGCI_LINT_VERSION in the Makefile
+      - name: Lint
+        uses: golangci/golangci-lint-action@v9
+        with:
+          version: v2.13.2
+
+      - name: Test
+        run: |
+          packages="$(go list ./... | grep -v '/mocks$')"
+          # shellcheck disable=SC2086 # intentional word splitting: one argument per package
+          go test -v $packages -race -coverprofile=coverage.txt -covermode=atomic
+
+      - name: Upload Code Coverage
+        uses: codecov/codecov-action@v7
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage.txt
+          flags: coverage
+          name: release
+          fail_ci_if_error: false
