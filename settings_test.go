@@ -4,75 +4,9 @@ import (
 	"io"
 	"testing"
 
-	"git-release/env"
-
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
-
-func TestBooleanSetting(t *testing.T) {
-	a := assert.New(t)
-
-	type test struct {
-		Value    string
-		Expected bool
-		Error    bool
-	}
-
-	suite := map[string]test{
-		"unset": {Value: "", Expected: false},
-		"true":  {Value: "true", Expected: true},
-		"True":  {Value: "True", Expected: true},
-		"TRUE":  {Value: "TRUE", Expected: true},
-		"false": {Value: "false", Expected: false},
-		"False": {Value: "False", Expected: false},
-		// v6 treated every one of these as false, so DRAFT_RELEASE: "yes"
-		// published a public release for a user who asked for a draft.
-		"yes":  {Value: "yes", Error: true},
-		"1":    {Value: "1", Error: true},
-		"on":   {Value: "on", Error: true},
-		"typo": {Value: "ture", Error: true},
-	}
-
-	for name, test := range suite {
-		t.Run(name, func(t *testing.T) {
-			t.Setenv("DRAFT_RELEASE", test.Value)
-
-			got, err := env.Bool("DRAFT_RELEASE")
-			if test.Error {
-				a.Error(err)
-				a.ErrorContains(err, "DRAFT_RELEASE")
-				return
-			}
-
-			a.NoError(err)
-			a.Equal(test.Expected, got)
-		})
-	}
-}
-
-func TestEnumSetting(t *testing.T) {
-	a := assert.New(t)
-
-	t.Run("fallback when unset", func(t *testing.T) {
-		v, err := env.Enum("UNRELEASED", "", "update", "delete")
-		a.NoError(err)
-		a.Equal("", v)
-	})
-
-	t.Run("case insensitive", func(t *testing.T) {
-		t.Setenv("UNRELEASED", "Update")
-		v, err := env.Enum("UNRELEASED", "", "update", "delete")
-		a.NoError(err)
-		a.Equal("update", v)
-	})
-
-	t.Run("rejects unknown", func(t *testing.T) {
-		t.Setenv("UNRELEASED", "remove")
-		_, err := env.Enum("UNRELEASED", "", "update", "delete")
-		a.ErrorContains(err, "UNRELEASED not supported")
-	})
-}
 
 // TestGetAssets pins the asset list contract.
 //

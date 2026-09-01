@@ -329,3 +329,224 @@ func TestTemplateFields(t *testing.T) {
 	a.Contains(body, ".Name")
 	a.Contains(body, ".Tag")
 }
+
+func TestGetConfig(t *testing.T) {
+	a := assert.New(t)
+	log.SetOutput(io.Discard)
+
+	type test struct {
+		Env           map[string]string
+		Files         map[string]string
+		Expected      Configuration
+		HasName       bool
+		HasBody       bool
+		ExpectedError string
+	}
+
+	suite := map[string]test{
+		"Defaults": {
+			Files:    map[string]string{changelogFile: changelogFixture},
+			Expected: Configuration{ChangelogFile: changelogFile},
+		},
+		"Missing changelog file is tolerated": {
+			Expected: Configuration{ChangelogFile: ""},
+		},
+		// 'none' is not a filename - it silences the "not found" error and
+		// leaves the release body empty.
+		"CHANGELOG_FILE none": {
+			Env:      map[string]string{"CHANGELOG_FILE": "none"},
+			Expected: Configuration{ChangelogFile: ""},
+		},
+		"CHANGELOG_FILE custom path": {
+			Env:      map[string]string{"CHANGELOG_FILE": "docs/RELEASES.md"},
+			Files:    map[string]string{"docs/RELEASES.md": changelogFixture},
+			Expected: Configuration{ChangelogFile: "docs/RELEASES.md"},
+		},
+		"ALLOW_EMPTY_CHANGELOG": {
+			Env:      map[string]string{"ALLOW_EMPTY_CHANGELOG": "true"},
+			Files:    map[string]string{changelogFile: changelogFixture},
+			Expected: Configuration{AllowEmptyChangelog: true, ChangelogFile: changelogFile},
+		},
+		"ALLOW_EMPTY_CHANGELOG rejects a non boolean": {
+			Env:           map[string]string{"ALLOW_EMPTY_CHANGELOG": "yes"},
+			ExpectedError: "ALLOW_EMPTY_CHANGELOG expects 'true' or 'false', received 'yes'",
+		},
+		"UNRELEASED update": {
+			Files:    map[string]string{changelogFile: changelogFixture},
+			Env:      map[string]string{"UNRELEASED": "update"},
+			Expected: Configuration{UnreleasedCreate: true, ChangelogFile: changelogFile},
+		},
+		"UNRELEASED delete": {
+			Files:    map[string]string{changelogFile: changelogFixture},
+			Env:      map[string]string{"UNRELEASED": "delete"},
+			Expected: Configuration{UnreleasedDelete: true, ChangelogFile: changelogFile},
+		},
+		"UNRELEASED rejects an unknown mode": {
+			Env:           map[string]string{"UNRELEASED": "remove"},
+			ExpectedError: "UNRELEASED not supported, possible values are [update, delete]",
+		},
+		"TAG_PREFIX_REGEX": {
+			Files:    map[string]string{changelogFile: changelogFixture},
+			Env:      map[string]string{"TAG_PREFIX_REGEX": "[a-z-]*"},
+			Expected: Configuration{TagPrefix: "[a-z-]*", ChangelogFile: changelogFile},
+		},
+		"Assets": {
+			Files:    map[string]string{changelogFile: changelogFixture},
+			Env:      map[string]string{"INPUT_ARGS": "build/a.zip\nbuild/b.zip"},
+			Expected: Configuration{ChangelogFile: changelogFile, Assets: []string{"build/a.zip", "build/b.zip"}},
+		},
+		"Templates are parsed": {
+			Files: map[string]string{changelogFile: changelogFixture},
+			Env: map[string]string{
+				"NAME_TEMPLATE": "Release {{ .Tag }}",
+				"BODY_TEMPLATE": "{{ .Changelog }}",
+			},
+			Expected: Configuration{ChangelogFile: changelogFile},
+			HasName:  true,
+			HasBody:  true,
+		},
+		// Templates are compiled during configuration so a typo fails before any
+		// file is read or any API call is made.
+		"Malformed NAME_TEMPLATE": {
+			Env:           map[string]string{"NAME_TEMPLATE": "{{ .Tag"},
+			ExpectedError: "error parsing NAME_TEMPLATE",
+		},
+		"Malformed BODY_TEMPLATE": {
+			Env:           map[string]string{"BODY_TEMPLATE": "{{ upper .Tag }}"},
+			ExpectedError: "error parsing BODY_TEMPLATE",
+		},
+		"A setting removed in v7 is fatal": {
+			Env:           map[string]string{"RELEASE_NAME_PREFIX": "Release: "},
+			ExpectedError: "RELEASE_NAME_PREFIX was replaced by NAME_TEMPLATE",
+		},
+	}
+
+	// NOTE: subtests, not a flat loop - t.Setenv restores at the end of the TEST,
+	// so a flat loop would leak each case's settings into every later case.
+	for name, test := range suite {
+		t.Run(name, func(t *testing.T) {
+			for k, v := range test.Env {
+				t.Setenv(k, v)
+			}
+
+			fs := afero.NewMemMapFs()
+			for path, content := range test.Files {
+				if err := afero.WriteFile(fs, path, []byte(content), 0o644); err != nil {
+					t.Fatalf("error preparing test case: %v", err)
+				}
+			}
+
+			conf, err := GetConfig(fs)
+
+			if test.ExpectedError != "" {
+				a.Error(err)
+				a.ErrorContains(err, test.ExpectedError)
+				return
+			}
+
+			if !a.NoError(err) {
+				return
+			}
+
+			a.Equal(test.Expected.ChangelogFile, conf.ChangelogFile)
+			a.Equal(test.Expected.AllowEmptyChangelog, conf.AllowEmptyChangelog)
+			a.Equal(test.Expected.UnreleasedCreate, conf.UnreleasedCreate)
+			a.Equal(test.Expected.UnreleasedDelete, conf.UnreleasedDelete)
+			a.Equal(test.Expected.TagPrefix, conf.TagPrefix)
+
+			if test.Expected.Assets != nil {
+				a.Equal(test.Expected.Assets, conf.Assets)
+			}
+
+			a.Equal(test.HasName, conf.NameTemplate != nil)
+			a.Equal(test.HasBody, conf.BodyTemplate != nil)
+		})
+	}
+}
+
+func TestGetChangelog(t *testing.T) {
+	a := assert.New(t)
+	log.SetOutput(io.Discard)
+
+	const withUnreleased = `# Changelog
+
+## [Unreleased]
+
+### Added
+
+- Something new
+
+## [1.0.0] - 2024-01-01
+
+### Added
+
+- Something
+`
+
+	type test struct {
+		Fixture             string
+		Version             string
+		AllowEmptyChangelog bool
+		Expected            string
+		ExpectedError       string
+	}
+
+	suite := map[string]test{
+		"Released version": {
+			Fixture:  changelogFixture,
+			Version:  "1.0.0",
+			Expected: "### Added\n\n- Something\n",
+		},
+		"Unreleased scope": {
+			Fixture:  withUnreleased,
+			Version:  release.UnreleasedVersion,
+			Expected: "### Added\n\n- Something new\n",
+		},
+		"Unreleased scope with no entries": {
+			Fixture:       changelogFixture,
+			Version:       release.UnreleasedVersion,
+			ExpectedError: "changelog file does not contain changes in Unreleased scope",
+		},
+		"Unreleased scope with no entries is tolerated": {
+			Fixture:             changelogFixture,
+			Version:             release.UnreleasedVersion,
+			AllowEmptyChangelog: true,
+			Expected:            "",
+		},
+		"Version absent from the changelog": {
+			Fixture:       changelogFixture,
+			Version:       "9.9.9",
+			ExpectedError: "changelog file does not contain version 9.9.9",
+		},
+		"Version absent is tolerated": {
+			Fixture:             changelogFixture,
+			Version:             "9.9.9",
+			AllowEmptyChangelog: true,
+			Expected:            "",
+		},
+	}
+
+	var counter int
+	for name, test := range suite {
+		counter++
+		t.Logf("Test Case %v/%v - %s", counter, len(suite), name)
+
+		conf := &Configuration{
+			ChangelogFile:       changelogFile,
+			AllowEmptyChangelog: test.AllowEmptyChangelog,
+		}
+
+		rel := testRelease()
+		rel.Reference.Version = test.Version
+
+		got, err := conf.GetChangelog(testFilesystem(t, test.Fixture), rel)
+
+		if test.ExpectedError != "" {
+			a.EqualError(err, test.ExpectedError)
+			continue
+		}
+
+		a.NoError(err)
+		a.Equal(test.Expected, got)
+	}
+}

@@ -204,11 +204,10 @@ Execute **git-release** through JavaScrip Wrapper on Windows Runners.
 ## Remarks
 
 - This action has multiple tags: `latest / v1 / v1.2 / v1.2.3`. You may lock to a certain version instead of using **latest**.  
-(*Recommended to lock against a major version, for example* `v4`)
+(*Recommended to lock against a major version, for example* `v7`)
 - Instead of using a pre-built Docker image, you may execute the action through JavaScript wrapper by changing `docker://antonyurchenko/git-release:v7` to `anton-yurchenko/git-release@v7`
 - `git-release` operates assets with pattern matching, this means that it is unable to validate whether an asset exists
 - Docker image is published both to [**Docker Hub**](https://hub.docker.com/r/antonyurchenko/git-release) and [**GitHub Packages**](https://github.com/anton-yurchenko/git-release/packages). If you don't want to rely on **Docker Hub** but still want to use the dockerized action, you may switch from `uses: docker://antonyurchenko/git-release:latest` to `uses: docker://ghcr.io/anton-yurchenko/git-release:latest`
-- Slashes (`/`) in asset filenames will be replaced with dashes (`-`)
 - `git-release` may crash when executed against a not supported changelog file format. Make sure your changelog file is compliant to one of the supported formats.
 
 ## License
