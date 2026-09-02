@@ -93,7 +93,7 @@ jobs:
             --platform linux/arm64/v8,linux/amd64 --output type=registry .
 
       - name: Release
-        uses: docker://antonyurchenko/git-release:v6
+        uses: docker://antonyurchenko/git-release:v7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
