@@ -95,6 +95,53 @@ Two invariants that look like mistakes and are not:
 Version headings must match `## [X.Y.Z] - YYYY-MM-DD` exactly, and section order in the published
 release body is fixed by the library, not by the file.
 
+## Releasing
+
+Dispatch **Create New Version** on `main` with `vX.Y.Z`. It rewrites the three version strings, commits,
+and pushes the tag. The tag push triggers `release.yml`, which tests, scans, builds the multi-arch images
+and publishes the GitHub release.
+
+**The tag is pushed before anything tests it.** `version.yml` only bumps and tags - every gate lives in
+`release.yml`, downstream of the tag. A failed release therefore leaves a tag pointing at a commit with
+nothing published: no GitHub release, no images, `:latest` unmoved. Recovery depends on what failed.
+
+- **A workflow file, or the code** - delete the tag and re-cut it. Re-running a tag-push workflow loads
+  the workflow file *from the tagged commit*, so a fix landed on `main` afterwards can never reach that
+  tag; the re-run fails identically, forever.
+
+      git push origin :refs/tags/vX.Y.Z && git tag -d vX.Y.Z
+      # merge the fix, then dispatch Create New Version again with the same version
+
+  Deleting is safe precisely because nothing published - and if the release job did not complete, nothing
+  did. Only branch rulesets exist here; tags are unprotected.
+
+- **A secret** - `gh run rerun <id> --failed`. Secrets resolve at job start, so the same commit picks up
+  the new value on the next attempt. No tag surgery, and `test`/`scan` keep their results.
+
+A green run is not proof, since both failure modes above are silent. Verify what actually landed:
+
+    gh release view vX.Y.Z --json tagName,isDraft,isPrerelease
+    curl -s "https://hub.docker.com/v2/repositories/antonyurchenko/git-release/tags/?page_size=5"
+    TOK=$(curl -s "https://ghcr.io/token?scope=repository:anton-yurchenko/git-release:pull" | jq -r .token)
+    curl -s -H "Authorization: Bearer $TOK" https://ghcr.io/v2/anton-yurchenko/git-release/tags/list
+    docker run --rm antonyurchenko/git-release:vX.Y.Z   # DEBUG banner must read the new version
+
+Three things rot between releases. All three broke v7.0.0, none is caught by CI:
+
+- **Secrets expire while the repo is dormant.** `DOCKER_HUB_TOKEN` was five years old and failed with
+  `unauthorized: incorrect username or password`. Before a release that follows a long gap, check ages
+  with `gh api repos/anton-yurchenko/git-release/actions/secrets`.
+- **The self-release pin is manual.** `release.yml` releases this action using
+  `docker://antonyurchenko/git-release:vN`. Dependabot never touches `docker://`, so bump it by hand
+  after each major.
+- **Pinned actions can outgrow the module.** `Templum/govulncheck-action` ships its own Go and runs with
+  `GOTOOLCHAIN=local`, so it could not build a `go 1.27` module. Any action that compiles this code needs
+  `go-version-file: go.mod`, not a bundled toolchain.
+
+Right after a release `## [Unreleased]` is empty, so the next **Create New Version** fails with
+`missing 'Unreleased' section` until a change lands. That is the Changelog invariant above, seen from the
+release side.
+
 ## Traps
 
 - **`bin/` is tracked and no CI job rebuilds it.** It is what the JavaScript wrapper executes. Any Go
