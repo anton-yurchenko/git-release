@@ -1,0 +1,87 @@
+name: Dev Image
+
+# Publishes a pre-release container image from the 'dev' branch so that
+# anton-yurchenko/git-release-dev can exercise unreleased code.
+#
+# GHCR only, on purpose: it needs no additional secret (the built-in
+# GITHUB_TOKEN is enough) and it keeps a moving pre-release tag off Docker Hub,
+# which is the registry users browse and copy tags from.
+#
+# Two tags are pushed:
+#   :dev            moving, convenient for a quick manual check
+#   :dev-<sha7>     immutable, what the test suite pins so a mid-run push
+#                   cannot swap the image under a running matrix
+
+on:
+  push:
+    branches:
+      - dev
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  APP_NAME: git-release
+
+jobs:
+  test:
+    uses: ./.github/workflows/test.yml
+    secrets:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  image:
+    name: Publish Dev Image
+    needs: test
+    runs-on: ubuntu-latest
+    outputs:
+      image: ${{ steps.meta.outputs.image }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Prepare Image Tags
+        id: meta
+        run: |
+          sha="$(git rev-parse --short=7 HEAD)"
+          repo="ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/${APP_NAME}"
+          {
+            echo "sha=${sha}"
+            echo "repo=${repo}"
+            echo "image=${repo}:dev-${sha}"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Login to GitHub Packages Docker Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # amd64 only: the dev image is consumed exclusively by the test suite on
+      # ubuntu-latest, and a single-arch build keeps the feedback loop short.
+      - name: Build Docker Image
+        run: |
+          docker buildx build \
+            --tag ${{ steps.meta.outputs.repo }}:dev \
+            --tag ${{ steps.meta.outputs.image }} \
+            --platform linux/amd64 --output type=registry .
+
+      - name: Summary
+        run: |
+          {
+            echo "### Dev image published"
+            echo
+            echo '```'
+            echo "${{ steps.meta.outputs.image }}"
+            echo "${{ steps.meta.outputs.repo }}:dev"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

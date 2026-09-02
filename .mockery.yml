@@ -1,0 +1,12 @@
+template: testify
+dir: mocks
+filename: "{{.InterfaceName}}.go"
+pkgname: mocks
+structname: "{{.InterfaceName}}"
+force-file-write: true
+formatter: goimports
+packages:
+  git-release/release:
+    interfaces:
+      GitClient:
+      RepositoriesClient:

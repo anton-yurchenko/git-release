@@ -22,10 +22,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
 
       - name: Release
-        uses: docker://antonyurchenko/git-release:latest
+        uses: docker://antonyurchenko/git-release:v7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -37,7 +37,9 @@ jobs:
 
 </details>
 
-## Release title with prefix
+## Release title with a prefix
+
+See [Release Name and Body Templates](../README.md#templates) for the available fields.
 
 ![PIC](images/example-prefix.png)
 
@@ -56,13 +58,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
 
       - name: Release
-        uses: docker://antonyurchenko/git-release:latest
+        uses: docker://antonyurchenko/git-release:v7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          RELEASE_NAME_PREFIX: "Release: "
+          NAME_TEMPLATE: "Release: {{ .Tag }}"
         with:
           args: |
             darwin-amd64.zip
@@ -72,7 +74,7 @@ jobs:
 
 </details>
 
-## Release title with suffix
+## Release title with a suffix
 
 ![PIC](images/example-suffix.png)
 
@@ -91,14 +93,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
 
       - name: Release
-        uses: docker://antonyurchenko/git-release:latest
+        uses: docker://antonyurchenko/git-release:v7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PRE_RELEASE: "true"
-          RELEASE_NAME_SUFFIX: " (nightly build)"
+          NAME_TEMPLATE: "{{ .Tag }} (nightly build)"
         with:
           args: |
             darwin-amd64.zip
@@ -108,13 +110,11 @@ jobs:
 
 </details>
 
-## Release title with prefix and suffix
+## Release title with a prefix and a suffix
 
 ![PIC](images/example-prefix-suffix.png)
 
 <details><summary>Workflow</summary>
-
-Can be set as global environmental variables or provided directly to the action
 
 ```yaml
 name: release
@@ -129,18 +129,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
-
-      - run: |
-          export PREFIX="Release: "
-          export SUFFIX=" (Codename: 'Ragnarok')"
-          echo "::set-env name=RELEASE_NAME_PREFIX::$PREFIX"
-          echo "::set-env name=RELEASE_NAME_SUFFIX::$SUFFIX"
+        uses: actions/checkout@v7
 
       - name: Release
-        uses: docker://antonyurchenko/git-release:latest
+        uses: docker://antonyurchenko/git-release:v7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NAME_TEMPLATE: "Release: {{ .Tag }} (Codename: 'Ragnarok')"
         with:
           args: |
             darwin-amd64.zip
@@ -156,8 +151,6 @@ jobs:
 
 <details><summary>Workflow</summary>
 
-Can be set as global environmental variable or provided directly to the action
-
 ```yaml
 name: release
 
@@ -171,16 +164,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
-
-      - run: |
-          export TEXT="Release X"
-          echo "::set-env name=RELEASE_NAME::$TEXT"
+        uses: actions/checkout@v7
 
       - name: Release
-        uses: docker://antonyurchenko/git-release:latest
+        uses: docker://antonyurchenko/git-release:v7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NAME_TEMPLATE: "Release X"
           CHANGELOG_FILE: "CHANGES.md"
           ALLOW_EMPTY_CHANGELOG: "true"
         with:
@@ -211,10 +201,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
 
       - name: Release
-        uses: docker://antonyurchenko/git-release:latest
+        uses: docker://antonyurchenko/git-release:v7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -242,10 +232,10 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
 
       - name: Release
-        uses: anton-yurchenko/git-release@master
+        uses: anton-yurchenko/git-release@v7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -262,7 +252,7 @@ jobs:
 This will recreate a single released on each execution by deleting the previous release and creating a new one.
 Changelog will be extracted from an `Unreleased` scope inside a CHANGELOG.md file.
 
-Because this is an *"Unreleased"* release, it will always be marked as a **pre-release**.
+Because this is an _"Unreleased"_ release, it will always be marked as a **pre-release**.
 
 `latest` tag will be used by default, this means that it will be moved with each execution and point to a different commit.
 
@@ -283,10 +273,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
 
       - name: Release
-        uses: docker://antonyurchenko/git-release:latest
+        uses: docker://antonyurchenko/git-release:v7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           UNRELEASED: "update"
@@ -317,10 +307,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
 
       - name: Release
-        uses: docker://antonyurchenko/git-release:latest
+        uses: docker://antonyurchenko/git-release:v7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           UNRELEASED: "update"

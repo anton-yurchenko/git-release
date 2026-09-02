@@ -11,34 +11,26 @@ import (
 	"sync"
 	"time"
 
-	"github.com/google/go-github/github"
+	"github.com/google/go-github/v78/github"
 	"github.com/pkg/errors"
 	"github.com/spf13/afero"
 
 	log "github.com/sirupsen/logrus"
 )
 
-// GetAssets returns validated assets supplied via 'args'
-func GetAssets(fs afero.Fs, args []string) (*[]Asset, error) {
+// GetAssets expands the configured paths and globs into release assets.
+//
+// NOTE: patterns arrive already split, one per line. v6 received the list on
+// argv and guessed the separator - splitting on whichever of space, newline,
+// comma or pipe matched first - which made a path containing a space
+// inexpressible, silently discarded the remainder of a comma-and-space
+// separated list, and produced a different asset set through the container than
+// through the JavaScript wrapper.
+func GetAssets(fs afero.Fs, patterns []string) (*[]Asset, error) {
 	assets := make([]Asset, 0)
-	arguments := make([]string, 0)
 
-	for _, arg := range args {
-		if len(strings.Split(arg, " ")) > 1 {
-			arguments = append(arguments, strings.Split(arg, " ")...)
-		} else if len(strings.Split(arg, "\n")) > 1 {
-			arguments = append(arguments, strings.Split(arg, "\n")...)
-		} else if len(strings.Split(arg, ",")) > 1 {
-			arguments = append(arguments, strings.Split(arg, ",")...)
-		} else if len(strings.Split(arg, "|")) > 1 {
-			arguments = append(arguments, strings.Split(arg, "|")...)
-		} else {
-			arguments = append(arguments, arg)
-		}
-	}
-
-	for _, argument := range arguments {
-		files, err := afero.Glob(fs, filepath.Clean(argument))
+	for _, pattern := range patterns {
+		files, err := afero.Glob(fs, filepath.Clean(pattern))
 		if err != nil {
 			return nil, err
 		}
@@ -55,6 +47,15 @@ func GetAssets(fs afero.Fs, args []string) (*[]Asset, error) {
 		}
 	}
 	return &assets, nil
+}
+
+// retryDelay is the backoff before retry attempt i (1-based).
+//
+// NOTE: a package-level variable so tests can collapse it. The suite otherwise
+// sleeps 9 + 27 + 81 real seconds for every retry-exhausting case, which made
+// the upload tests too slow to assert on properly.
+var retryDelay = func(i int) time.Duration {
+	return time.Duration(math.Pow(3, float64(i+1))) * time.Second
 }
 
 // Upload an asset to a GitHub release
@@ -85,9 +86,9 @@ func (a *Asset) Upload(release *Release, cli RepositoriesClient, id int64, errs 
 
 		log.WithField("asset", a.Name).Warn(err.Error())
 
-		delay := math.Pow(3, float64(i+1))
-		log.WithField("asset", a.Name).Infof("retrying (%v/%v) uploading asset in %v seconds", i+1, maxRetries, delay)
-		time.Sleep(time.Duration(delay) * time.Second)
+		delay := retryDelay(i)
+		log.WithField("asset", a.Name).Infof("retrying (%v/%v) uploading asset in %v seconds", i+1, maxRetries, delay.Seconds())
+		time.Sleep(delay)
 	}
 }
 

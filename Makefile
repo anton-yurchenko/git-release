@@ -1,27 +1,54 @@
 I := "⚪"
 E := "🔴"
 BINARY := $(notdir $(CURDIR))
-GO_BIN_DIR := $(GOPATH)/bin
 OSES := windows linux
 ARCHS := amd64
 
-test: lint
-	@echo "$(I) unit testing... [this may take a couple of minutes]"
-	@go test -v $$(go list ./... | grep -v vendor | grep -v mocks) -race -coverprofile=coverage.txt -covermode=atomic
+GO_BIN_DIR := $(shell go env GOPATH)/bin
+# NOTE: tools must be built with the toolchain this module requires, otherwise
+# they can not type-check it ("package requires newer Go version")
+GOTOOLCHAIN_PIN := $(shell awk '/^go /{print "go"$$2; exit}' go.mod)
+# NOTE: keep in sync with the golangci-lint-action version in .github/workflows/test.yml
+GOLANGCI_LINT_VERSION := v2.13.2
+MOCKERY_VERSION := v3.7.4
+# NOTE: the pinned copy in GOPATH/bin wins over whatever is on PATH. The other
+# way round, a stale binary earlier in PATH (a version manager's shim, say)
+# silently beats the version `make tools` installs - and mockery v2 against a v3
+# .mockery.yml fails complaining about the CONFIG, not about itself.
+GOLANGCI_LINT := $(shell test -x $(GO_BIN_DIR)/golangci-lint && echo $(GO_BIN_DIR)/golangci-lint || command -v golangci-lint 2>/dev/null)
+MOCKERY := $(shell test -x $(GO_BIN_DIR)/mockery && echo $(GO_BIN_DIR)/mockery || command -v mockery 2>/dev/null)
+
+.PHONY: all
+all: test
+
+.PHONY: tools
+tools:
+	@echo "$(I) installing golangci-lint $(GOLANGCI_LINT_VERSION)..."
+	@GOTOOLCHAIN=$(GOTOOLCHAIN_PIN) go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION) || (echo "$(E) 'go install golangci-lint' error"; exit 1)
+	@echo "$(I) installing mockery $(MOCKERY_VERSION)..."
+	@GOTOOLCHAIN=$(GOTOOLCHAIN_PIN) go install github.com/vektra/mockery/v3@$(MOCKERY_VERSION) || (echo "$(E) 'go install mockery' error"; exit 1)
+
+.PHONY: tidy
+tidy:
+	@echo "$(I) tidying go modules..."
+	@go mod tidy || (echo "$(E) 'go mod tidy' error"; exit 1)
+
+.PHONY: mocks
+mocks:
+	@test -x "$(MOCKERY)" || (echo "$(E) mockery not found, run 'make tools'"; exit 1)
+	@echo "$(I) generating mocks..."
+	@$(MOCKERY) || (echo "$(E) 'mockery' error"; exit 1)
 
 .PHONY: lint
-lint: $(GO_LINTER)
-	@echo "$(I) vendoring..."
-	@go get ./... || (echo "$(E) 'go get' error"; exit 1)
-	@go mod vendor || (echo "$(E) 'go mod vendor' error"; exit 1)
-	@go mod tidy || (echo "$(E) 'go mod tidy' error"; exit 1)
+lint:
+	@test -x "$(GOLANGCI_LINT)" || (echo "$(E) golangci-lint not found, run 'make tools'"; exit 1)
 	@echo "$(I) linting..."
-	@golangci-lint run ./... || (echo "$(E) linter error"; exit 1)
+	@$(GOLANGCI_LINT) run ./... || (echo "$(E) linter error"; exit 1)
 
-.PHONY: init
-init:
-	@rm -rf go.mod go.sum ./vendor
-	@go mod init $$(pwd | awk -F'/' '{print $$NF}')
+.PHONY: test
+test: lint
+	@echo "$(I) unit testing... [this may take a couple of minutes]"
+	@go test -v $$(go list ./... | grep -v '/mocks$$') -race -coverprofile=coverage.txt -covermode=atomic
 
 .PHONY: build
 build: test
@@ -31,9 +58,9 @@ build: test
 	@for ARCH in $(ARCHS); do \
 		for OS in $(OSES); do \
 			if test "$$OS" = "windows"; then \
-				GOOS=$$OS GOARCH=$$ARCH go build -o bin/$(BINARY)-$$OS-$$ARCH.exe; \
+				CGO_ENABLED=0 GOOS=$$OS GOARCH=$$ARCH go build -trimpath -buildvcs=false -ldflags="-w -s" -o bin/$(BINARY)-$$OS-$$ARCH.exe; \
 			else \
-				GOOS=$$OS GOARCH=$$ARCH go build -o bin/$(BINARY)-$$OS-$$ARCH; \
+				CGO_ENABLED=0 GOOS=$$OS GOARCH=$$ARCH go build -trimpath -buildvcs=false -ldflags="-w -s" -o bin/$(BINARY)-$$OS-$$ARCH; \
 			fi; \
 		done; \
 	done
@@ -41,8 +68,3 @@ build: test
 .PHONY: codecov
 codecov: test
 	@go tool cover -html=coverage.txt || (echo "$(E) 'go tool cover' error"; exit 1)
-
-GO_LINTER := $(GO_BIN_DIR)/golangci-lint
-$(GO_LINTER):
-	@echo "installing linter..."
-	go get -u github.com/golangci/golangci-lint/cmd/golangci-lint

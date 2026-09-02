@@ -25,9 +25,14 @@ func init() {
 	})
 	log.SetOutput(os.Stdout)
 	log.SetLevel(log.DebugLevel)
+}
 
-	log.Debugf("git-release v%v ", Version)
-
+// validateEnvironment reports a required environmental variable that is not defined.
+//
+// NOTE: intentionally not a part of init(), otherwise it would terminate the test
+// binary of this package before any test had a chance to run; and it returns an
+// error rather than calling log.Fatal so that it can be tested at all.
+func validateEnvironment() error {
 	l := []string{
 		"GITHUB_REPOSITORY",
 		"GITHUB_TOKEN",
@@ -40,12 +45,20 @@ func init() {
 
 	for _, v := range l {
 		if os.Getenv(v) == "" {
-			log.Fatalf("%v is not defined", v)
+			return errors.Errorf("%v is not defined", v)
 		}
 	}
+
+	return nil
 }
 
 func main() {
+	log.Debugf("git-release v%v ", Version)
+
+	if err := validateEnvironment(); err != nil {
+		log.Fatal(err)
+	}
+
 	fs := afero.NewOsFs()
 
 	conf, err := GetConfig(fs)
@@ -55,21 +68,25 @@ func main() {
 
 	rel, err := release.GetRelease(
 		fs,
-		os.Args[1:],
+		conf.Assets,
 		conf.TagPrefix,
-		conf.ReleaseName,
-		conf.ReleaseNamePrefix,
-		conf.ReleaseNameSuffix,
 		conf.UnreleasedCreate || conf.UnreleasedDelete,
 	)
 	if err != nil {
 		log.Fatal(errors.Wrap(err, "error fetching release configuration"))
 	}
 
-	if conf.ChangelogFile != "" {
-		rel.Changelog, err = conf.GetChangelog(fs, rel)
-		if err != nil {
-			log.Fatal(errors.Wrap(err, "error reading changelog"))
+	// NOTE: the title and body are only built for a release that will actually
+	// be published. v6 rendered the body before reaching the teardown branch
+	// below, so UNRELEASED=delete failed whenever the Unreleased section was
+	// empty - it demanded a changelog it was never going to publish.
+	if !conf.UnreleasedDelete {
+		if rel.Name, err = conf.GetName(rel); err != nil {
+			log.Fatal(err)
+		}
+
+		if rel.Body, err = conf.GetBody(fs, rel); err != nil {
+			log.Fatal(err)
 		}
 	}
 

@@ -2,6 +2,7 @@ package release_test
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -13,7 +14,7 @@ import (
 
 	"git-release/release"
 
-	"github.com/google/go-github/github"
+	"github.com/google/go-github/v78/github"
 	"github.com/pkg/errors"
 	"github.com/spf13/afero"
 
@@ -41,216 +42,74 @@ func TestGetAssets(t *testing.T) {
 	}
 
 	type test struct {
-		Args     []string
+		Patterns []string
 		Files    []string
 		Expected expected
 	}
 
+	// NOTE: patterns arrive already split, one per line - the separator guessing
+	// that used to live here moved out of the asset list entirely, and is
+	// covered by TestGetAssets in the main package.
 	suite := map[string]test{
-		"Empty Args": {
-			Args:  []string{},
-			Files: []string{},
+		"No Patterns": {
+			Patterns: []string{},
+			Files:    []string{},
 			Expected: expected{
 				Result: &[]release.Asset{},
-				Error:  "",
 			},
 		},
-		"Space Separator": {
-			Args:  []string{"file1 file2"},
-			Files: []string{"file1", "file2"},
+		"Single File": {
+			Patterns: []string{"file1"},
+			Files:    []string{"file1"},
 			Expected: expected{
 				Result: &[]release.Asset{
-					{
-						Name: "file1",
-						Path: "file1",
-					},
-					{
-						Name: "file2",
-						Path: "file2",
-					},
+					{Name: "file1", Path: "file1"},
 				},
-				Error: "",
 			},
 		},
-		"New Line Separator": {
-			Args:  []string{"file1\nfile2"},
-			Files: []string{"file1", "file2"},
+		"Multiple Files": {
+			Patterns: []string{"file1", "file2"},
+			Files:    []string{"file1", "file2"},
 			Expected: expected{
 				Result: &[]release.Asset{
-					{
-						Name: "file1",
-						Path: "file1",
-					},
-					{
-						Name: "file2",
-						Path: "file2",
-					},
+					{Name: "file1", Path: "file1"},
+					{Name: "file2", Path: "file2"},
 				},
-				Error: "",
 			},
 		},
-		"Comma Separator": {
-			Args:  []string{"file1,file2"},
-			Files: []string{"file1", "file2"},
+		"Glob": {
+			Patterns: []string{"*.zip"},
+			Files:    []string{"a.zip", "b.zip", "c.txt"},
 			Expected: expected{
 				Result: &[]release.Asset{
-					{
-						Name: "file1",
-						Path: "file1",
-					},
-					{
-						Name: "file2",
-						Path: "file2",
-					},
+					{Name: "a.zip", Path: "a.zip"},
+					{Name: "b.zip", Path: "b.zip"},
 				},
-				Error: "",
 			},
 		},
-		"Pipe Separator": {
-			Args:  []string{"file1|file2"},
-			Files: []string{"file1", "file2"},
+		"Path Containing A Space": {
+			Patterns: []string{"release notes.txt"},
+			Files:    []string{"release notes.txt"},
 			Expected: expected{
 				Result: &[]release.Asset{
-					{
-						Name: "file1",
-						Path: "file1",
-					},
-					{
-						Name: "file2",
-						Path: "file2",
-					},
+					{Name: "release notes.txt", Path: "release notes.txt"},
 				},
-				Error: "",
 			},
 		},
-		"Multiple Separators": {
-			Args:  []string{"file1 file2\nfile3,file4|file5"},
-			Files: []string{"file1", "file2", "file3", "file4", "file5"},
+		"Path Containing A Comma": {
+			Patterns: []string{"a,b.zip"},
+			Files:    []string{"a,b.zip"},
 			Expected: expected{
 				Result: &[]release.Asset{
-					{
-						Name: "file1",
-						Path: "file1",
-					},
+					{Name: "a,b.zip", Path: "a,b.zip"},
 				},
-				Error: "",
 			},
 		},
-		"Multiple Arguments": {
-			Args:  []string{"file1", "file2"},
-			Files: []string{"file1", "file2"},
+		"Unmatched Pattern": {
+			Patterns: []string{"nothing-*.zip"},
+			Files:    []string{},
 			Expected: expected{
-				Result: &[]release.Asset{
-					{
-						Name: "file1",
-						Path: "file1",
-					},
-					{
-						Name: "file2",
-						Path: "file2",
-					},
-				},
-				Error: "",
-			},
-		},
-		"Multiple Arguments with Space Separator": {
-			Args:  []string{"file1 file2", "file3 file4"},
-			Files: []string{"file1", "file2", "file3", "file4"},
-			Expected: expected{
-				Result: &[]release.Asset{
-					{
-						Name: "file1",
-						Path: "file1",
-					},
-					{
-						Name: "file2",
-						Path: "file2",
-					},
-					{
-						Name: "file3",
-						Path: "file3",
-					},
-					{
-						Name: "file4",
-						Path: "file4",
-					},
-				},
-				Error: "",
-			},
-		},
-		"Multiple Arguments with New Line Separator": {
-			Args:  []string{"file1\nfile2", "file3\nfile4"},
-			Files: []string{"file1", "file2", "file3", "file4"},
-			Expected: expected{
-				Result: &[]release.Asset{
-					{
-						Name: "file1",
-						Path: "file1",
-					},
-					{
-						Name: "file2",
-						Path: "file2",
-					},
-					{
-						Name: "file3",
-						Path: "file3",
-					},
-					{
-						Name: "file4",
-						Path: "file4",
-					},
-				},
-				Error: "",
-			},
-		},
-		"Multiple Arguments with Comma Separator": {
-			Args:  []string{"file1,file2", "file3,file4"},
-			Files: []string{"file1", "file2", "file3", "file4"},
-			Expected: expected{
-				Result: &[]release.Asset{
-					{
-						Name: "file1",
-						Path: "file1",
-					},
-					{
-						Name: "file2",
-						Path: "file2",
-					},
-					{
-						Name: "file3",
-						Path: "file3",
-					},
-					{
-						Name: "file4",
-						Path: "file4",
-					},
-				},
-				Error: "",
-			},
-		},
-		"Multiple Arguments with Pipe Separator": {
-			Args:  []string{"file1|file2", "file3|file4"},
-			Files: []string{"file1", "file2", "file3", "file4"},
-			Expected: expected{
-				Result: &[]release.Asset{
-					{
-						Name: "file1",
-						Path: "file1",
-					},
-					{
-						Name: "file2",
-						Path: "file2",
-					},
-					{
-						Name: "file3",
-						Path: "file3",
-					},
-					{
-						Name: "file4",
-						Path: "file4",
-					},
-				},
-				Error: "",
+				Result: &[]release.Asset{},
 			},
 		},
 	}
@@ -269,7 +128,7 @@ func TestGetAssets(t *testing.T) {
 		}
 
 		// test
-		r, err := release.GetAssets(fs, test.Args)
+		r, err := release.GetAssets(fs, test.Patterns)
 		a.Equal(test.Expected.Result, r)
 		if test.Expected.Error != "" || err != nil {
 			a.EqualError(err, test.Expected.Error)
@@ -286,6 +145,9 @@ func TestGetAssets(t *testing.T) {
 
 func TestUpload(t *testing.T) {
 	log.SetOutput(io.Discard)
+
+	// The retry LOGIC is what matters here, not 117 seconds of real sleeping.
+	defer release.SetRetryDelay(time.Millisecond)()
 
 	a := assert.New(t)
 	fs := afero.NewOsFs()
@@ -339,7 +201,7 @@ func TestUpload(t *testing.T) {
 				Error: "",
 			},
 		},
-		"Ghost Release Asset Not Found [very long test]": {
+		"Ghost Release Asset Not Found - Recovers On Retry": {
 			Asset: release.Asset{
 				Name: "testFile1",
 				Path: "testFile1",
@@ -360,7 +222,7 @@ func TestUpload(t *testing.T) {
 					},
 					UploadReleaseAssetError: errors.New("reason-c"),
 					GetReleaseByTagRelease: &github.RepositoryRelease{
-						Assets: []github.ReleaseAsset{
+						Assets: []*github.ReleaseAsset{
 							{
 								ID:   pInt64(123),
 								Name: pString("testFile2"),
@@ -378,10 +240,13 @@ func TestUpload(t *testing.T) {
 				},
 			},
 			Expected: expected{
-				Error: "ghost release asset not found",
+				// The ghost is NOT found on the first attempt, so uploadHandler
+				// reports it, Upload treats that as retryable, and the second
+				// attempt succeeds. The run therefore returns no error.
+				Error: "",
 			},
 		},
-		"Asset Already Exists - Last Try [very long test]": {
+		"Asset Already Exists - Last Try": {
 			Asset: release.Asset{
 				Name: "test/File1",
 				Path: "testFile1",
@@ -408,7 +273,7 @@ func TestUpload(t *testing.T) {
 					},
 					UploadReleaseAssetError: errors.New("reason-c"),
 					GetReleaseByTagRelease: &github.RepositoryRelease{
-						Assets: []github.ReleaseAsset{
+						Assets: []*github.ReleaseAsset{
 							{
 								ID:   pInt64(123),
 								Name: pString("test-File1"),
@@ -423,7 +288,7 @@ func TestUpload(t *testing.T) {
 					},
 					UploadReleaseAssetError: errors.New("reason-c"),
 					GetReleaseByTagRelease: &github.RepositoryRelease{
-						Assets: []github.ReleaseAsset{
+						Assets: []*github.ReleaseAsset{
 							{
 								ID:   pInt64(123),
 								Name: pString("test-File1"),
@@ -445,7 +310,7 @@ func TestUpload(t *testing.T) {
 				Error: "maximum attempts reached uploading asset: test/File1",
 			},
 		},
-		"Recover [long test]": {
+		"Recover": {
 			Asset: release.Asset{
 				Name: "test/File1",
 				Path: "testFile1",
@@ -472,7 +337,7 @@ func TestUpload(t *testing.T) {
 					},
 					UploadReleaseAssetError: errors.New("reason-b"),
 					GetReleaseByTagRelease: &github.RepositoryRelease{
-						Assets: []github.ReleaseAsset{
+						Assets: []*github.ReleaseAsset{
 							{
 								ID:   pInt64(123),
 								Name: pString("test-File1"),
@@ -494,7 +359,7 @@ func TestUpload(t *testing.T) {
 				Error: "",
 			},
 		},
-		"No API Response [long test]": {
+		"No API Response": {
 			Asset: release.Asset{
 				Name: "test/File1",
 				Path: "testFile1",
@@ -563,7 +428,7 @@ func TestUpload(t *testing.T) {
 		wg.Add(1)
 		errs := make(chan error, 1)
 
-		m := new(mocks.RepositoriesClient)
+		m := mocks.NewRepositoriesClient(t)
 		for _, res := range test.MockResponses {
 			m.On("UploadReleaseAsset",
 				context.Background(),
@@ -609,8 +474,14 @@ func TestUpload(t *testing.T) {
 
 		test.Asset.Upload(test.Release, m, id, errs, wg)
 
+		// NOTE: unconditional. Guarding this with `if err != nil` meant a case
+		// whose expected error stopped occurring asserted nothing at all - four
+		// of the six cases were silently checking nothing, and replacing the
+		// "maximum attempts reached" error with nil passed the whole suite.
 		err := <-errs
-		if err != nil {
+		if test.Expected.Error == "" {
+			a.NoError(err)
+		} else {
 			a.EqualError(err, test.Expected.Error)
 		}
 
@@ -624,4 +495,81 @@ func TestUpload(t *testing.T) {
 			time.Sleep(30 * time.Millisecond)
 		}
 	}
+}
+
+// TestUploadHandlerGhostRecovery pins the 502/422 recovery branch.
+//
+// GitHub can report a failed upload that nevertheless left the asset attached to
+// the release. The next attempt would then fail with "already exists" forever, so
+// the handler deletes that ghost and asks to be retried. Upload() reports only the
+// final outcome, so this branch is only observable one attempt at a time.
+func TestUploadHandlerGhostRecovery(t *testing.T) {
+	log.SetOutput(io.Discard)
+
+	a := assert.New(t)
+	const id int64 = 1
+
+	rel := &release.Release{
+		Slug:      &release.Slug{Owner: "anton-yurchenko", Name: "git-release"},
+		Reference: &release.Reference{Tag: "v1.0.0"},
+	}
+
+	fs := afero.NewOsFs()
+	if err := afero.WriteFile(fs, "ghostFile", []byte(""), 0644); err != nil {
+		t.Fatalf("error preparing test case: %v", err)
+	}
+	defer func() { _ = fs.Remove("ghostFile") }()
+
+	asset := &release.Asset{Name: "ghostFile", Path: "ghostFile"}
+
+	for _, status := range []int{http.StatusBadGateway, http.StatusUnprocessableEntity} {
+		t.Run(fmt.Sprintf("ghost deleted on %v", status), func(t *testing.T) {
+			m := mocks.NewRepositoriesClient(t)
+
+			m.On("UploadReleaseAsset", context.Background(), "anton-yurchenko", "git-release", id,
+				&github.UploadOptions{Name: "ghostFile"}, mock.AnythingOfType("*os.File")).
+				Return(nil, &github.Response{Response: &http.Response{StatusCode: status}}, errors.New("reason")).Once()
+
+			m.On("GetReleaseByTag", context.Background(), "anton-yurchenko", "git-release", "v1.0.0").
+				Return(&github.RepositoryRelease{
+					Assets: []*github.ReleaseAsset{{ID: int64P(7), Name: stringP("ghostFile")}},
+				}, nil, nil).Once()
+
+			// The ghost carrying the same name must be removed, or every later
+			// attempt collides with it.
+			m.On("DeleteReleaseAsset", context.Background(), "anton-yurchenko", "git-release", int64(7)).
+				Return(nil, nil).Once()
+
+			err := asset.UploadHandler(rel, m, id, false)
+			a.EqualError(err, "ghost release asset deleted")
+		})
+	}
+
+	t.Run("no ghost to delete", func(t *testing.T) {
+		m := mocks.NewRepositoriesClient(t)
+
+		m.On("UploadReleaseAsset", context.Background(), "anton-yurchenko", "git-release", id,
+			&github.UploadOptions{Name: "ghostFile"}, mock.AnythingOfType("*os.File")).
+			Return(nil, &github.Response{Response: &http.Response{StatusCode: http.StatusBadGateway}}, errors.New("reason")).Once()
+
+		m.On("GetReleaseByTag", context.Background(), "anton-yurchenko", "git-release", "v1.0.0").
+			Return(&github.RepositoryRelease{
+				Assets: []*github.ReleaseAsset{{ID: int64P(7), Name: stringP("somethingElse")}},
+			}, nil, nil).Once()
+
+		err := asset.UploadHandler(rel, m, id, false)
+		a.EqualError(err, "ghost release asset not found")
+	})
+
+	// On the final attempt there is no point recovering - the error is reported.
+	t.Run("no recovery on the last attempt", func(t *testing.T) {
+		m := mocks.NewRepositoriesClient(t)
+
+		m.On("UploadReleaseAsset", context.Background(), "anton-yurchenko", "git-release", id,
+			&github.UploadOptions{Name: "ghostFile"}, mock.AnythingOfType("*os.File")).
+			Return(nil, &github.Response{Response: &http.Response{StatusCode: http.StatusBadGateway}}, errors.New("reason")).Once()
+
+		err := asset.UploadHandler(rel, m, id, true)
+		a.EqualError(err, "reason")
+	})
 }

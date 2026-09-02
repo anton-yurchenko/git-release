@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(go build:*)",
+      "Bash(go vet:*)",
+      "Bash(go test:*)",
+      "Bash(go list:*)",
+      "Bash(go doc:*)",
+      "Bash(go env:*)",
+      "Bash(go version:*)",
+      "Bash(go tool cover:*)",
+      "Bash(go mod tidy)",
+      "Bash(go mod download:*)",
+      "Bash(gofmt -l:*)",
+      "Bash(gofmt -d:*)",
+      "Bash(golangci-lint run:*)",
+      "Bash(make -n:*)",
+      "Bash(make lint)",
+      "Bash(make test)",
+      "Bash(make tools)",
+      "Bash(make tidy)",
+      "Bash(make mocks)",
+      "Bash(docker build:*)",
+      "Bash(docker buildx build:*)",
+      "Bash(./scripts/check-drift.sh)"
+    ],
+    "ask": [
+      "Bash(docker run:*)",
+      "Bash(make build)"
+    ],
+    "deny": [
+      "Read(bin/**)",
+      "Read(node_modules/**)"
+    ],
+    "additionalDirectories": ["../git-release-dev"]
+  },
+  "env": {
+    "BASH_DEFAULT_TIMEOUT_MS": "300000"
+  }
+}

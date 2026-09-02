@@ -9,26 +9,24 @@ import (
 	"sync"
 	"time"
 
+	"git-release/env"
+
 	changelog "github.com/anton-yurchenko/go-changelog"
-	"github.com/google/go-github/github"
+	"github.com/google/go-github/v78/github"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 )
 
-func GetRelease(fs afero.Fs, args []string, tagPrefix, name, namePrefix, nameSuffix string, unreleased bool) (*Release, error) {
+func GetRelease(fs afero.Fs, assets []string, tagPrefix string, unreleased bool) (*Release, error) {
 	release := new(Release)
 
-	if strings.ToLower(os.Getenv("DRAFT_RELEASE")) == "true" {
-		release.Draft = true
-	}
-
-	if strings.ToLower(os.Getenv("PRE_RELEASE")) == "true" || unreleased {
-		release.PreRelease = true
-	}
-
 	var err error
-	release.Assets, err = GetAssets(fs, args)
+	if release.Draft, err = env.Bool("DRAFT_RELEASE"); err != nil {
+		return nil, err
+	}
+
+	release.Assets, err = GetAssets(fs, assets)
 	if err != nil {
 		return nil, errors.Wrap(err, "error retrieving release assets")
 	}
@@ -43,12 +41,18 @@ func GetRelease(fs afero.Fs, args []string, tagPrefix, name, namePrefix, nameSuf
 		return nil, errors.Wrap(err, "error retrieving repository slug")
 	}
 
-	if name != "" {
-		release.Name = name
-	} else if unreleased {
+	// A rolling release is always a pre-release.
+	preRelease, err := env.Bool("PRE_RELEASE")
+	if err != nil {
+		return nil, err
+	}
+
+	release.PreRelease = preRelease || unreleased
+
+	// The default title. NAME_TEMPLATE, when set, replaces it.
+	release.Name = release.Reference.Tag
+	if unreleased {
 		release.Name = "Latest"
-	} else {
-		release.Name = fmt.Sprintf("%v%v%v", namePrefix, release.Reference.Tag, nameSuffix)
 	}
 
 	return release, nil
@@ -56,10 +60,9 @@ func GetRelease(fs afero.Fs, args []string, tagPrefix, name, namePrefix, nameSuf
 
 // GetReference loads a codebase references from workspace
 func GetReference(prefix string, unreleased bool) (*Reference, error) {
-	if os.Getenv("GITHUB_REF") == "" {
+	ref := os.Getenv("GITHUB_REF")
+	if ref == "" {
 		return nil, errors.New("GITHUB_REF is not defined")
-	} else if os.Getenv("GITHUB_REF") == UnreleasedRef {
-		return nil, errors.New("workflow configuration error detected: trigger loop (triggering tag will be recreated and trigger the workflow again)")
 	}
 
 	if os.Getenv("GITHUB_SHA") == "" {
@@ -68,47 +71,68 @@ func GetReference(prefix string, unreleased bool) (*Reference, error) {
 
 	if unreleased {
 		tag := UnreleasedDefaultTag
+		if v := env.Get("UNRELEASED_TAG"); v != "" {
+			tag = v
+		}
 
-		if os.Getenv("UNRELEASED_TAG") != "" {
-			tag = os.Getenv("UNRELEASED_TAG")
+		// The rolling tag is deleted and recreated on every run, so a workflow
+		// triggered by that tag would trigger itself forever.
+		//
+		// NOTE: the guard is scoped to the resolved tag, and only in unreleased
+		// mode. v6 compared against a hardcoded 'refs/tags/latest', which both
+		// missed a custom UNRELEASED_TAG and refused an ordinary release of a
+		// tag that happened to be named 'latest'.
+		if ref == fmt.Sprintf("refs/tags/%v", tag) {
+			return nil, errors.New("workflow configuration error detected: trigger loop (triggering tag will be recreated and trigger the workflow again)")
 		}
 
 		return &Reference{
 			CommitHash: os.Getenv("GITHUB_SHA"),
 			Tag:        tag,
-			Version:    "Unreleased",
+			Version:    UnreleasedVersion,
 		}, nil
 	}
 
-	var expression string
-	if prefix != "" {
-		expression = fmt.Sprintf("^refs/tags/(?P<prefix>%v)%v$", prefix, changelog.SemVerRegex)
-	} else {
-		expression = fmt.Sprintf("^refs/tags/[v]?%v$", changelog.SemVerRegex)
-	}
-	regex := regexp.MustCompile(expression)
-
-	if regex.MatchString(os.Getenv("GITHUB_REF")) {
-		var version string
-		if prefix != "" {
-			versionRegex := regexp.MustCompile(fmt.Sprintf("^refs/tags/(?P<prefix>%v)(?P<version>.*)$", prefix))
-			if versionRegex.MatchString(os.Getenv("GITHUB_REF")) {
-				version = versionRegex.ReplaceAllString(os.Getenv("GITHUB_REF"), "${2}")
-			} else {
-				version = strings.TrimPrefix(os.Getenv("GITHUB_REF"), "refs/tags/")
-			}
-		} else {
-			version = strings.TrimPrefix(strings.TrimPrefix(os.Getenv("GITHUB_REF"), "refs/tags/"), "v")
-		}
-
-		return &Reference{
-			CommitHash: os.Getenv("GITHUB_SHA"),
-			Tag:        strings.Join(strings.Split(os.Getenv("GITHUB_REF"), "/")[2:], "/"),
-			Version:    version,
-		}, nil
+	if prefix == "" {
+		prefix = DefaultTagPrefixRegex
 	}
 
-	return nil, errors.New(fmt.Sprintf("malformed env.var GITHUB_REF: expected to match regex '%v', got '%v'", expression, os.Getenv("GITHUB_REF")))
+	// NOTE: the prefix is wrapped non-capturing and the version is read by NAME.
+	// v6 built '(?P<prefix>%v)' and then extracted the version with a positional
+	// '${2}', so a capture group in a user's own regex shifted the numbering:
+	// TAG_PREFIX_REGEX='(rel|pre)-' on 'refs/tags/rel-1.2.3' silently yielded
+	// the version 'rel'.
+	expression := fmt.Sprintf(`^refs/tags/(?:%v)(?P<version>%v)$`, prefix, changelog.SemVerRegex)
+
+	// NOTE: Compile, not MustCompile - the pattern is user input, and a
+	// configuration mistake must not panic.
+	regex, err := regexp.Compile(expression)
+	if err != nil {
+		return nil, errors.Wrap(err, "malformed env.var TAG_PREFIX_REGEX")
+	}
+
+	match := regex.FindStringSubmatch(ref)
+	if match == nil {
+		return nil, errors.Errorf("malformed env.var GITHUB_REF: expected to match regex '%v', got '%v'", expression, ref)
+	}
+
+	version := match[regex.SubexpIndex("version")]
+
+	// Re-match the extracted version on its own to split it into components.
+	// Doing it separately keeps the indexes independent of whatever groups the
+	// user's prefix introduced.
+	semver := regexp.MustCompile(`^` + changelog.SemVerRegex + `$`)
+	parts := semver.FindStringSubmatch(version)
+
+	return &Reference{
+		CommitHash: os.Getenv("GITHUB_SHA"),
+		Tag:        strings.Join(strings.Split(ref, "/")[2:], "/"),
+		Version:    version,
+		Major:      parts[1],
+		Minor:      parts[2],
+		Patch:      parts[3],
+		Prerelease: parts[4],
+	}, nil
 }
 
 // GetSlug loads project information from a workspace
@@ -141,7 +165,7 @@ func (r *Release) Publish(cli RepositoriesClient) error {
 			Name:            &r.Name,
 			TagName:         &r.Reference.Tag,
 			TargetCommitish: &r.Reference.CommitHash,
-			Body:            &r.Changelog,
+			Body:            &r.Body,
 			Draft:           &r.Draft,
 			Prerelease:      &r.PreRelease,
 		},
@@ -255,11 +279,9 @@ func (r *Release) UpdateUnreleasedTag(gitCli GitClient) error {
 		context.Background(),
 		r.Slug.Owner,
 		r.Slug.Name,
-		&github.Reference{
-			Ref: &tag,
-			Object: &github.GitObject{
-				SHA: &r.Reference.CommitHash,
-			},
+		github.CreateRef{
+			Ref: tag,
+			SHA: r.Reference.CommitHash,
 		},
 	)
 
