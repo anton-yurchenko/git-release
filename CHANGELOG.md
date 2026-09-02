@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [7.0.0] - 2026-09-02
+
 ### Changed
 
 - **Breaking:** :warning: `RELEASE_NAME`, `RELEASE_NAME_PREFIX` and `RELEASE_NAME_SUFFIX` are replaced by `NAME_TEMPLATE`
@@ -15,6 +17,10 @@
 - [PR #145](https://github.com/anton-yurchenko/git-release/pull/145) `NAME_TEMPLATE` to compose the release title from a template (_Thanks to [Taylor Becker](https://github.com/tajobe)_)
 - `BODY_TEMPLATE` to compose the release body from a template
 
+### Removed
+
+- `RELEASE_NAME_POSTFIX` and `ALLOW_TAG_PREFIX`
+
 ### Fixed
 
 - Release assets were resolved differently by the Docker image and the JavaScript wrapper
@@ -24,10 +30,6 @@
 - Trigger loop protection ignored a custom `UNRELEASED_TAG`
 - Releasing a tag named `latest`
 - Asset upload URL on GitHub Enterprise
-
-### Removed
-
-- `RELEASE_NAME_POSTFIX` and `ALLOW_TAG_PREFIX`
 
 ## [6.0.0] - 2024-01-17
 
@@ -417,7 +419,8 @@ This is a major release as most of the code was refactored and some behavior was
 - Control Release Draft through env.var `DRAFT_RELEASE`
 - Control Release Pre Release through env.var `PRE_RELEASE`
 
-[Unreleased]: https://github.com/anton-yurchenko/git-release/compare/v6.0.0...HEAD
+[Unreleased]: https://github.com/anton-yurchenko/git-release/compare/v7.0.0...HEAD
+[7.0.0]: https://github.com/anton-yurchenko/git-release/compare/v6.0.0...v7.0.0
 [6.0.0]: https://github.com/anton-yurchenko/git-release/compare/v5.0.2...v6.0.0
 [5.0.2]: https://github.com/anton-yurchenko/git-release/compare/v5.0.1...v5.0.2
 [5.0.1]: https://github.com/anton-yurchenko/git-release/compare/v5.0.0...v5.0.1
