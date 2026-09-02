@@ -5,11 +5,21 @@
 # diverge: the build would succeed, the tests would pass, and the artefact would
 # be wrong.
 set -uo pipefail
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/.." || exit 1
 
 fail=0
-check() { # check <description> <a> <b>
-    if [[ "$2" == "$3" ]]; then
+
+# check <description> <a> <b>
+#
+# NOTE: an empty value is a failure, not a match. sed exits 0 when a pattern
+# simply does not match, so a reformat that breaks BOTH extractions of a pair
+# would otherwise compare "" against "" and report a pass - the check silently
+# stops checking. (`set -e` does not help here for the same reason.)
+check() {
+    if [[ -z "$2" || -z "$3" ]]; then
+        printf '  BROKEN %s: could not extract a value (%s vs %s)\n' "$1" "${2:-<empty>}" "${3:-<empty>}"
+        fail=1
+    elif [[ "$2" == "$3" ]]; then
         printf '  ok    %s (%s)\n' "$1" "$2"
     else
         printf '  DRIFT %s: %s != %s\n' "$1" "$2" "$3"

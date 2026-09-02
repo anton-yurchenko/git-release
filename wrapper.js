@@ -5,7 +5,7 @@ import fs from 'node:fs'
 import child from 'node:child_process'
 
 // The binary reads every setting from the environment, including the asset
-// list, which the runner has already exported as INPUT_ASSETS. Nothing is
+// list, which the runner has already exported as INPUT_ARGS. Nothing is
 // passed on argv: v6 forwarded the asset list as a single argument here while
 // the container received it pre-split by the runner, so the two distribution
 // modes disagreed about which assets to upload.
