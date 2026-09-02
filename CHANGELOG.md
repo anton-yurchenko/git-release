@@ -2,8 +2,6 @@
 
 ## [Unreleased]
 
-## [7.0.0] - 2026-09-02
-
 ### Changed
 
 - **Breaking:** :warning: `RELEASE_NAME`, `RELEASE_NAME_PREFIX` and `RELEASE_NAME_SUFFIX` are replaced by `NAME_TEMPLATE`
@@ -419,8 +417,7 @@ This is a major release as most of the code was refactored and some behavior was
 - Control Release Draft through env.var `DRAFT_RELEASE`
 - Control Release Pre Release through env.var `PRE_RELEASE`
 
-[Unreleased]: https://github.com/anton-yurchenko/git-release/compare/v7.0.0...HEAD
-[7.0.0]: https://github.com/anton-yurchenko/git-release/compare/v6.0.0...v7.0.0
+[Unreleased]: https://github.com/anton-yurchenko/git-release/compare/v6.0.0...HEAD
 [6.0.0]: https://github.com/anton-yurchenko/git-release/compare/v5.0.2...v6.0.0
 [5.0.2]: https://github.com/anton-yurchenko/git-release/compare/v5.0.1...v5.0.2
 [5.0.1]: https://github.com/anton-yurchenko/git-release/compare/v5.0.0...v5.0.1

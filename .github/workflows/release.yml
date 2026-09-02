@@ -35,8 +35,16 @@ jobs:
         with:
           category: "/language:go"
 
+      # NOTE: the official action, not Templum/govulncheck-action. That one ships
+      # its own Go and runs with GOTOOLCHAIN=local, so it cannot build a module
+      # whose go directive is newer than the Go it bundles - it failed the v7.0.0
+      # release with "go.mod requires go >= 1.27.1 (running go 1.21.4)".
+      # go-version-file keeps the scanner on the same toolchain as the module.
       - name: Go Vulnerability Check
-        uses: Templum/govulncheck-action@v1
+        uses: golang/govulncheck-action@v1
+        with:
+          go-version-file: go.mod
+          repo-checkout: false
 
   release:
     name: Release
