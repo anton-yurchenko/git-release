@@ -1,4 +1,4 @@
-FROM golang:1.27.0 AS builder
+FROM golang:1.27.1 AS builder
 WORKDIR /opt/src
 COPY . .
 RUN groupadd -g 1000 appuser &&\

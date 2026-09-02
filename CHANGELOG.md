@@ -7,7 +7,7 @@
 - **Breaking:** :warning: `RELEASE_NAME`, `RELEASE_NAME_PREFIX` and `RELEASE_NAME_SUFFIX` are replaced by `NAME_TEMPLATE`
 - **Breaking:** :warning: Boolean settings reject any value other than `true` and `false`
 - **Breaking:** :warning: Update NodeJS version to v24 (_Thanks to [Vincent Biret](https://github.com/baywet)_)
-- Update Golang version to v1.27.0
+- Update Golang version to v1.27.1
 - Update dependencies
 
 ### Added
